@@ -90,6 +90,8 @@ export type BuildProblem = {
   hints: [string, string, string];
   review: string[];
   walkthrough: { design: string; classes: { name: string; role: string }[]; tradeoffs: string[]; followUps: string[] };
+  /** Plausible bugs, made by editing the JS reference; check-content makes sure each one fails a scenario. */
+  mutants?: { name: string; from: string; to: string }[];
 };
 
 /** A system-design lab: build an architecture on the canvas; the simulator and rules score it. */

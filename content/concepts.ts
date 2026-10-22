@@ -4,7 +4,7 @@
 export type Concept = {
   id: string;
   term: string;
-  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2";
+  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking";
   hue: "teal" | "violet" | "amber" | "rose" | "blue";
   definition: string;
   appearsIn: string[];
@@ -138,5 +138,13 @@ export const concepts: Record<string, Concept> = {
     hue: "rose",
     definition: "A durable buffer between the code that produces work and the workers that do it, so slow or failing work (like recording a click) doesn't hold up the request.",
     appearsIn: ["HLD 15 · Queues and streams", "HLD 22 · URL shortener", "HLD 25 · Notification system"],
+  },
+  "allocation-rule": {
+    id: "allocation-rule",
+    term: "Allocation rule",
+    glyph: "SquareParking",
+    hue: "violet",
+    definition: "The exact order in which a system hands out a scarce resource (a slot, a seat, a driver). Writing it down as a precise order makes it testable and easy to change.",
+    appearsIn: ["LLD 14 · Parking lot", "LLD 17 · Movie ticket booking", "LLD 23 · Ride sharing"],
   },
 };

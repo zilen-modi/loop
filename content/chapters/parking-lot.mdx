@@ -1,0 +1,134 @@
+<ChapterHead kicker="Book 2 · Classic builds · Chapter 14" title="Parking lot" concept="allocation-rule" meta="About 20 minutes of reading · one 90-minute build" />
+
+<Story when="Monday, 7 am">
+Tiffin's new hub opens with a three-level car park for delivery bikes, vans and visitors. On day one a rider's bike gets a van bay while bike bays sit empty, and a visitor is charged for two hours after staying sixty-one minutes. Nobody wrote the two rules down: which slot a vehicle gets, and how long counts as an hour.
+</Story>
+
+"Design a parking lot" may be the most-asked machine-coding prompt of all. It's popular because it looks like a modelling exercise but is really about two **rules**: how slots are handed out, and how stays are priced. Candidates who spend forty minutes drawing Vehicle, Car, Bike, Truck, Slot, Floor, Building and Gate classes often run out of time before either rule works. Get the rules exact first, and the classes follow from them.
+
+## Clarify the two rules
+
+Ask until each rule could be turned into a test:
+
+- **Which vehicles fit where?** Usually a bike fits anywhere, a car fits a car or truck bay, and a truck only fits a truck bay.
+- **Which free slot comes first?** The vehicle's own size, or the nearest floor? Lowest number? This is the question most candidates skip, and the hidden tests always check it.
+- **How is time charged?** Per minute, per started hour, a daily cap? Is a zero-minute stay free?
+- **What's an error?** A full lot, a vehicle that's already inside, a ticket used twice, leaving before you arrived.
+
+The bench's version: own size before bigger sizes, then floors in the order they were added, then the lowest slot number. Fees are per **started** hour, with at least one hour.
+
+<Checkpoint id="pl-fee" />
+
+## The allocation rule, live
+
+Writing the slot order down as one precise sentence is an <Term id="allocation-rule">allocation rule</Term>. Once you have it, choosing a slot is a scan in a fixed order. Try it: send vehicles in, and click a parked one to let it leave.
+
+<ParkingBoard />
+
+<Checkpoint id="pl-slot" />
+
+A useful trick: if you keep every slot in **one list, in the order the floors and sizes were added**, "floors in order, then lowest number" comes for free. Finding a slot is then two loops: over the sizes this vehicle fits, smallest first, and over the list.
+
+```js
+findSlot(type) {
+  const sizes = SIZES.slice(SIZES.indexOf(type)); // car → ["car", "truck"]
+  for (const size of sizes) {
+    const slot = this.slots.find((s) => !s.plate && s.size === size);
+    if (slot) return slot;
+  }
+  return null;
+}
+```
+
+## Model what the questions need
+
+Read the API back: park returns a ticket, leave takes a ticket and a time, and you can ask where a vehicle is. That suggests exactly three pieces of state:
+
+- **Slots**, each with its size and the plate in it (or nothing).
+- **Tickets**, each with the plate, vehicle type, slot and entry time.
+- **Plate to ticket**, so "is this car already inside?" and "where is it?" are instant.
+
+There's no need for a class per vehicle type. A car and a truck differ only in which sizes they fit, and that's one line of data. Subclasses would add code without adding behaviour, which interviewers notice.
+
+## Pricing is the part that changes
+
+Ask yourself which part an interviewer will change. In a parking lot it's almost always pricing: weekends, night rates, a daily cap, electric-vehicle bays. So <Term id="strategy-pattern">put pricing behind one method</Term> from the start:
+
+```js
+class HourlyPricing {
+  rateAt(type, minute) { return RATES[type]; }
+}
+
+// in leave():
+const hours = Math.max(1, Math.ceil((time - entry) / 60));
+for (let h = 0; h < hours; h++) fee += this.pricing.rateAt(type, entry + h * 60);
+```
+
+Asking for the rate *at each hour's start* looks like overkill for flat rates. It's what makes the extension painless: when weekend rates arrive, a `WeekendPricing` class wraps the hourly one and answers differently on Saturdays and Sundays, and `leave()` doesn't change at all.
+
+## Validate, then write
+
+The usual rule from the playbook applies: check everything, then change state. Two cases catch people out.
+
+- **Adding a floor with one bad count.** If you register the floor before checking its slot counts, a failed call leaves a half-added floor behind, and the next attempt with the same id is wrongly refused.
+- **Ticket numbers.** They're issued for successful parks only, and never reused. Incrementing the counter before the lot turns a vehicle away skips a number.
+
+## The extension
+
+When the core passes, the bench adds two requirements.
+
+**Weekend rates.** Each charged hour uses the rate for the day it *starts* on. A car that parks on Friday at 23:00 and leaves on Saturday at 01:30 pays one Friday hour and two Saturday hours. With pricing behind `rateAt(type, minute)`, this is one new class.
+
+**A VIP floor.** VIP slots are only for VIP vehicles, and VIP vehicles try VIP slots before normal ones. That's one more condition in the same scan: a first pass over VIP slots, then the normal pass. If your slot choice lived in one function, this is a five-line change.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Several entry gates park cars at the same moment." Finding a free slot and taking it must be one atomic step: a lock around it, or a compare-and-set on the slot.
+- "Make parking O(log n) for a huge lot." Keep a free list or heap per size and floor instead of scanning.
+- "A driver lost their ticket." Look the car up by plate and charge a flat daily rate.
+- "Add electric-vehicle bays with chargers." A new slot attribute, and a pricing rule for charging time.
+
+Traps that cost people the round:
+
+- A class hierarchy of vehicles with nothing in it, and no working park().
+- An allocation rule that's never stated, so the hidden tests and the code disagree.
+- Pricing per minute when the rule said per started hour, or forgetting the one-hour minimum.
+- if/else on the day of the week inside leave(), which turns into a tangle when night rates arrive.
+
+<PageBreak />
+
+## Your turn
+
+<ProblemLadder chapter="parking-lot" />
+
+Start the 90-minute clock on the bench for the real pressure. The scenarios include a generated busy day of about 2,000 arrivals, departures and lookups, so the allocation rule has to be exactly right.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how you'd structure a parking lot so that slot choice is exact and a new pricing rule is easy to add."
+  model="Keep every slot in one list in the order floors were added, and choose by scanning the vehicle's own size first, then bigger sizes, which gives floors-in-order and lowest-number for free. Pricing is a strategy that returns the rate at a given minute, so leave() charges each started hour at that hour's rate and a weekend rule is just a new class."
+  points={["State the allocation rule exactly before coding", "One list of slots in insertion order makes the rule a scan", "Own size first, then bigger sizes", "Pricing behind one method (a strategy)", "Charge each started hour at that hour's rate"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "What two rules decide most of a parking-lot round?", a: "The allocation rule (which free slot a vehicle gets) and the pricing rule (how a stay is charged). Write both down before coding." },
+    { q: "How does one list of slots make the allocation rule simple?", a: "If slots are stored in the order floors were added, scanning the vehicle's sizes smallest-first gives own-size-first, floors-in-order and lowest-number automatically." },
+    { q: "Why ask for the rate at each hour's start minute?", a: "So rates that change by day or time (weekends, nights) work by swapping the pricing object, without changing leave()." },
+    { q: "What must be atomic when several gates park at once?", a: "Finding a free slot and taking it, with a lock or a compare-and-set, or two cars get the same slot." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Refactoring.Guru: the strategy pattern", href: "https://refactoring.guru/design-patterns/strategy" },
+    { label: "Refactoring.Guru: the decorator pattern", href: "https://refactoring.guru/design-patterns/decorator" },
+    { label: "Martin Fowler: replace conditional with polymorphism", href: "https://refactoring.com/catalog/replaceConditionalWithPolymorphism.html" },
+  ]}
+/>

@@ -126,7 +126,7 @@ export const books: Book[] = [
       {
         title: "Classic builds",
         chapters: [
-          ch(14, "Parking lot"),
+          ch(14, "Parking lot", { slug: "parking-lot", available: true }),
           ch(15, "Splitwise", { slug: "splitwise", available: true }),
           ch(16, "Elevator system"),
           ch(17, "Movie ticket booking"),

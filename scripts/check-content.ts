@@ -166,6 +166,23 @@ function checkBuild(p: BuildProblem) {
   const starterPasses = core.filter((c) => judgeScenario(c, { kind: "ok", got: runSteps(starter, c.steps), ms: 0 }).pass).length;
   if (starterPasses < core.length) ok(`starter code fails ${core.length - starterPasses} of ${core.length} core scenarios (tests aren't trivial)`);
   else fail("starter code passes every core scenario");
+  // Each plausible bug must be caught by at least one scenario.
+  for (const m of p.mutants ?? []) {
+    if (!p.solution.js.includes(m.from)) {
+      fail(`mutant "${m.name}": its edit doesn't apply to the reference`);
+      continue;
+    }
+    let Mut;
+    try {
+      Mut = compileClass(p.solution.js.replace(m.from, m.to), p.className);
+    } catch (e) {
+      fail(`mutant "${m.name}" doesn't compile: ${(e as Error).message}`);
+      continue;
+    }
+    const caught = cases.find((c) => !judgeScenario(c, { kind: "ok", got: runSteps(Mut, c.steps), ms: 0 }).pass);
+    if (caught) ok(`bug "${m.name}" is caught by "${caught.name}"`);
+    else fail(`bug "${m.name}" passes every scenario: the tests have a gap`);
+  }
 }
 
 function checkCatalog() {

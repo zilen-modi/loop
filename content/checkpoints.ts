@@ -29,6 +29,19 @@ function equalSplit(paise: number, n: number) {
   return Array.from({ length: n }, (_, i) => Math.floor(paise / n) + (i < paise % n ? 1 : 0));
 }
 
+/** The parking-lot allocation rule: own size, then bigger; floors in order; lowest number. */
+function allocate(floors: [string, Record<string, number>][], arrivals: string[]) {
+  const sizes = ["bike", "car", "truck"];
+  const slots = floors.flatMap(([f, spec]) => sizes.flatMap((sz) => Array.from({ length: spec[sz] ?? 0 }, (_, i) => ({ id: `${f}-${sz[0].toUpperCase()}${i + 1}`, size: sz, used: false }))));
+  return arrivals.map((type) => {
+    for (const sz of sizes.slice(sizes.indexOf(type))) {
+      const s = slots.find((x) => !x.used && x.size === sz);
+      if (s) return ((s.used = true), s.id);
+    }
+    return "Turned away";
+  });
+}
+
 const approx = (x: number) => {
   const p = 10 ** (Math.floor(Math.log10(x)) - 1);
   return `About ${(Math.round(x / p) * p).toLocaleString("en-US")}`;
@@ -140,6 +153,20 @@ export const checkpoints: Record<string, Checkpoint> = {
     options: ["200", "2,000", "18,000", "20,000"],
     compute: () => Math.round(20_000 * (1 - 0.9)).toLocaleString("en-US"),
     explain: "Only misses reach the database: 10% of 20,000 is 2,000. Raise the hit rate to 99% and it's 200, which is why caching hot keys is the first move for read-heavy systems.",
+  },
+  "pl-slot": {
+    id: "pl-slot",
+    prompt: "Floor G has 1 bike slot and 1 car slot; floor L1 (added second) has 2 car slots. A bike arrives, then another bike, then a car. Where does the car go?",
+    options: ["G-C1", "L1-C1", "L1-C2", "Turned away"],
+    compute: () => allocate([["G", { bike: 1, car: 1 }], ["L1", { car: 2 }]], ["bike", "bike", "car"])[2],
+    explain: "The first bike takes G-B1. The second bike finds no bike slot, so it takes the next size up: G-C1. The car's own size comes first, and G's car slot is now taken, so it goes to the next floor: L1-C1.",
+  },
+  "pl-fee": {
+    id: "pl-fee",
+    prompt: "A car parks at 10:10 and leaves at 12:20. Cars pay ₹50 per started hour. What's the fee?",
+    options: ["₹100", "₹110", "₹150", "₹200"],
+    compute: () => `₹${Math.max(1, Math.ceil((12 * 60 + 20 - (10 * 60 + 10)) / 60)) * 50}`,
+    explain: "130 minutes is 2 hours and 10 minutes, so 3 started hours: 3 × ₹50 = ₹150. Charging per minute would give about ₹108, which is why the rule has to be written down before you code.",
   },
 };
 
