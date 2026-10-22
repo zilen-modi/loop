@@ -1,0 +1,98 @@
+<ChapterHead kicker="Book 3 · Classic designs · Chapter 25" title="Notification system" concept="message-queue" meta="About 20 minutes of reading · one design lab" />
+
+<Story when="Saturday, 8:15 pm">
+The push provider has a bad five minutes during Saturday dinner. Tiffin's ordering service calls it directly when an order is accepted, so for five minutes accepting an order takes thirty seconds and then fails. Customers retry. When the provider comes back, half of them get three "Order accepted!" notifications for one order.
+</Story>
+
+A notification system looks like plumbing: take a message, hand it to a provider. The interview is about everything that goes wrong between those two steps. Third parties are slow and unreliable, traffic comes in bursts, retries create duplicates, and customers have opinions about what they want to hear.
+
+## Requirements and numbers
+
+- Internal services call one API: "send template X to customer Y with this data". They get an id back immediately.
+- Each notification is delivered once, unless the customer has turned that kind off.
+- Failures are retried; messages that keep failing are set aside for a person to look at.
+
+At dinner peak that's 20,000 notifications a second. The provider takes about 200 ms per send, so roughly 4,000 sends are in flight at any moment. A five-minute outage means millions of messages that need somewhere to wait.
+
+<Checkpoint id="ns-backlog" />
+
+## Accepting is not delivering
+
+The story's mistake was making callers wait for the provider. Split the work in two:
+
+1. **Accept.** The API validates the request, writes it to a durable <Term id="message-queue">message queue</Term>, and answers with an id in a few milliseconds.
+2. **Deliver.** A pool of workers reads the queue, checks the customer's preferences, sends to the provider, and acknowledges the queue message only after the send succeeds.
+
+Now provider slowness and outages show up as a growing queue, not as slow orders. The queue also smooths bursts: a promo blast becomes a queue that drains at whatever rate the workers and the provider can manage.
+
+## Retries without making things worse
+
+Retrying is obvious; how you retry is the interview. Compare three policies during an outage:
+
+<RetryLab />
+
+- **Drop failures:** simple, and every outage loses millions of notifications.
+- **Retry at once:** workers spin on failing sends, hammering a provider that's trying to recover. Fresh messages queue up behind the retries.
+- **Exponential backoff with jitter:** wait 1 s, 2 s, 4 s and so on, plus a random amount, so retries from thousands of messages don't arrive together. After a fixed number of attempts, move the message to a **dead-letter queue** and alert, so one poisoned message can't loop forever.
+
+<Checkpoint id="ns-drain" />
+
+## Exactly once is a promise you can't keep (but you can fake it)
+
+Queues deliver *at least once*: a worker that crashes after sending, but before acknowledging, will see the same message again. And a send that timed out may still have reached the phone. So duplicates are normal, and the fix is an <Term id="idempotency">idempotency key</Term>. Each notification gets an id when it's accepted. Before sending, the worker records the id in a fast store such as a cache, and if it's already there, it skips the send. Keep ids for a window long enough to cover retries (hours, not forever).
+
+## Preferences and priorities
+
+Every send checks the customer's preferences: which kinds they want, quiet hours, a cap on promotions. That's a small, read-heavy lookup, ideal for a key-value store with a cache in front.
+
+Priorities matter more than they first seem. A one-time password stuck behind six million promotional messages is a broken login. Use separate queues (or a priority field the workers respect) so OTPs and order updates go first.
+
+## Try it in the lab
+
+<ProblemLadder chapter="notification-system" />
+
+The lab gives you a provider you can't scale or control, and it goes down in the drill. Choose direct calls or a queue, a retry policy and deduplication. The scorecard checks how fast notifications are accepted, whether deliveries keep up, preferences, duplicates and the outage.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Add SMS and email." One queue per channel, each with its own workers, provider and rate limits, so a slow email provider can't hold up push.
+- "Track delivery status." Workers write a status (sent, delivered, failed) per notification id; support can look it up.
+- "A promo blast to 40 million customers." Fan out in batches through a low-priority queue, rate-limited so it never starves order updates.
+- "Templates and localisation." Render at send time from a template id and data, in the customer's language.
+
+Traps that cost people the round:
+
+- Calling the provider synchronously from the request path.
+- Retries without backoff, or without a dead-letter queue.
+- No answer for duplicates, or claiming exactly-once delivery.
+- One queue for everything, so OTPs wait behind promotions.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how a notification system stays fast and loses nothing when its provider fails."
+  model="The API only writes each notification to a durable queue and returns, so callers never wait on the provider; workers deliver from the queue, checking preferences and an idempotency key so retries don't duplicate. During an outage messages wait in the queue, retries back off with jitter, and messages that keep failing go to a dead-letter queue."
+  points={["Accept into a durable queue and return quickly", "Workers deliver and acknowledge only after success", "Exponential backoff with jitter", "Dead-letter queue for repeated failures", "Idempotency key so redelivery doesn't duplicate"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "Why put a queue between the API and the provider?", a: "Callers get an answer in milliseconds, bursts are smoothed, and a provider outage becomes a backlog instead of failing every caller." },
+    { q: "Why exponential backoff with jitter?", a: "Retrying at once hammers a provider that's trying to recover; spacing retries out and randomising them spreads the load." },
+    { q: "What does a dead-letter queue do?", a: "It holds messages that failed too many times, so they stop looping and someone can inspect them." },
+    { q: "Queues deliver at least once. How do you avoid double notifications?", a: "An idempotency key per notification, recorded before sending; workers skip ids they've already sent." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "AWS Architecture Blog: exponential backoff and jitter", href: "https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/" },
+    { label: "Firebase Cloud Messaging documentation: scaling and throttling", href: "https://firebase.google.com/docs/cloud-messaging/scale-fcm" },
+    { label: "Stripe: designing robust and predictable APIs with idempotency", href: "https://stripe.com/blog/idempotency" },
+  ]}
+/>

@@ -207,7 +207,7 @@ export const books: Book[] = [
           ch(22, "URL shortener", { slug: "url-shortener", available: true }),
           ch(23, "Pastebin"),
           ch(24, "Distributed rate limiter", { slug: "distributed-rate-limiter", available: true }),
-          ch(25, "Notification system"),
+          ch(25, "Notification system", { slug: "notification-system", available: true }),
           ch(26, "News feed"),
           ch(27, "Chat and presence"),
           ch(28, "Video streaming"),

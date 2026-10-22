@@ -25,11 +25,21 @@ export function TraceButton({ running, onTrace, disabled }: { running: boolean; 
   );
 }
 
+export type Tolerates = Partial<Record<NodeKind, { flows: string[]; why: string }>>;
+
+/** A step survives if every primary flow works, or the ones that stopped are allowed to pause for this failure. */
+export const survives = (step: DrillStep, primary: string[], tolerates: Tolerates = {}) =>
+  primary.every((id) => step.sim.flows[id]?.ok || tolerates[step.kind]?.flows.includes(id));
+
 /** One step of the failure drill: what fails, and what that does. */
-export function stepLine(step: DrillStep, primary: string[]) {
-  const broken = primary.map((id) => step.sim.flows[id]).find((f) => f && !f.ok);
+export function stepLine(step: DrillStep, primary: string[], tolerates: Tolerates = {}) {
+  const broken = primary.filter((id) => step.sim.flows[id] && !step.sim.flows[id].ok);
   const b = step.sim.bottleneck;
-  return broken ? broken.reason ?? "Something stops working." : `Still works${b ? `; busiest: ${catalog[b.kind].short} at ${fmtPct(b.utilization)}` : ""}.`;
+  const busiest = b ? `busiest: ${catalog[b.kind].short} at ${fmtPct(b.utilization)}` : "";
+  if (!broken.length) return `Still works${busiest ? `; ${busiest}` : ""}.`;
+  const allowed = tolerates[step.kind];
+  if (allowed && broken.every((id) => allowed.flows.includes(id))) return `Survives: ${allowed.why}`;
+  return step.sim.flows[broken.find((id) => !allowed?.flows.includes(id)) ?? broken[0]].reason ?? "Something stops working.";
 }
 
 /** Step through every single-machine failure, on the canvas. */
@@ -38,6 +48,7 @@ export function Drill({
   index,
   playing,
   primary,
+  tolerates,
   onIndex,
   onPlay,
   onExit,
@@ -46,11 +57,12 @@ export function Drill({
   index: number;
   playing: boolean;
   primary: string[];
+  tolerates?: Tolerates;
   onIndex: (i: number) => void;
   onPlay: () => void;
   onExit: () => void;
 }) {
-  const ok = (st: DrillStep) => primary.every((id) => st.sim.flows[id]?.ok);
+  const ok = (st: DrillStep) => survives(st, primary, tolerates);
   const survived = steps.filter(ok).length;
   const firstBad = steps.find((st) => !ok(st));
   const step = steps[index];
@@ -71,7 +83,7 @@ export function Drill({
       </div>
       {step && (
         <p className={`lab-drill-line ${ok(step) ? "pass" : "fail"}`} data-testid="drill-line" aria-live="polite">
-          <strong>{step.note}</strong> {stepLine(step, primary)}
+          <strong>{step.note}</strong> {stepLine(step, primary, tolerates)}
         </p>
       )}
     </div>

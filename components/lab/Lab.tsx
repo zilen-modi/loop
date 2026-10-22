@@ -389,6 +389,7 @@ function Lab({ problem: p, from }: { problem: DesignProblem; from: string }) {
               index={drill.index}
               playing={drill.playing}
               primary={primary}
+              tolerates={s.tolerates}
               onIndex={(i) => setDrill((d) => d && { ...d, index: i, playing: false })}
               onPlay={() => setDrill((d) => d && { ...d, playing: !d.playing, index: d.playing || d.index < d.steps.length - 1 ? d.index : 0 })}
               onExit={() => setDrill(null)}

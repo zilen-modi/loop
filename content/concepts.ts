@@ -179,4 +179,12 @@ export const concepts: Record<string, Concept> = {
     definition: "What a check does when something it depends on is down. Fail open lets requests through unchecked (stays available); fail closed refuses them (stays safe). The right choice depends on which failure costs more.",
     appearsIn: ["HLD 24 · Distributed rate limiter", "HLD 18 · Reliability", "HLD 20 · Security"],
   },
+  idempotency: {
+    id: "idempotency",
+    term: "Idempotency key",
+    glyph: "Hash",
+    hue: "rose",
+    definition: "A unique id attached to a request so that doing it twice has the same effect as doing it once. The receiver records ids it has handled and skips repeats, which makes retries safe.",
+    appearsIn: ["HLD 25 · Notification system", "HLD 32 · Payments and ledgers", "HLD 4 · APIs"],
+  },
 };

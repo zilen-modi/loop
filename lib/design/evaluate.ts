@@ -44,6 +44,8 @@ export type DesignScenario = {
   naive: Design;
   /** Common wrong designs, each failing one specific check (verified by check-content). */
   wrong: { name: string; design: Design; fails: string }[];
+  /** Flows that may pause, by design, when a component fails (e.g. deliveries wait while a provider is down). */
+  tolerates?: Partial<Record<NodeKind, { flows: string[]; why: string }>>;
   /** The reference design's numbers, pinned so engine or catalog changes can't move them silently. */
   pinned?: { cost: number; latencyMs: Record<string, number>; utilization: Partial<Record<NodeKind, number>> };
   hints: [string, string, string];

@@ -313,3 +313,42 @@ export function GatewayCounts() {
     </div>
   );
 }
+
+/** A provider outage under three retry policies: what's lost, what the provider sees, how long recovery takes. */
+export function RetryLab() {
+  const [minutes, setMinutes] = useState(5);
+  const [policy, setPolicy] = useState<"none" | "immediate" | "backoff">("backoff");
+  const rate = 20_000;
+  const workers = 30_000; // total send capacity
+  const backlog = rate * minutes * 60;
+  const lost = policy === "none" ? backlog : 0;
+  const pressure = policy === "immediate" ? workers : policy === "backoff" ? Math.round(workers * 0.05) : 0; // requests/s at the provider while it's down
+  const drainMin = policy === "none" ? 0 : backlog / (workers - rate) / 60;
+  const row = (label: string, value: string, bad: boolean, testid: string) => (
+    <div style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "6px 0", borderTop: "1px solid var(--rule)" }}>
+      <span>{label}</span>
+      <strong data-testid={testid} style={{ color: bad ? "var(--fail)" : "var(--pass)", fontVariantNumeric: "tabular-nums" }}>{value}</strong>
+    </div>
+  );
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · the push provider goes down at dinner peak</p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
+        <div className="seg" role="group" aria-label="Retry policy">
+          {([["none", "Drop failures"], ["immediate", "Retry at once"], ["backoff", "Backoff + jitter"]] as const).map(([v, l]) => (
+            <button key={v} aria-pressed={policy === v} onClick={() => setPolicy(v)}>{l}</button>
+          ))}
+        </div>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-2)" }}>
+          Outage <input type="range" min={1} max={15} value={minutes} onChange={(e) => setMinutes(+e.target.value)} aria-label="Outage length in minutes" /> <span style={{ fontFamily: "var(--mono)" }}>{minutes} min</span>
+        </label>
+      </div>
+      <div style={{ fontSize: 13.5 }}>
+        {row("Notifications lost", lost.toLocaleString("en-US"), lost > 0, "retry-lost")}
+        {row("Sends hitting the provider while it's down", `${pressure.toLocaleString("en-US")} / s`, pressure > 5000, "retry-pressure")}
+        {row("Time to clear the backlog afterwards", policy === "none" ? "nothing to clear (it's gone)" : `${Math.round(drainMin)} min`, policy === "none", "retry-drain")}
+      </div>
+      <p style={{ margin: "8px 0 0", fontSize: 12.5, color: "var(--ink-3)" }}>{rate.toLocaleString("en-US")} notifications a second arrive; workers can send {workers.toLocaleString("en-US")} a second in total. Estimates, rounded.</p>
+    </div>
+  );
+}

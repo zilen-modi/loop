@@ -297,6 +297,20 @@ export const checkpoints: Record<string, Checkpoint> = {
     },
     explain: "One node would be 30% busy, but if it fails there's nothing left. With two, losing one leaves a single node at 30%. Memory isn't the issue either: 50,000 partners × ~100 bytes is about 5 MB.",
   },
+  "ns-backlog": {
+    id: "ns-backlog",
+    prompt: "At 20,000 notifications a second, the push provider goes down for 5 minutes. With a queue in front of it, how many messages pile up?",
+    options: ["About 100,000", "About 1.2 million", "About 6 million", "About 60 million"],
+    compute: () => `About ${(20_000 * 5 * 60) / 1_000_000} million`,
+    explain: "20,000 × 300 seconds = 6 million. The queue must hold them durably, and when the provider returns, workers drain the backlog on top of new traffic. Spare capacity decides how long that takes.",
+  },
+  "ns-drain": {
+    id: "ns-drain",
+    prompt: "After that outage, workers can send 30,000 a second in total, while 20,000 a second keep arriving. How long until the 6 million backlog is gone?",
+    options: ["About 3 minutes", "About 10 minutes", "About 5 minutes", "About 20 minutes"],
+    compute: () => `About ${Math.round(6_000_000 / (30_000 - 20_000) / 60)} minutes`,
+    explain: "Only the spare 10,000 a second goes to the backlog: 6,000,000 ÷ 10,000 = 600 s, 10 minutes. Headroom isn't waste: it's how fast you recover. Priorities help too, so an OTP doesn't wait behind 6 million order updates.",
+  },
 };
 
 export function correctIndex(c: Checkpoint): number {
