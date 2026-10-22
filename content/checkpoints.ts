@@ -311,6 +311,20 @@ export const checkpoints: Record<string, Checkpoint> = {
     compute: () => `About ${Math.round(6_000_000 / (30_000 - 20_000) / 60)} minutes`,
     explain: "Only the spare 10,000 a second goes to the backlog: 6,000,000 ÷ 10,000 = 600 s, 10 minutes. Headroom isn't waste: it's how fast you recover. Priorities help too, so an OTP doesn't wait behind 6 million order updates.",
   },
+  "feed-pull": {
+    id: "feed-pull",
+    prompt: "With fan-out on read, every feed load reads the latest posts of everyone you follow. At 50,000 loads a second and 300 accounts followed, how many timeline reads is that per second?",
+    options: ["About 150,000", "About 1.5 million", "About 15 million", "About 150 million"],
+    compute: () => `About ${(50_000 * 300) / 1e6} million`,
+    explain: "50,000 × 300 = 15 million reads a second, every second, just to assemble feeds. That's why big feeds precompute (fan out on write) for most authors.",
+  },
+  "feed-memory": {
+    id: "feed-memory",
+    prompt: "40 million users keep the newest 200 entries in their feeds. How much memory do the feeds take if each entry is an 8-byte post id?",
+    options: ["About 6.4 GB", "About 64 GB", "About 640 GB", "About 6.4 TB"],
+    compute: () => `About ${(40_000_000 * 200 * 8) / 1e9} GB`,
+    explain: "40 M × 200 × 8 bytes = 64 GB: one big cache node, or spread across a few. Copying whole posts (~1 KB) instead would be 8 TB. Store ids, and fetch the posts for a page in one batched read.",
+  },
 };
 
 export function correctIndex(c: Checkpoint): number {

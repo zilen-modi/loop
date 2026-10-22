@@ -12,4 +12,5 @@ export const chapterLoaders: Record<string, () => Promise<{ default: React.Compo
   "hld/url-shortener": () => import("./url-shortener.mdx"),
   "hld/distributed-rate-limiter": () => import("./distributed-rate-limiter.mdx"),
   "hld/notification-system": () => import("./notification-system.mdx"),
+  "hld/news-feed": () => import("./news-feed.mdx"),
 };

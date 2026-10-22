@@ -208,7 +208,7 @@ export const books: Book[] = [
           ch(23, "Pastebin"),
           ch(24, "Distributed rate limiter", { slug: "distributed-rate-limiter", available: true }),
           ch(25, "Notification system", { slug: "notification-system", available: true }),
-          ch(26, "News feed"),
+          ch(26, "News feed", { slug: "news-feed", available: true }),
           ch(27, "Chat and presence"),
           ch(28, "Video streaming"),
           ch(29, "Ride hailing"),

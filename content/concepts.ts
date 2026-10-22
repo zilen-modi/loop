@@ -187,4 +187,12 @@ export const concepts: Record<string, Concept> = {
     definition: "A unique id attached to a request so that doing it twice has the same effect as doing it once. The receiver records ids it has handled and skips repeats, which makes retries safe.",
     appearsIn: ["HLD 25 · Notification system", "HLD 32 · Payments and ledgers", "HLD 4 · APIs"],
   },
+  "fan-out": {
+    id: "fan-out",
+    term: "Fan-out",
+    glyph: "Split",
+    hue: "amber",
+    definition: "Copying one event to many recipients. On write, each new post is pushed into every follower's feed; on read, each feed load gathers posts from everyone followed. Big systems mix the two.",
+    appearsIn: ["HLD 26 · News feed", "HLD 25 · Notification system", "HLD 27 · Chat and presence"],
+  },
 };

@@ -352,3 +352,48 @@ export function RetryLab() {
     </div>
   );
 }
+
+/** What one post costs under each fan-out strategy, as the author's follower count grows. */
+export function FanoutCost() {
+  const steps = [100, 1_000, 10_000, 100_000, 1_000_000, 20_000_000];
+  const [i, setI] = useState(1);
+  const [strategy, setStrategy] = useState<"push" | "pull" | "hybrid">("push");
+  const followers = steps[i];
+  const threshold = 100_000;
+  const pushes = strategy === "push" || (strategy === "hybrid" && followers < threshold);
+  const inserts = pushes ? followers : 0;
+  const spare = 400_000; // feed inserts per second the fan-out tier can spare
+  const seconds = inserts / spare;
+  const extraReads = strategy === "pull" ? 300 : strategy === "hybrid" ? 5 : 0;
+  const fmt = (n: number) => (n >= 1e6 ? `${n / 1e6} million` : n.toLocaleString("en-US"));
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · the cost of one post</p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
+        <div className="seg" role="group" aria-label="Fan-out strategy">
+          {([["push", "On write"], ["pull", "On read"], ["hybrid", "Hybrid"]] as const).map(([v, l]) => (
+            <button key={v} aria-pressed={strategy === v} onClick={() => setStrategy(v)}>{l}</button>
+          ))}
+        </div>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-2)" }}>
+          Author&apos;s followers <input type="range" min={0} max={steps.length - 1} value={i} onChange={(e) => setI(+e.target.value)} aria-label="Author's followers" aria-valuetext={fmt(followers)} /> <span style={{ fontFamily: "var(--mono)" }}>{fmt(followers)}</span>
+        </label>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8, fontSize: 13 }}>
+        <div style={{ background: "var(--page-2)", borderRadius: 8, padding: "8px 10px" }}>
+          <div style={{ color: "var(--ink-3)", fontSize: 12 }}>Feed inserts for this post</div>
+          <strong style={{ fontSize: 16 }} data-testid="fan-inserts">{fmt(inserts)}</strong>
+        </div>
+        <div style={{ background: seconds > 5 ? "var(--fail-soft)" : "var(--page-2)", borderRadius: 8, padding: "8px 10px" }}>
+          <div style={{ color: "var(--ink-3)", fontSize: 12 }}>Time to reach every feed</div>
+          <strong style={{ fontSize: 16, color: seconds > 5 ? "var(--fail)" : "var(--ink)" }} data-testid="fan-time">{inserts ? (seconds < 1 ? "under a second" : `about ${Math.round(seconds)} s`) : "at read time"}</strong>
+        </div>
+        <div style={{ background: extraReads > 50 ? "var(--fail-soft)" : "var(--page-2)", borderRadius: 8, padding: "8px 10px" }}>
+          <div style={{ color: "var(--ink-3)", fontSize: 12 }}>Extra reads on every feed load</div>
+          <strong style={{ fontSize: 16, color: extraReads > 50 ? "var(--fail)" : "var(--ink)" }} data-testid="fan-reads">{extraReads}</strong>
+        </div>
+      </div>
+      <p style={{ margin: "8px 0 0", fontSize: 12.5, color: "var(--ink-3)" }}>Hybrid pushes for authors under 100,000 followers and pulls the rest in at read time. Estimates, rounded.</p>
+    </div>
+  );
+}

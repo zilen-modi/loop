@@ -24,6 +24,7 @@ import { kvStore } from "./lld/kv-store";
 import { urlShortenerLab } from "./hld/url-shortener";
 import { distributedRateLimiterLab } from "./hld/distributed-rate-limiter";
 import { notificationSystemLab } from "./hld/notification-system";
+import { newsFeedProblem } from "./hld/news-feed";
 
 export const problems: Problem[] = [
   // Chapter 3 · Hashing
@@ -40,10 +41,11 @@ export const problems: Problem[] = [
   rateLimiter,
   lruLfu,
   kvStore,
-  // System design · chapters 22, 24 and 25
+  // System design · chapters 22, 24, 25 and 26
   urlShortenerLab,
   distributedRateLimiterLab,
   notificationSystemLab,
+  newsFeedProblem,
 ];
 
 export const problemById = (id: string) => problems.find((p) => p.id === id);

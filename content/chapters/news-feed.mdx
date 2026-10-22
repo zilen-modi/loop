@@ -1,0 +1,98 @@
+<ChapterHead kicker="Book 3 · Classic designs · Chapter 26" title="News feed" concept="fan-out" meta="About 20 minutes of reading · one design lab" />
+
+<Story when="Sunday, 1 pm">
+Tiffin's new food feed works well in the beta. Then a celebrity chef with 20 million followers joins and posts a biryani recipe. For the next half a minute nobody's posts appear anywhere, the feed cache runs hot, and the chef's followers keep refreshing to see the post everyone's talking about.
+</Story>
+
+"Design a news feed" (Twitter, Instagram, LinkedIn, or here, a food feed) is one of the most common system-design questions, because the obvious designs fail in opposite directions. The whole interview turns on one idea, <Term id="fan-out">fan-out</Term>: when does a post get copied into the feeds of the people who follow its author?
+
+## Requirements and numbers
+
+- Users post; users load a feed of the newest posts from everyone they follow, a page at a time.
+- A new post shows up in followers' feeds within seconds.
+- A page loads in under 100 ms at peak.
+
+Peak: 50,000 feed loads and 2,000 posts a second; authors have about 200 followers on average; a user follows about 300 accounts. And one account has 20 million followers.
+
+## Two ways to build a feed
+
+**Fan-out on read (pull).** When you open the app, fetch the latest posts of everyone you follow and merge them. Posting is free and always fresh. But every load reads hundreds of timelines.
+
+<Checkpoint id="feed-pull" />
+
+**Fan-out on write (push).** When someone posts, insert the post into each follower's feed list, and keep those lists in a cache. Loading a feed is then one read. Posting costs one insert per follower: 400,000 inserts a second on average. That's fine until the celebrity posts.
+
+<FanoutCost />
+
+## The hybrid everyone ends up with
+
+Push for normal authors, pull for celebrities. Posts from accounts below a threshold (say 100,000 followers) are fanned out on write. Celebrities' posts aren't. When you load your feed, the app reads your precomputed list, then fetches the latest posts of the handful of celebrities you follow (about five) and merges them in.
+
+The cost is small on both sides. Loading takes a few extra reads, which are cheap and cacheable because celebrities are few and their recent posts are hot. Writing never has to touch 20 million lists. Ask the interviewer whether that matches their scale, and say where you'd set the threshold.
+
+## Ids, not copies
+
+What goes in each feed entry? Store the **post id**, not a copy of the post.
+
+<Checkpoint id="feed-memory" />
+
+With ids, an edit or a delete shows everywhere at once, because there's only one copy. The page of posts is fetched in one batched read when the feed loads. With copies, the feeds are 125 times bigger, and an edit has to be pushed to millions of feeds.
+
+## The write path, end to end
+
+1. Save the post in the posts store (a key-value store, partitioned by post id).
+2. Put a fan-out job on a queue and return.
+3. Workers read the author's followers in pages and insert the post id into each follower's feed list (capped at the newest few hundred), in batches.
+4. Celebrities skip steps 2–3.
+
+The feed cache is a performance layer, not the source of truth: if a node is lost, feeds can be rebuilt from the posts store and the follow graph.
+
+## Try it in the lab
+
+<ProblemLadder chapter="news-feed" />
+
+The lab runs your design at 50,000 loads and 2,000 posts a second. It checks what a celebrity post does to freshness and how much memory your feeds need, then knocks out one machine at a time.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Rank the feed instead of newest-first." Use the feed list as candidates, score them with a model, and cache the ranked page briefly.
+- "Users who haven't opened the app in a month." Skip them during fan-out and rebuild their feed when they return. That saves a large share of the writes.
+- "Paging." Use cursors (the last post's time and id), never offsets: new posts arriving would shift an offset.
+- "Delete a post." Delete it in the posts store; feeds hold ids, so the page simply skips it on the next load.
+
+Traps that cost people the round:
+
+- Fan-out on write for everyone, with no answer for the celebrity.
+- Fan-out on read at this scale, with no estimate of what it costs.
+- Copying whole posts into feeds.
+- Offset-based paging on a feed that's always changing.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how you'd build feeds for millions of users when one account has 20 million followers."
+  model="Fan out on write for normal authors, inserting each new post's id into followers' cached feed lists so loading a feed is one cheap read, but skip that for celebrities and merge their latest posts in at read time. Feeds store post ids, not copies, and the page of posts is fetched in one batched read."
+  points={["Fan-out on write makes loading cheap", "Celebrities would cost millions of inserts per post", "Hybrid: pull celebrities in at read time", "Store ids, not copies", "Batch-fetch the posts for a page"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "Fan-out on write vs on read?", a: "On write, each post is pushed into every follower's feed (cheap reads, expensive posts). On read, each load merges followees' posts (cheap posts, expensive reads)." },
+    { q: "Why does fan-out on write break for celebrities?", a: "One post means one insert per follower: 20 million inserts that swamp the cache and delay everyone else's posts." },
+    { q: "What does the hybrid do?", a: "Pushes posts from normal authors, and pulls the few celebrities a user follows in at read time." },
+    { q: "Why store ids in feeds?", a: "They're about 125× smaller than copies, and edits or deletes show up everywhere because there's only one copy of each post." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Raffi Krikorian: Timelines at Scale (QCon 2013, on InfoQ)", href: "https://www.infoq.com/presentations/Twitter-Timeline-Scalability/" },
+    { label: "Martin Kleppmann, Designing Data-Intensive Applications, chapter 1 (the home-timeline example)", href: "https://dataintensive.net/" },
+    { label: "Bronson et al., TAO: Facebook's distributed data store for the social graph (USENIX ATC 2013)", href: "https://www.usenix.org/conference/atc13/technical-sessions/presentation/bronson" },
+  ]}
+/>
