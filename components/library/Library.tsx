@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, Lock, Repeat } from "lucide-react";
-import { books, chapterCount, findChapter, type BookId } from "@/content/syllabus";
+import { ArrowRight, Lock } from "lucide-react";
+import { books, chapterCount, type BookId } from "@/content/syllabus";
 import { problems, problemsForChapter } from "@/content/problems";
-import { cards, problemsProgress, reading } from "@/lib/progress";
+import { problemsProgress, reading } from "@/lib/progress";
 import { useMounted } from "@/lib/use-mounted";
+import Today from "./Today";
 
 const coverHue: Record<BookId, string> = { dsa: "var(--hue-teal)", lld: "var(--hue-violet)", hld: "var(--hue-amber)" };
 const coverLabel: Record<BookId, string> = { dsa: "Book 1", lld: "Book 2", hld: "Book 3" };
@@ -17,37 +18,15 @@ export default function Library() {
   const mounted = useMounted();
   const read = reading.use();
   const solved = problemsProgress.use();
-  const allCards = cards.use();
-  const now = Date.now();
 
-  const lastKey = Object.keys(read)[0];
-  const last = lastKey ? findChapter(lastKey.split("/")[0], lastKey.split("/")[1]) : null;
-  const dueProblems = mounted ? Object.values(solved).filter((p) => p.due && p.due <= now).length : 0;
-  const dueCards = mounted ? Object.values(allCards).filter((c) => c.due <= now).length : 0;
   const solvedCount = mounted ? Object.values(solved).filter((p) => p.status === "solved").length : 0;
 
   const book = books.find((b) => b.id === open)!;
 
   return (
     <div style={{ display: "grid", gap: 36 }}>
-      <section aria-labelledby="today" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
-        <h1 id="today" className="sr-only">Your library</h1>
-        <Link href={last ? `/learn/${lastKey}` : "/learn/dsa/sliding-window"} className="card" style={{ padding: "16px 18px", textDecoration: "none", display: "grid", gap: 6 }}>
-          <span className="kicker">{last && mounted ? "Continue reading" : "Start here"}</span>
-          <span style={{ fontFamily: "var(--serif)", fontSize: 20 }}>{last && mounted ? last.chapter.title : "Sliding window"}</span>
-          <span style={{ color: "var(--ink-2)", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
-            {last && mounted ? `${last.book.title} · Chapter ${last.chapter.n}` : "Data structures and algorithms · Chapter 9"} <ArrowRight size={14} />
-          </span>
-        </Link>
-        <Link href="/practice" className="card" style={{ padding: "16px 18px", textDecoration: "none", display: "grid", gap: 6 }}>
-          <span className="kicker">Due today</span>
-          <span style={{ fontFamily: "var(--serif)", fontSize: 20 }}>
-            {dueProblems + dueCards === 0 ? "Nothing due" : `${dueProblems} re-solve${dueProblems === 1 ? "" : "s"} · ${dueCards} card${dueCards === 1 ? "" : "s"}`}
-          </span>
-          <span style={{ color: "var(--ink-2)", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
-            <Repeat size={14} /> Spaced practice keeps what you learn
-          </span>
-        </Link>
+      <Today />
+      <section aria-label="Practice" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
         <Link href="/top" className="card" style={{ padding: "16px 18px", textDecoration: "none", display: "grid", gap: 6 }}>
           <span className="kicker">Top questions</span>
           <span style={{ fontFamily: "var(--serif)", fontSize: 20 }}>Coding, design, behavioral</span>

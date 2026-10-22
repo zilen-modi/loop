@@ -139,7 +139,7 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
       }
     }
     setAnchor(a);
-    const t = setTimeout(() => updateChapter(chapterKey, (c) => ({ ...c, anchor: a, finished: c.finished || page >= pages - 1 })), 300);
+    const t = setTimeout(() => updateChapter(chapterKey, (c) => ({ ...c, anchor: a, finished: c.finished || page >= pages - 1, lastRead: Date.now() })), 300);
     return () => clearTimeout(t);
   }, [page, pages, blocks, pageOf, chapterKey]);
 

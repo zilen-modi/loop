@@ -15,6 +15,7 @@ export type ChapterState = {
   explain?: { text: string; covered: number[] };
   recapAdded?: boolean;
   finished?: boolean;
+  lastRead?: number; // when a page was last turned, for "continue reading"
 };
 
 export const reading = createLocalStore<Record<string, ChapterState>>("loop:reading", {});
