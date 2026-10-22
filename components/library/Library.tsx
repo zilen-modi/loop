@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Lock, Repeat } from "lucide-react";
 import { books, chapterCount, findChapter, type BookId } from "@/content/syllabus";
-import { problems } from "@/content/problems";
+import { problems, problemsForChapter } from "@/content/problems";
 import { cards, problemsProgress, reading } from "@/lib/progress";
 import { useMounted } from "@/lib/use-mounted";
 
@@ -47,6 +47,11 @@ export default function Library() {
           <span style={{ color: "var(--ink-2)", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
             <Repeat size={14} /> Spaced practice keeps what you learn
           </span>
+        </Link>
+        <Link href="/top" className="card" style={{ padding: "16px 18px", textDecoration: "none", display: "grid", gap: 6 }}>
+          <span className="kicker">Top questions</span>
+          <span style={{ fontFamily: "var(--serif)", fontSize: 20 }}>Coding, design, behavioral</span>
+          <span style={{ color: "var(--ink-2)", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>The ones that come up again and again <ArrowRight size={14} /></span>
         </Link>
         <Link href="/problems" className="card" style={{ padding: "16px 18px", textDecoration: "none", display: "grid", gap: 6 }}>
           <span className="kicker">Problems</span>
@@ -110,6 +115,8 @@ export default function Library() {
                       {c.newFormat && <span className="chip new" title="Covers a newer interview format">◆ new format</span>}
                       {c.available ? (
                         <span className="chip easy">{started ? (read[key].finished ? "Finished" : "Reading") : "Read"}</span>
+                      ) : c.slug && problemsForChapter(c.slug).length ? (
+                        <span className="chip new">{problemsForChapter(c.slug).length} problems</span>
                       ) : (
                         <span style={{ color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
                           <Lock size={12} aria-hidden="true" /> Soon
@@ -119,7 +126,13 @@ export default function Library() {
                   );
                   return (
                     <li key={c.n}>
-                      {c.available ? <Link href={`/learn/${key}`} style={{ textDecoration: "none" }}>{row}</Link> : row}
+                      {c.available ? (
+                        <Link href={`/learn/${key}`} style={{ textDecoration: "none" }}>{row}</Link>
+                      ) : c.slug && problemsForChapter(c.slug).length ? (
+                        <Link href={`/problems?chapter=${c.slug}`} style={{ textDecoration: "none" }}>{row}</Link>
+                      ) : (
+                        row
+                      )}
                     </li>
                   );
                 })}

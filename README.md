@@ -22,6 +22,8 @@ This first build has one complete chapter, **DSA chapter 9: Sliding window**, pl
   - A ladder of seven problems: six coding problems and one code-review bug hunt.
   - Each one is set in the Tiffin world and links to the equivalent LeetCode problem, but the wording and tests are Loop's own.
   - **Workbench:** JavaScript or Python (Python runs in the browser through Pyodide), Run and Submit, then hidden tests and a scale test that separates O(n) from slower approaches. Hints come one at a time, and the walkthrough unlocks after an attempt.
+- **Top questions:** 91 most-practised coding questions by pattern (the classic 75 plus 16 additions, numbers and difficulty fetched from LeetCode), 25 low-level design and 25 system-design questions with what a strong answer covers, and 14 behavioral questions with a private STAR story bank. Progress is ticked off locally.
+- **More problems:** 24 in total, now also covering hashing, two pointers and prefix sums.
 - **Practice:** re-solves on a 1/3/7/21-day schedule, mixed sets with titles hidden, timed rounds, and review cards.
 - **Privacy:** no AI, no accounts and no backend. Progress lives in this browser's localStorage. The only outside requests are for Pyodide, from jsDelivr, when you pick Python.
 
@@ -31,6 +33,7 @@ This first build has one complete chapter, **DSA chapter 9: Sliding window**, pl
 npm install
 npm run dev            # http://localhost:3002
 npm run check:content  # proves every example, test, answer key and reference solution is right
+node scripts/fetch-leetcode-meta.mjs  # refreshes the top-questions list from LeetCode
 ```
 
 `check:content` needs `python3` for the Python reference solutions.

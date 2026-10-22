@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Check, Search } from "lucide-react";
 import { problems } from "@/content/problems";
@@ -17,10 +18,15 @@ export default function ProblemList() {
   const [level, setLevel] = useState("All");
   const [status, setStatus] = useState("All");
   const [round, setRound] = useState("All");
+  const search = useSearchParams();
+  const chapters = useMemo(() => ["All", ...new Set(problems.map((p) => chapterTitle(p.chapter)))], []);
+  const initialChapter = search.get("chapter");
+  const [chapter, setChapter] = useState(initialChapter ? chapterTitle(initialChapter) : "All");
 
   const rounds = useMemo(() => ["All", ...new Set(problems.flatMap((p) => p.rounds))], []);
   const list = problems.filter((p) => {
     const st = mounted ? progress[p.id]?.status : undefined;
+    if (chapter !== "All" && chapterTitle(p.chapter) !== chapter) return false;
     if (level !== "All" && p.level !== level) return false;
     if (round !== "All" && !p.rounds.includes(round)) return false;
     if (status === "Solved" && st !== "solved") return false;
@@ -45,6 +51,7 @@ export default function ProblemList() {
           <Search size={15} color="var(--ink-3)" aria-hidden="true" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by title, pattern or LeetCode number" aria-label="Search problems" style={{ border: 0, outline: "none", background: "transparent", color: "var(--ink)", font: "14px var(--sans)", flex: 1 }} />
         </label>
+        {select("Pattern", chapter, setChapter, chapters)}
         {select("Level", level, setLevel, ["All", "Easy", "Medium", "Hard"])}
         {select("Round", round, setRound, rounds)}
         {select("Status", status, setStatus, ["All", "To do", "Solved"])}

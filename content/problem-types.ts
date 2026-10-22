@@ -28,6 +28,8 @@ export type CodeProblem = {
   solution: Record<Lang, string>;
   /** A correct but slow solution; the content check proves it fails the scale test. */
   brute: string;
+  /** false when the naive approach is also linear (the scale test then only checks correctness at size). */
+  scaleSeparates?: boolean;
   edgeCases: Args[];
   random: { count: number; gen: (rand: Rand) => Args };
   scale: { target: string; js: { n: string; limitMs: number; gen: (rand: Rand) => Args }; py: { n: string; limitMs: number; gen: (rand: Rand) => Args } };

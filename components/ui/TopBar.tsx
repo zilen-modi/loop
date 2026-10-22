@@ -7,6 +7,7 @@ import { applyTheme, settings } from "@/lib/settings";
 
 const links = [
   { href: "/", label: "Library" },
+  { href: "/top", label: "Top questions" },
   { href: "/problems", label: "Problems" },
   { href: "/practice", label: "Practice" },
 ];

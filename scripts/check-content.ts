@@ -83,6 +83,10 @@ async function checkCode(p: CodeProblem) {
       if (r.timedOut || r.ms === undefined) fail(`JS reference timed out on the scale test`);
       else if (!deepEqual(r.result, scale.expected)) fail(`JS reference wrong on scale test`);
       else ok(`JS reference: scale test in ${Math.round(r.ms)} ms (limit ${scale.limitMs} ms in the browser)`);
+      if (p.scaleSeparates === false) {
+        ok("scale test checks correctness at size only (the naive approach is also linear)");
+        continue;
+      }
       const b = await timeInWorker(p.brute, p.fn.js, scale.args, scale.limitMs * 3);
       if (b.timedOut || (b.ms ?? 0) > scale.limitMs) ok(`brute force misses the scale limit (${b.timedOut ? "stopped" : Math.round(b.ms!) + " ms"})`);
       else fail(`brute force passes the scale test in ${Math.round(b.ms!)} ms; the scale test doesn't separate O(n) from slower solutions`);

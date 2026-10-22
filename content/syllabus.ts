@@ -33,7 +33,7 @@ export const books: Book[] = [
         chapters: [
           ch(1, "Thinking in cost"),
           ch(2, "Arrays and strings"),
-          ch(3, "Hashing"),
+          ch(3, "Hashing", { slug: "hashing" }),
           ch(4, "Recursion and the call stack"),
           ch(5, "Sorting and what it buys you"),
           ch(6, "Bit manipulation"),
@@ -43,9 +43,9 @@ export const books: Book[] = [
       {
         title: "Core patterns",
         chapters: [
-          ch(8, "Two pointers"),
+          ch(8, "Two pointers", { slug: "two-pointers" }),
           ch(9, "Sliding window", { slug: "sliding-window", available: true }),
-          ch(10, "Prefix sums and difference arrays"),
+          ch(10, "Prefix sums and difference arrays", { slug: "prefix-sums" }),
           ch(11, "Binary search, on arrays and on the answer"),
           ch(12, "Stacks and the monotonic stack"),
           ch(13, "Queues, deques and the monotonic deque"),

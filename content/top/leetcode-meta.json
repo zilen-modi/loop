@@ -1,0 +1,821 @@
+[
+ {
+  "slug": "two-sum",
+  "pattern": "Arrays and hashing",
+  "id": 1,
+  "title": "Two Sum",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "contains-duplicate",
+  "pattern": "Arrays and hashing",
+  "id": 217,
+  "title": "Contains Duplicate",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "valid-anagram",
+  "pattern": "Arrays and hashing",
+  "id": 242,
+  "title": "Valid Anagram",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "group-anagrams",
+  "pattern": "Arrays and hashing",
+  "id": 49,
+  "title": "Group Anagrams",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "top-k-frequent-elements",
+  "pattern": "Arrays and hashing",
+  "id": 347,
+  "title": "Top K Frequent Elements",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "product-of-array-except-self",
+  "pattern": "Arrays and hashing",
+  "id": 238,
+  "title": "Product of Array Except Self",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "longest-consecutive-sequence",
+  "pattern": "Arrays and hashing",
+  "id": 128,
+  "title": "Longest Consecutive Sequence",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "encode-and-decode-strings",
+  "pattern": "Arrays and hashing",
+  "id": 271,
+  "title": "Encode and Decode Strings",
+  "difficulty": "Medium",
+  "premium": true,
+  "classic": true
+ },
+ {
+  "slug": "subarray-sum-equals-k",
+  "pattern": "Arrays and hashing",
+  "id": 560,
+  "title": "Subarray Sum Equals K",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "valid-palindrome",
+  "pattern": "Two pointers",
+  "id": 125,
+  "title": "Valid Palindrome",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "3sum",
+  "pattern": "Two pointers",
+  "id": 15,
+  "title": "3Sum",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "container-with-most-water",
+  "pattern": "Two pointers",
+  "id": 11,
+  "title": "Container With Most Water",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "trapping-rain-water",
+  "pattern": "Two pointers",
+  "id": 42,
+  "title": "Trapping Rain Water",
+  "difficulty": "Hard",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "best-time-to-buy-and-sell-stock",
+  "pattern": "Sliding window",
+  "id": 121,
+  "title": "Best Time to Buy and Sell Stock",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "longest-substring-without-repeating-characters",
+  "pattern": "Sliding window",
+  "id": 3,
+  "title": "Longest Substring Without Repeating Characters",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "longest-repeating-character-replacement",
+  "pattern": "Sliding window",
+  "id": 424,
+  "title": "Longest Repeating Character Replacement",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "minimum-window-substring",
+  "pattern": "Sliding window",
+  "id": 76,
+  "title": "Minimum Window Substring",
+  "difficulty": "Hard",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "sliding-window-maximum",
+  "pattern": "Sliding window",
+  "id": 239,
+  "title": "Sliding Window Maximum",
+  "difficulty": "Hard",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "valid-parentheses",
+  "pattern": "Stack",
+  "id": 20,
+  "title": "Valid Parentheses",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "min-stack",
+  "pattern": "Stack",
+  "id": 155,
+  "title": "Min Stack",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "daily-temperatures",
+  "pattern": "Stack",
+  "id": 739,
+  "title": "Daily Temperatures",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "find-minimum-in-rotated-sorted-array",
+  "pattern": "Binary search",
+  "id": 153,
+  "title": "Find Minimum in Rotated Sorted Array",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "search-in-rotated-sorted-array",
+  "pattern": "Binary search",
+  "id": 33,
+  "title": "Search in Rotated Sorted Array",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "koko-eating-bananas",
+  "pattern": "Binary search",
+  "id": 875,
+  "title": "Koko Eating Bananas",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "median-of-two-sorted-arrays",
+  "pattern": "Binary search",
+  "id": 4,
+  "title": "Median of Two Sorted Arrays",
+  "difficulty": "Hard",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "reverse-linked-list",
+  "pattern": "Linked list",
+  "id": 206,
+  "title": "Reverse Linked List",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "merge-two-sorted-lists",
+  "pattern": "Linked list",
+  "id": 21,
+  "title": "Merge Two Sorted Lists",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "reorder-list",
+  "pattern": "Linked list",
+  "id": 143,
+  "title": "Reorder List",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "remove-nth-node-from-end-of-list",
+  "pattern": "Linked list",
+  "id": 19,
+  "title": "Remove Nth Node From End of List",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "linked-list-cycle",
+  "pattern": "Linked list",
+  "id": 141,
+  "title": "Linked List Cycle",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "merge-k-sorted-lists",
+  "pattern": "Linked list",
+  "id": 23,
+  "title": "Merge k Sorted Lists",
+  "difficulty": "Hard",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "lru-cache",
+  "pattern": "Linked list",
+  "id": 146,
+  "title": "LRU Cache",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "invert-binary-tree",
+  "pattern": "Trees",
+  "id": 226,
+  "title": "Invert Binary Tree",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "maximum-depth-of-binary-tree",
+  "pattern": "Trees",
+  "id": 104,
+  "title": "Maximum Depth of Binary Tree",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "same-tree",
+  "pattern": "Trees",
+  "id": 100,
+  "title": "Same Tree",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "subtree-of-another-tree",
+  "pattern": "Trees",
+  "id": 572,
+  "title": "Subtree of Another Tree",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "lowest-common-ancestor-of-a-binary-search-tree",
+  "pattern": "Trees",
+  "id": 235,
+  "title": "Lowest Common Ancestor of a Binary Search Tree",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "binary-tree-level-order-traversal",
+  "pattern": "Trees",
+  "id": 102,
+  "title": "Binary Tree Level Order Traversal",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "validate-binary-search-tree",
+  "pattern": "Trees",
+  "id": 98,
+  "title": "Validate Binary Search Tree",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "kth-smallest-element-in-a-bst",
+  "pattern": "Trees",
+  "id": 230,
+  "title": "Kth Smallest Element in a BST",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "construct-binary-tree-from-preorder-and-inorder-traversal",
+  "pattern": "Trees",
+  "id": 105,
+  "title": "Construct Binary Tree from Preorder and Inorder Traversal",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "binary-tree-maximum-path-sum",
+  "pattern": "Trees",
+  "id": 124,
+  "title": "Binary Tree Maximum Path Sum",
+  "difficulty": "Hard",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "serialize-and-deserialize-binary-tree",
+  "pattern": "Trees",
+  "id": 297,
+  "title": "Serialize and Deserialize Binary Tree",
+  "difficulty": "Hard",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "implement-trie-prefix-tree",
+  "pattern": "Tries",
+  "id": 208,
+  "title": "Implement Trie (Prefix Tree)",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "design-add-and-search-words-data-structure",
+  "pattern": "Tries",
+  "id": 211,
+  "title": "Design Add and Search Words Data Structure",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "word-search-ii",
+  "pattern": "Tries",
+  "id": 212,
+  "title": "Word Search II",
+  "difficulty": "Hard",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "kth-largest-element-in-an-array",
+  "pattern": "Heaps",
+  "id": 215,
+  "title": "Kth Largest Element in an Array",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "task-scheduler",
+  "pattern": "Heaps",
+  "id": 621,
+  "title": "Task Scheduler",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "find-median-from-data-stream",
+  "pattern": "Heaps",
+  "id": 295,
+  "title": "Find Median from Data Stream",
+  "difficulty": "Hard",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "combination-sum",
+  "pattern": "Backtracking",
+  "id": 39,
+  "title": "Combination Sum",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "word-search",
+  "pattern": "Backtracking",
+  "id": 79,
+  "title": "Word Search",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "number-of-islands",
+  "pattern": "Graphs",
+  "id": 200,
+  "title": "Number of Islands",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "clone-graph",
+  "pattern": "Graphs",
+  "id": 133,
+  "title": "Clone Graph",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "pacific-atlantic-water-flow",
+  "pattern": "Graphs",
+  "id": 417,
+  "title": "Pacific Atlantic Water Flow",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "course-schedule",
+  "pattern": "Graphs",
+  "id": 207,
+  "title": "Course Schedule",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "rotting-oranges",
+  "pattern": "Graphs",
+  "id": 994,
+  "title": "Rotting Oranges",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "graph-valid-tree",
+  "pattern": "Graphs",
+  "id": 261,
+  "title": "Graph Valid Tree",
+  "difficulty": "Medium",
+  "premium": true,
+  "classic": true
+ },
+ {
+  "slug": "number-of-connected-components-in-an-undirected-graph",
+  "pattern": "Graphs",
+  "id": 323,
+  "title": "Number of Connected Components in an Undirected Graph",
+  "difficulty": "Medium",
+  "premium": true,
+  "classic": true
+ },
+ {
+  "slug": "accounts-merge",
+  "pattern": "Graphs",
+  "id": 721,
+  "title": "Accounts Merge",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "word-ladder",
+  "pattern": "Graphs",
+  "id": 127,
+  "title": "Word Ladder",
+  "difficulty": "Hard",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "network-delay-time",
+  "pattern": "Graphs",
+  "id": 743,
+  "title": "Network Delay Time",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "alien-dictionary",
+  "pattern": "Graphs",
+  "id": 269,
+  "title": "Alien Dictionary",
+  "difficulty": "Hard",
+  "premium": true,
+  "classic": true
+ },
+ {
+  "slug": "insert-interval",
+  "pattern": "Intervals",
+  "id": 57,
+  "title": "Insert Interval",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "merge-intervals",
+  "pattern": "Intervals",
+  "id": 56,
+  "title": "Merge Intervals",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "non-overlapping-intervals",
+  "pattern": "Intervals",
+  "id": 435,
+  "title": "Non-overlapping Intervals",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "meeting-rooms",
+  "pattern": "Intervals",
+  "id": 252,
+  "title": "Meeting Rooms",
+  "difficulty": "Easy",
+  "premium": true,
+  "classic": true
+ },
+ {
+  "slug": "meeting-rooms-ii",
+  "pattern": "Intervals",
+  "id": 253,
+  "title": "Meeting Rooms II",
+  "difficulty": "Medium",
+  "premium": true,
+  "classic": true
+ },
+ {
+  "slug": "climbing-stairs",
+  "pattern": "Dynamic programming",
+  "id": 70,
+  "title": "Climbing Stairs",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "house-robber",
+  "pattern": "Dynamic programming",
+  "id": 198,
+  "title": "House Robber",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "house-robber-ii",
+  "pattern": "Dynamic programming",
+  "id": 213,
+  "title": "House Robber II",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "longest-palindromic-substring",
+  "pattern": "Dynamic programming",
+  "id": 5,
+  "title": "Longest Palindromic Substring",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "palindromic-substrings",
+  "pattern": "Dynamic programming",
+  "id": 647,
+  "title": "Palindromic Substrings",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "decode-ways",
+  "pattern": "Dynamic programming",
+  "id": 91,
+  "title": "Decode Ways",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "coin-change",
+  "pattern": "Dynamic programming",
+  "id": 322,
+  "title": "Coin Change",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "maximum-product-subarray",
+  "pattern": "Dynamic programming",
+  "id": 152,
+  "title": "Maximum Product Subarray",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "word-break",
+  "pattern": "Dynamic programming",
+  "id": 139,
+  "title": "Word Break",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "longest-increasing-subsequence",
+  "pattern": "Dynamic programming",
+  "id": 300,
+  "title": "Longest Increasing Subsequence",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "unique-paths",
+  "pattern": "Dynamic programming",
+  "id": 62,
+  "title": "Unique Paths",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "longest-common-subsequence",
+  "pattern": "Dynamic programming",
+  "id": 1143,
+  "title": "Longest Common Subsequence",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "edit-distance",
+  "pattern": "Dynamic programming",
+  "id": 72,
+  "title": "Edit Distance",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": false
+ },
+ {
+  "slug": "combination-sum-iv",
+  "pattern": "Dynamic programming",
+  "id": 377,
+  "title": "Combination Sum IV",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "maximum-subarray",
+  "pattern": "Greedy",
+  "id": 53,
+  "title": "Maximum Subarray",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "jump-game",
+  "pattern": "Greedy",
+  "id": 55,
+  "title": "Jump Game",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "set-matrix-zeroes",
+  "pattern": "Matrix",
+  "id": 73,
+  "title": "Set Matrix Zeroes",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "spiral-matrix",
+  "pattern": "Matrix",
+  "id": 54,
+  "title": "Spiral Matrix",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "rotate-image",
+  "pattern": "Matrix",
+  "id": 48,
+  "title": "Rotate Image",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "number-of-1-bits",
+  "pattern": "Bit manipulation",
+  "id": 191,
+  "title": "Number of 1 Bits",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "counting-bits",
+  "pattern": "Bit manipulation",
+  "id": 338,
+  "title": "Counting Bits",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "reverse-bits",
+  "pattern": "Bit manipulation",
+  "id": 190,
+  "title": "Reverse Bits",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "missing-number",
+  "pattern": "Bit manipulation",
+  "id": 268,
+  "title": "Missing Number",
+  "difficulty": "Easy",
+  "premium": false,
+  "classic": true
+ },
+ {
+  "slug": "sum-of-two-integers",
+  "pattern": "Bit manipulation",
+  "id": 371,
+  "title": "Sum of Two Integers",
+  "difficulty": "Medium",
+  "premium": false,
+  "classic": true
+ }
+]
