@@ -1,0 +1,146 @@
+<ChapterHead kicker="Book 1 · Core patterns · Chapter 9" title="Sliding window" concept="sliding-window" meta="About 25 minutes of reading · 7 problems" />
+
+<Story when="Friday, 8 pm">
+Orders are pouring into Tiffin. Every minute, the pricing service looks back over the last five minutes in each zone, adds up the orders, and decides whether to switch on surge pricing. Tonight it's falling behind, and riders are seeing prices that are three minutes stale.
+</Story>
+
+The engineer on call opens the code and finds this: every minute, for every zone, a loop adds up the last five minutes from scratch. Then, a minute later, it does it again.
+
+But the five minutes ending at 8:06 share four of their minutes with the five minutes ending at 8:05. Only one minute arrived and only one minute left. Why add the other four again?
+
+That question is the whole idea of this chapter. Instead of recounting, keep a running total. When a new minute arrives, add it. When the oldest minute leaves, subtract it. The range of minutes you're looking at moves forward like a frame over a strip of film. That moving frame is a <Term id="sliding-window">sliding window</Term>.
+
+## The slide
+
+Here is one evening's orders, minute by minute. The highlighted frame is a window of k minutes. Move it to the right and watch which numbers enter and leave.
+
+<WindowExplorer />
+
+Each time the window moves, exactly one value enters on the right and exactly one leaves on the left. So the new total is the old total, plus what entered, minus what left. Two operations, no matter how wide the window is.
+
+<Checkpoint id="sw-next-sum" />
+
+Recounting does k additions for every window. Sliding does k additions once, for the first window, and then two operations per step. For a short window that hardly matters. For long days and wide windows it decides whether the service keeps up.
+
+## Why it matters at scale
+
+Say a day has n minutes and the window is k minutes long. There are about n windows, and recounting each one costs k additions, so the whole day costs about n × k. Sliding costs about 2n. That's the difference between O(n·k) and O(n).
+
+<Checkpoint id="sw-ops" />
+
+Numbers like that are easy to nod along to and hard to feel. So run both approaches on real data, right here in your browser.
+
+<ScaleRace />
+
+Both columns grow about ten times each time n does, because k stays at 1,000. The difference is where they start: the recount does about a thousand times more work, so at a million minutes it takes on the order of a second while the slide finishes in a few milliseconds. Make k grow with n and the gap widens further. Interviewers read constraints the same way: if n can be 10⁵ or 10⁶, an O(n·k) answer is a hint to look for something linear.
+
+## Two kinds of window
+
+So far the window has had a fixed size. That's the first kind.
+
+A <Term id="fixed-window">fixed window</Term> answers questions like "the busiest k minutes" or "the average of every 7 days". The size is given, so every step adds one item and removes one item.
+
+```js
+let sum = 0;
+for (let i = 0; i < k; i++) sum += a[i];  // first window
+let best = sum;
+for (let i = k; i < a.length; i++) {
+  sum += a[i] - a[i - k];                 // one in, one out
+  best = Math.max(best, sum);
+}
+```
+
+The second kind is more interesting. A <Term id="variable-window">variable window</Term> has no size given in advance. Instead there's a rule, such as "at most k surging zones" or "no dish twice", and the window grows on the right for as long as the rule holds. When adding an item breaks the rule, the left edge moves forward until the rule holds again.
+
+```js
+let left = 0;
+for (let right = 0; right < a.length; right++) {
+  add(a[right]);                       // grow
+  while (broken()) remove(a[left++]);  // shrink
+  best = Math.max(best, right - left + 1);
+}
+```
+
+There's a loop inside a loop, which looks like O(n²). It isn't. Each item enters the window once, when right passes it, and leaves at most once, when left passes it. Over the whole run that's at most 2n moves, which is O(n) <Term id="amortised">amortised</Term>. The left and right edges are simply <Term id="two-pointers">two pointers</Term> that only ever move forward.
+
+<Checkpoint id="sw-shrink" />
+
+<Checkpoint id="sw-which" />
+
+## Spotting a window problem
+
+Most window problems don't say "sliding window". They say things like these:
+
+- The answer is about a contiguous stretch: consecutive minutes, a substring, a subarray, a run.
+- It asks for the longest, shortest, largest or smallest such stretch, or for something about every stretch of size k.
+- Shrinking a valid stretch keeps it valid, or growing an invalid one never fixes it. That property is what makes moving the left edge safe.
+- You need to know what's inside the window quickly: a running sum, a count, or a <Term id="hash-map">hash map</Term> of counts or last positions.
+
+When the window needs its maximum or minimum, a running total isn't enough, because removing the old maximum tells you nothing about the next one. That's the job of a <Term id="monotonic-deque">monotonic deque</Term>, which you'll build in the last problem of this chapter.
+
+## When it doesn't work
+
+A window needs that shrinking-keeps-it-valid property. Two common traps break it.
+
+Negative numbers. "The longest stretch with a sum of at most 10" works with a window only when every value is zero or more. With negative values, adding an item can make the sum smaller, so you can't tell which way to move. Use prefix sums and a hash map instead (chapter 10).
+
+Non-contiguous answers. If the items you pick don't have to be next to each other, as in subsequences, it isn't a window problem at all. That's usually dynamic programming (chapters 29 and 30).
+
+<PageBreak />
+
+## Your turn
+
+Here is the chapter's problem ladder, from easy to hard. Each one is set at Tiffin and has its own tests, including a scale test that a slow solution won't pass in time. The hints come one at a time, and the full walkthrough unlocks after you've tried.
+
+<ProblemLadder chapter="sliding-window" />
+
+Problem 7 is different: a teammate's solution has a bug, and you find it. Reading and judging someone else's code is now a skill interviews test directly, in code-review and code-comprehension rounds.
+
+## In interviews
+
+Window problems are among the most common in phone screens and first coding rounds, because they reward exactly the skill interviewers want to see: noticing repeated work and removing it.
+
+What you'll usually be asked next:
+
+- "Can you do it in one pass?" or "What's the complexity?" Say O(n) and explain why the inner loop doesn't make it O(n²): each item enters and leaves at most once.
+- "What if the numbers can be negative?" Explain why the window breaks, and suggest prefix sums.
+- "Return the stretch itself, not just its length." Track where the best window starts.
+- "What if the data is a stream?" The same algorithm works, keeping only what's inside the window.
+
+Traps that cost people the round:
+
+- Window length off by one. With both ends inclusive, the length is right − left + 1.
+- Shrinking with an if instead of a while. One new item can require several to leave.
+- Moving the left edge backwards when using a last-seen map.
+- Starting the best value at 0 when values can be negative.
+
+Say it out loud: "I'll keep a window over the array and a running total. Each step adds the new item and drops the old one, so the whole pass is O(n) time and O(1) extra space."
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain to a friend why a sliding window is faster than recounting, and when you would shrink it."
+  model="Neighbouring windows overlap almost completely, so instead of recounting each one you update a running total by adding the item that enters and removing the one that leaves, which makes the whole pass O(n). For variable windows you grow on the right and shrink from the left whenever the window breaks its rule, and each item enters and leaves at most once."
+  points={["Neighbouring windows overlap, so recounting repeats work", "Update by adding what enters and removing what leaves", "O(n) instead of O(n·k)", "Variable windows shrink from the left when a rule breaks", "Each item enters and leaves at most once"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "What changes when a fixed window moves one step?", a: "One item enters on the right and one leaves on the left: add the first, subtract the second." },
+    { q: "Why is the grow-and-shrink loop O(n), not O(n²)?", a: "Each item enters the window once and leaves at most once, so the pointers move at most 2n times in total." },
+    { q: "Which property must hold for a variable window to work?", a: "Shrinking a valid window keeps it valid (or growing an invalid one never fixes it), so moving the left edge forward is always safe." },
+    { q: "Why does a sum-limited window fail with negative numbers, and what do you use instead?", a: "Adding an item can lower the sum, so you can't tell which edge to move. Use prefix sums with a hash map." },
+  ]}
+/>
+
+<Sources
+  reviewed="21 October 2026"
+  items={[
+    { label: "Antti Laaksonen, Competitive Programmer's Handbook: sliding window minimum and two pointers", href: "https://cses.fi/book/book.pdf" },
+    { label: "LeetCode 643: Maximum Average Subarray I", href: "https://leetcode.com/problems/maximum-average-subarray-i/" },
+    { label: "LeetCode 3: Longest Substring Without Repeating Characters", href: "https://leetcode.com/problems/longest-substring-without-repeating-characters/" },
+    { label: "LeetCode 239: Sliding Window Maximum", href: "https://leetcode.com/problems/sliding-window-maximum/" },
+  ]}
+/>
