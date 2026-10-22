@@ -49,7 +49,7 @@ export function buildScenarioCases(p: BuildProblem, mode: "run" | "submit", stag
   if (mode === "run") return hand;
   const gen = p.generated
     .filter((g) => allowed.includes(g.stage))
-    .map((g, i) => ({
+    .map((g) => ({
       name: g.name,
       stage: g.stage,
       steps: withExpectations(p, g.gen(mulberry32(1000 + p.generated.indexOf(g)))),

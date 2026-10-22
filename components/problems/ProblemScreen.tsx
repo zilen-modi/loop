@@ -5,13 +5,16 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { problemById } from "@/content/problems";
 import { applyTheme, settings } from "@/lib/settings";
-import Workbench, { type BenchMode } from "./Workbench";
-import BugHunt from "./BugHunt";
-import BuildBench from "./BuildBench";
+import type { BenchMode } from "./Workbench";
 import { nextInQueue } from "@/lib/practice-queue";
 
-// The design canvas (React Flow) is only needed for design labs, so it loads on demand.
-const DesignLab = dynamic(() => import("./DesignLab"), { loading: () => <div className="bench" /> });
+// Each screen loads on demand: the editor (CodeMirror) and the design canvas (React Flow) are only
+// needed by the problem kinds that use them.
+const loading = () => <div className="bench" />;
+const Workbench = dynamic(() => import("./Workbench"), { loading });
+const BugHunt = dynamic(() => import("./BugHunt"), { loading });
+const BuildBench = dynamic(() => import("./BuildBench"), { loading });
+const DesignLab = dynamic(() => import("./DesignLab"), { loading });
 
 function Screen({ id }: { id: string }) {
   const search = useSearchParams();
