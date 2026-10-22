@@ -4,7 +4,7 @@
 export type Concept = {
   id: string;
   term: string;
-  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen";
+  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen" | "Workflow" | "Ticket" | "ArrowUpDown";
   hue: "teal" | "violet" | "amber" | "rose" | "blue";
   definition: string;
   appearsIn: string[];
@@ -194,5 +194,29 @@ export const concepts: Record<string, Concept> = {
     hue: "amber",
     definition: "Copying one event to many recipients. On write, each new post is pushed into every follower's feed; on read, each feed load gathers posts from everyone followed. Big systems mix the two.",
     appearsIn: ["HLD 26 · News feed", "HLD 25 · Notification system", "HLD 27 · Chat and presence"],
+  },
+  "state-machine": {
+    id: "state-machine",
+    term: "State machine",
+    glyph: "Workflow",
+    hue: "violet",
+    definition: "A design where what an object may do depends on which state it's in, and actions move it between states. The state pattern puts each state's rules in its own object instead of if-chains in every method.",
+    appearsIn: ["LLD 21 · Vending machine", "LLD 16 · Elevator system", "LLD 7 · Behavioural patterns"],
+  },
+  "seat-hold": {
+    id: "seat-hold",
+    term: "Seat hold",
+    glyph: "Ticket",
+    hue: "rose",
+    definition: "A short lease on a scarce item (a seat, a room, stock) while the customer pays. It's taken all at once or not at all, and it ends on its own when time runs out.",
+    appearsIn: ["LLD 17 · Movie ticket booking", "HLD 31 · Ticket booking", "HLD 39 · Flash sale"],
+  },
+  scan: {
+    id: "scan",
+    term: "SCAN (the elevator algorithm)",
+    glyph: "ArrowUpDown",
+    hue: "teal",
+    definition: "Serve requests by sweeping in one direction while any lie ahead, then reversing. Fair and simple: nobody waits more than about two sweeps. Also used to schedule disk heads.",
+    appearsIn: ["LLD 16 · Elevator system", "OS fundamentals · Disk scheduling"],
   },
 };

@@ -85,6 +85,33 @@ function replayTx(ops: (string | number)[][], key: string) {
   return store.has(key) ? String(store.get(key)) : "Nothing (the key is gone)";
 }
 
+/** Greedy change from a limited coin box: largest coin that fits, repeatedly. Returns null if it can't pay exactly. */
+function greedyChange(amount: number, box: Record<number, number>) {
+  const out: number[] = [];
+  for (const c of [20, 10, 5, 2, 1])
+    for (let n = box[c] ?? 0; n > 0 && amount >= c; n--) {
+      out.push(c);
+      amount -= c;
+    }
+  return amount === 0 ? out : null;
+}
+
+/** One lift, SCAN: the order it reaches its stops from a floor and direction. */
+function scanOrder(floor: number, dir: "up" | "down", stops: number[]) {
+  const left = new Set(stops);
+  const order: number[] = [];
+  while (left.size) {
+    const ahead = [...left].filter((s) => (dir === "up" ? s > floor : s < floor));
+    if (!ahead.length) {
+      dir = dir === "up" ? "down" : "up";
+      continue;
+    }
+    floor += dir === "up" ? 1 : -1;
+    if (left.delete(floor)) order.push(floor);
+  }
+  return order;
+}
+
 const approx = (x: number) => {
   const p = 10 ** (Math.floor(Math.log10(x)) - 1);
   return `About ${(Math.round(x / p) * p).toLocaleString("en-US")}`;
@@ -324,6 +351,63 @@ export const checkpoints: Record<string, Checkpoint> = {
     options: ["About 6.4 GB", "About 64 GB", "About 640 GB", "About 6.4 TB"],
     compute: () => `About ${(40_000_000 * 200 * 8) / 1e9} GB`,
     explain: "40 M × 200 × 8 bytes = 64 GB: one big cache node, or spread across a few. Copying whole posts (~1 KB) instead would be 8 TB. Store ids, and fetch the posts for a page in one batched read.",
+  },
+  "vm-change": {
+    id: "vm-change",
+    prompt: "The machine owes ₹6 in change and holds one ₹5 coin and three ₹2 coins (no ₹1s). Using greedy change (largest coin that fits, repeatedly), what happens?",
+    options: ["It gives 5 + 1", "It gives 2 + 2 + 2", "The sale is refused", "It gives 5 and keeps ₹1"],
+    compute: () => {
+      const c = greedyChange(6, { 5: 1, 2: 3 });
+      return c ? `It gives ${c.join(" + ")}` : "The sale is refused";
+    },
+    explain: "Greedy takes the ₹5 first, then owes ₹1 and has no ₹1 coin, so it fails, even though 2 + 2 + 2 would have worked. Real machines handle this by refusing the sale (the EXACT CHANGE ONLY light); a small dynamic program could find the other mix.",
+  },
+  "vm-state": {
+    id: "vm-state",
+    prompt: "A customer has inserted ₹10 and walked away. Which of these should the machine allow right now?",
+    options: ["Restocking a slot", "Loading change coins", "Starting maintenance", "A refund"],
+    answer: 3,
+    explain: "With money inside, the machine is in the has-money state: only customer actions (more coins, select, refund) make sense. Restocking or maintenance now would mix the customer's money with the service visit. Each state should answer this question in one place.",
+  },
+  "mb-race": {
+    id: "mb-race",
+    prompt: "Asha holds D5 and D6. A moment later, Bilal asks to hold D6 and D7 together. What does Bilal get?",
+    options: ["D6 and D7", "Only D7", "Nothing: his hold is refused", "D7 now, and D6 when Asha's hold ends"],
+    compute: () => {
+      const held = new Set(["D5", "D6"]);
+      const want = ["D6", "D7"];
+      return want.every((x) => !held.has(x)) ? "D6 and D7" : "Nothing: his hold is refused"; // all or nothing
+    },
+    explain: "Holds are all or nothing. D6 is Asha's, so Bilal's request fails as a whole: holding D7 alone would block it for everyone and isn't what he asked for.",
+  },
+  "mb-expiry": {
+    id: "mb-expiry",
+    prompt: "Asha's hold started at 20:00:00 and lasts 10 minutes. Her payment arrives at exactly 20:10:00. Is it confirmed?",
+    options: ["Yes", "No"],
+    compute: () => {
+      const start = 20 * 3600;
+      const paid = 20 * 3600 + 600;
+      return paid < start + 600 ? "Yes" : "No"; // live while time < start + 10 minutes
+    },
+    explain: "A hold is live while time < start + 10 minutes, so at exactly 20:10:00 it has ended and the seats may already be someone else's. The payment is refused (and refunded). Boundaries like this one are exactly what hidden tests check.",
+  },
+  "el-scan": {
+    id: "el-scan",
+    prompt: "A lift is on floor 5 going up. Its stops are floors 2, 7 and 9. In what order does it reach them, using SCAN?",
+    options: ["2, 7, 9", "7, 2, 9", "7, 9, 2", "9, 7, 2"],
+    compute: () => scanOrder(5, "up", [2, 7, 9]).join(", "),
+    explain: "SCAN keeps going in its direction while there are stops ahead: up to 7, then 9. With nothing above, it turns and goes down to 2. Going to the nearest stop first (7, then 2, then 9) would zigzag and could leave someone waiting at the top for a long time.",
+  },
+  "el-cost": {
+    id: "el-cost",
+    prompt: "Someone on floor 6 presses Down. Car 1 is on floor 2 going up to 10. Car 2 is idle on floor 12. Using the cost rule (distance if idle or already coming that way, otherwise the trip out and back), which car answers?",
+    options: ["Car 1", "Car 2"],
+    compute: () => {
+      const car1 = Math.abs(10 - 2) + Math.abs(10 - 6); // going up, not coming down: up to 10 and back
+      const car2 = Math.abs(12 - 6); // idle
+      return car1 < car2 ? "Car 1" : "Car 2";
+    },
+    explain: "Car 1 is heading up, away from a Down call, so it would go to 10 and come back: 8 + 4 = 12 floors. Idle car 2 is 6 floors away, so it answers. Being close isn't enough; the direction matters.",
   },
 };
 

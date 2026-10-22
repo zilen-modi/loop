@@ -1,0 +1,94 @@
+<ChapterHead kicker="Book 2 · Classic builds · Chapter 16" title="Elevator system" concept="scan" meta="About 20 minutes of reading · one 90-minute build" />
+
+<Story when="Monday, 9:05 am">
+Tiffin's new office opens, and the lifts are chaos. One car rushes to the nearest button every time, zigzagging between floors 3 and 5 while someone on floor 18 waits six minutes. Another car, already passing floor 10 on its way up, ignores a person on 10 who wants to go up, and sends a car from the lobby instead.
+</Story>
+
+"Design an elevator system" is a favourite because the classes are obvious (Building, Elevator, Request) but the behaviour isn't. Two policies decide whether the design is any good: where each car goes next, and which car answers a call. Get those exact, keep them separate, and the rest is bookkeeping.
+
+## Two kinds of request
+
+- **Hall calls:** someone on a floor presses Up or Down. Any car can answer, so the controller must choose one.
+- **Car calls:** someone inside presses a floor. Only that car can serve it.
+
+Keep them apart in your model. Car calls become stops for that car; hall calls are assigned to a car (becoming one of its stops) but are also remembered as hall calls, so they can be reassigned if the car breaks down, and timed.
+
+## Where does a car go next? SCAN
+
+Going to the nearest stop first sounds efficient and is how the story's first car behaves. It zigzags, and far floors can wait forever. The classic answer is <Term id="scan">SCAN</Term>: keep going in your direction while any stop lies ahead; when none does, turn around.
+
+<ScanLift />
+
+<Checkpoint id="el-scan" />
+
+SCAN is fair: nobody waits more than about two sweeps of the building. It's the same algorithm operating systems once used to move a disk's read head, which is why it's also called the elevator algorithm.
+
+## Which car answers? A cost function
+
+Give each car a cost for the call and pick the cheapest (ties to the lowest number, so tests are deterministic):
+
+- An idle car, or one already **heading that way in the same direction and not yet past the floor**, costs the distance.
+- Any other car must first finish its sweep: the distance to its furthest stop ahead, plus the distance back to the caller.
+
+<Checkpoint id="el-cost" />
+
+Putting this rule in one function is the design decision interviewers look for. "Nearest car" is a one-line change; so is weighing load or energy later.
+
+## Time in ticks
+
+Real controllers are driven by events, but for a build and its tests, **ticks** are better: in one tick a car moves one floor or stops at a floor it was asked to. Every car's position is then exact at every step, and a whole morning rush hour can be replayed deterministically.
+
+## The extension
+
+**Out of service.** A car is taken out: it gets no new hall calls, and the ones it was carrying are reassigned to other cars by the same cost rule. Passengers inside still reach their floors. This is easy only if hall calls were tracked separately from stops.
+
+**Wait times.** Each hall call remembers when it was made; when its car stops at that floor, record the wait. That turns the building into something you can measure, and compare policies with.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Destination dispatch." Passengers enter their floor in the lobby, and the system groups people going to nearby floors into the same car.
+- "Capacity." A full car skips hall calls until someone gets off.
+- "Peak hours." Park idle cars at the lobby in the morning and spread them out in the evening.
+- "Minimise average wait, not distance." Change the cost function; nothing else.
+
+Traps that cost people the round:
+
+- Nearest-stop-first movement, which zigzags and starves far floors.
+- Treating every request the same, so hall calls can't be reassigned.
+- Dispatch logic scattered through the movement code.
+- Real timers and threads in a 90-minute build.
+
+<PageBreak />
+
+## Your turn
+
+<ProblemLadder chapter="elevator" />
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how each lift decides where to go, and how a hall call is assigned to a lift."
+  model="Each car runs SCAN: it keeps moving in its direction while any of its stops lie ahead and turns when none do, which is fair to far floors. A hall call goes to the car with the lowest cost: the distance if it's idle or already coming that way, otherwise the trip to its furthest stop and back; hall calls are tracked separately so they can be reassigned and timed."
+  points={["SCAN: keep going while stops lie ahead, then turn", "Hall calls vs car calls", "A cost function picks the car", "Direction matters, not just distance", "Track hall calls to reassign and time them"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "What is SCAN?", a: "Move in one direction while any stop lies ahead, then reverse. Fair, simple, and no request waits more than about two sweeps." },
+    { q: "Why keep hall calls separate from car stops?", a: "So a hall call can be reassigned if its car goes out of service, and its wait can be measured." },
+    { q: "When does a moving car cost just the distance?", a: "When it's heading in the call's direction and hasn't passed the floor yet; otherwise it must finish its sweep and come back." },
+    { q: "Why simulate in ticks?", a: "Every position is exact at every step, so behaviour is deterministic and testable." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Wikipedia: elevator algorithm (SCAN)", href: "https://en.wikipedia.org/wiki/Elevator_algorithm" },
+    { label: "Wikipedia: destination dispatch", href: "https://en.wikipedia.org/wiki/Destination_dispatch" },
+  ]}
+/>

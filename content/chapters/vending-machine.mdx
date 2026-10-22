@@ -1,0 +1,94 @@
+<ChapterHead kicker="Book 2 · Classic builds · Chapter 21" title="Vending machine" concept="state-machine" meta="About 15 minutes of reading · one 60-minute build" />
+
+<Story when="Wednesday, 4 pm">
+The office pantry's new vending machine takes a ₹20 note for a ₹14 chikki and announces it can't give change, although its coin box is full of ₹2 coins. Later, a technician restocks it while someone's ₹10 is still inside, and that ₹10 ends up in the till. Both bugs come from the same place: nobody wrote down what the machine may do, and when.
+</Story>
+
+The vending machine is the classic interview build for the <Term id="state-machine">state machine</Term>. It's small enough to finish in an hour, and it rewards one decision above all: make the machine's *state* decide which actions are allowed, instead of scattering checks through every method.
+
+## Clarify the states first
+
+Before any code, list the states and what each allows:
+
+<StepTable
+  head={["State", "Insert coin", "Select", "Refund", "Stock, load coins", "Maintenance"]}
+  rows={[
+    ["Idle (no money in)", "yes", "yes (fails: no money)", "yes (nothing back)", "yes", "start"],
+    ["Has money", "yes", "yes", "yes", "no", "no"],
+    ["Maintenance", "no", "no", "no", "yes", "end"],
+  ]}
+/>
+
+The two story bugs are both missing rows in a table like this one. Write it on the whiteboard; it becomes your code.
+
+<VendingStateLab />
+
+<Checkpoint id="vm-state" />
+
+## One object per state
+
+The tempting design checks conditions everywhere: `if (balance > 0 && !maintenance && …)`. Each new requirement adds a condition to several methods, and one is always forgotten. Instead, give each state an object that answers the questions: may a customer act now? May the staff? Then each method starts with one check. When maintenance mode arrives as the extension, it's one new state object, and nothing else changes. That's the state pattern in its lightest form. If states need different *behaviour*, not just permissions, move the methods onto the state objects themselves.
+
+## Money: escrow, then commit
+
+Two rules keep the money right.
+
+- **Hold inserted coins aside** (escrow) until a sale or refund. A refund then gives back exactly what went in, not "₹10 in some coins".
+- **Check everything before changing anything.** A sale validates the slot, the stock and the balance, works out the change on a *copy* of the coin box, and only then commits the coins, the stock and the sale at once. A failed sale leaves no trace.
+
+## Change, and why greedy can fail
+
+The machine pays change from the coins it actually holds. The usual rule is greedy: the largest coin that fits, again and again. For ₹1, ₹2, ₹5, ₹10 and ₹20 with unlimited coins, greedy always uses the fewest coins. With a *limited* coin box it can fail even when another mix would work:
+
+<Checkpoint id="vm-change" />
+
+Real machines handle this by refusing the sale and lighting EXACT CHANGE ONLY, and that's what the bench expects. If the interviewer asks for any valid mix, that's a small dynamic program over the coin counts. Mention it, and don't build it unless asked.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Card payments." A payment state with approve and decline events, and a timeout.
+- "Give up after two minutes." A timer event on has-money that refunds automatically.
+- "Find change with any valid mix." Dynamic programming over amounts with bounded coin counts.
+- "Tell staff what to refill." Report empty slots and low coin counts.
+
+Traps that cost people the round:
+
+- if-chains in every method instead of states, and a forgotten case.
+- Refunding "an amount" instead of the coins that went in.
+- Changing stock or coins before knowing the sale will succeed.
+- Change that uses coins the machine doesn't have.
+
+<PageBreak />
+
+## Your turn
+
+<ProblemLadder chapter="vending-machine" />
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how you'd structure a vending machine so that every action is allowed only in the right state, and the money always adds up."
+  model="Model the machine as states (idle, has money, maintenance), each saying which actions are allowed, so every method starts with one state check and new modes are new states. Hold inserted coins in escrow so refunds return exactly them, and make a sale check stock, balance and change on a copy before committing everything at once."
+  points={["List the states and what each allows", "One object per state instead of if-chains", "Escrow inserted coins for exact refunds", "Check everything, then commit the sale", "Greedy change can fail with a limited coin box"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "What does the state pattern buy you in a vending machine?", a: "Each state says which actions are allowed, so methods start with one check, and a new mode (maintenance) is one new state." },
+    { q: "Why hold inserted coins in escrow?", a: "So a refund returns exactly the coins that went in, and the coin box only changes when a sale completes." },
+    { q: "When does greedy change fail?", a: "With a limited coin box: owing ₹6 with one ₹5 and three ₹2s, greedy takes the ₹5 and can't finish, though 2 + 2 + 2 works." },
+    { q: "How do you keep a failed sale from leaving a trace?", a: "Validate slot, stock and balance, compute change on a copy of the coin box, and only then commit everything together." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Refactoring.Guru: the state pattern", href: "https://refactoring.guru/design-patterns/state" },
+    { label: "Wikipedia: change-making problem (greedy and dynamic programming)", href: "https://en.wikipedia.org/wiki/Change-making_problem" },
+  ]}
+/>

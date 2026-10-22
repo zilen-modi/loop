@@ -1,0 +1,96 @@
+<ChapterHead kicker="Book 2 · Classic builds · Chapter 17" title="Movie ticket booking" concept="seat-hold" meta="About 20 minutes of reading · one 90-minute build" />
+
+<Story when="Thursday, 11:59 pm">
+Bookings open at midnight for the biggest film of the year. Twelve thousand people are waiting on the seat map. At 00:00:01, Asha and Bilal both tap D7, both are shown "Pay now", and both pay. One of them sits on the steps on Friday night. Meanwhile, rows of good seats show as "taken" for an hour, held by people who closed the app.
+</Story>
+
+"Design BookMyShow" is a machine-coding favourite because it hides a concurrency problem inside a simple-looking app. Two rules carry the whole build. A seat must never be sold twice. And a seat that someone started to buy, then abandoned, has to come back on its own.
+
+## Hold, then pay
+
+Payment takes time, so you can't sell a seat in one step. Booking is two steps:
+
+1. **Hold:** reserve specific seats for a few minutes while the customer pays. Nobody else can take them.
+2. **Confirm:** when payment succeeds, the hold becomes a booking. If the customer gives up, or the clock runs out, the hold ends and the seats are free again.
+
+A <Term id="seat-hold">seat hold</Term> is a lease, and leases expire.
+
+<SeatRace />
+
+<Checkpoint id="mb-race" />
+
+## All or nothing
+
+A family wants D5 to D8 together. If D7 is taken, holding D5, D6 and D8 is worse than useless: those seats are now blocked for everyone, and the family doesn't want them. So a hold checks **every** seat first and takes them only if all are free. A refused hold leaves nothing behind, and doesn't even use up a hold number.
+
+## Expiry without timers
+
+The tempting design starts a ten-minute timer for every hold. With thousands of holds, that's thousands of timers to manage, and tests that depend on real time. Instead, store each hold's expiry time and ask one question whenever you need to know about a seat: *is it booked, or held by a hold that's still live at this moment?* If the hold has ended or expired, the seat is free. No sweep, no timer, and the answer is exact for any time a call brings.
+
+<Checkpoint id="mb-expiry" />
+
+## Who wins a race?
+
+In one process, calls are handled one at a time, so "the first call wins" happens naturally, and the bench stages races that way. In production, many servers handle requests at once, so the check and the take must be **one atomic step**:
+
+- a database update with a condition: `UPDATE seats SET hold = ? WHERE id IN (…) AND hold IS NULL AND booking IS NULL`, and check that every row changed;
+- a row lock (`SELECT … FOR UPDATE`) around the check and the write;
+- or a lock per seat in Redis with an expiry, which doubles as the hold.
+
+Say this in the interview even if the build is single-process. It's what the question is really about.
+
+## The extension
+
+**Best seats together.** "Give me 4 good seats" means the row nearest the middle, then the leftmost run of 4 free seats in it. It's a scan over rows sorted by distance from the middle, using the same "is it free?" check.
+
+**Cancellation.** Allowed until 2 hours before the show. The seats become free, and the booking can't be cancelled twice.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Run it on many servers." An atomic conditional update or row locks, and idempotent payment callbacks.
+- "Payment confirms after the hold expired." Refund automatically, or extend holds once while a payment is pending.
+- "A user holds 200 seats to resell them." Cap seats per user per show.
+- "A waiting list." When a hold expires or a booking is cancelled, offer the seats to the next person in line.
+
+Traps that cost people the round:
+
+- Selling in one step, with no holds, or holds that never expire.
+- Partial holds.
+- A timer per hold, and tests that sleep.
+- No mention of what happens with two servers.
+
+<PageBreak />
+
+## Your turn
+
+<ProblemLadder chapter="movie-booking" />
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how you'd stop a seat being sold twice while people take time to pay, and how abandoned seats come back."
+  model="Booking is hold then confirm: a hold takes every requested seat or none, as one atomic step, and lasts ten minutes while the customer pays. A seat is free if it isn't booked and its hold has ended or expired, computed from the time of each request, so abandoned holds free their seats with no timers."
+  points={["Hold first, confirm after payment", "Holds are all or nothing", "Check-and-take is one atomic step", "Holds expire by time, no timers", "Expired holds can't be confirmed"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "Why hold seats before payment?", a: "Payment takes time; a hold reserves the seats so nobody else can take them, then becomes a booking or expires." },
+    { q: "Why must a hold be all or nothing?", a: "Taking only some of the seats blocks them for everyone and gives the customer something they didn't ask for." },
+    { q: "How do holds expire without timers?", a: "Each hold stores its expiry; a seat is free if its hold has ended or expired at the time being asked about." },
+    { q: "Across many servers, what makes 'first one wins' true?", a: "An atomic check-and-take: a conditional update, a row lock, or a per-seat lock with an expiry." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "PostgreSQL documentation: explicit locking (row-level locks)", href: "https://www.postgresql.org/docs/current/explicit-locking.html" },
+    { label: "Martin Fowler, Patterns of Enterprise Application Architecture: optimistic offline lock", href: "https://martinfowler.com/eaaCatalog/optimisticOfflineLock.html" },
+    { label: "Redis documentation: distributed locks", href: "https://redis.io/docs/latest/develop/use/patterns/distributed-locks/" },
+  ]}
+/>

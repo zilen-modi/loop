@@ -286,3 +286,170 @@ export function TransactionLab() {
     </div>
   );
 }
+
+type VmState = "idle" | "has-money" | "maintenance";
+
+/** The vending machine as a state machine: try actions and see which states allow them. */
+export function VendingStateLab() {
+  const [state, setState] = useState<VmState>("idle");
+  const [balance, setBalance] = useState(0);
+  const [stock, setStock] = useState(2);
+  const [line, setLine] = useState("Idle. Try an action.");
+  const allowed: Record<string, VmState[]> = {
+    "Insert ₹10": ["idle", "has-money"],
+    "Buy chips (₹10)": ["idle", "has-money"],
+    Refund: ["idle", "has-money"],
+    Restock: ["idle", "maintenance"],
+    "Start maintenance": ["idle"],
+    "End maintenance": ["maintenance"],
+  };
+  const act = (name: string) => {
+    if (!allowed[name].includes(state)) return setLine(`${name}: not allowed while ${state}.`);
+    if (name === "Insert ₹10") { setBalance(balance + 10); setState("has-money"); return setLine(`Balance ₹${balance + 10}. Now has-money.`); }
+    if (name === "Buy chips (₹10)") {
+      if (stock === 0) return setLine("Sold out: the sale is refused and nothing changes.");
+      if (balance < 10) return setLine("Not enough money: the sale is refused and nothing changes.");
+      setStock(stock - 1); setBalance(0); setState("idle");
+      return setLine(`Sold!${balance > 10 ? ` Change: ₹${balance - 10}.` : ""} Back to idle.`);
+    }
+    if (name === "Refund") { setLine(balance ? `Refunded your ₹${balance}. Back to idle.` : "Nothing to refund."); setBalance(0); return setState("idle"); }
+    if (name === "Restock") { setStock(stock + 3); return setLine(`Restocked: ${stock + 3} chips.`); }
+    if (name === "Start maintenance") { setState("maintenance"); return setLine("Maintenance: customers can't use the machine."); }
+    setState("idle"); setLine("Back to idle.");
+  };
+  const states: VmState[] = ["idle", "has-money", "maintenance"];
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · what each state allows</p>
+      <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }} aria-label="States">
+        {states.map((s) => (
+          <span key={s} data-vm-state={s} aria-current={state === s ? "true" : undefined} style={{ padding: "8px 12px", borderRadius: 8, border: `1.5px solid ${state === s ? "var(--accent)" : "var(--rule-2)"}`, background: state === s ? "var(--accent-soft)" : "transparent", font: "500 13px var(--sans)" }}>
+            {s}
+          </span>
+        ))}
+        <span style={{ marginLeft: "auto", fontFamily: "var(--mono)", fontSize: 13, alignSelf: "center" }}>₹{balance} in · {stock} chips</span>
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+        {Object.keys(allowed).map((a) => (
+          <button key={a} className="btn small" onClick={() => act(a)} style={{ opacity: allowed[a].includes(state) ? 1 : 0.55 }}>{a}</button>
+        ))}
+      </div>
+      <p role="status" style={{ margin: 0, fontSize: 13.5, color: "var(--ink-2)" }} data-testid="vm-line">{line}</p>
+    </div>
+  );
+}
+
+/** Two people race for the same seats; holds are all or nothing and expire after 10 minutes. */
+export function SeatRace() {
+  const seats = ["D4", "D5", "D6", "D7", "D8"];
+  const [clock, setClock] = useState(0); // minutes after midnight
+  const [holds, setHolds] = useState<{ who: string; seats: string[]; at: number; paid: boolean }[]>([]);
+  const [line, setLine] = useState("Bookings open at midnight. Try the race.");
+  const live = (h: { at: number; paid: boolean }) => h.paid || clock < h.at + 10;
+  const owner = (s: string) => holds.find((h) => h.seats.includes(s) && live(h));
+  const hold = (who: string, want: string[]) => {
+    const taken = want.filter((s) => owner(s));
+    if (taken.length) return setLine(`${who} asks for ${want.join(" + ")}: refused, because ${taken.join(", ")} ${taken.length > 1 ? "are" : "is"} taken. Nothing is held.`);
+    setHolds([...holds, { who, seats: want, at: clock, paid: false }]); // expired holds stay, so a late payment can say why it failed
+    setLine(`${who} holds ${want.join(" + ")} until 00:${String(clock + 10).padStart(2, "0")}.`);
+  };
+  const pay = (who: string) => {
+    const h = [...holds].reverse().find((x) => x.who === who && !x.paid);
+    if (!h) return setLine(`${who} has no hold to pay for.`);
+    if (!live(h)) return setLine(`${who}'s hold expired at 00:${String(h.at + 10).padStart(2, "0")}: payment refused, seats already free.`);
+    setHolds(holds.map((x) => (x === h ? { ...x, paid: true } : x)));
+    setLine(`${who} paid: ${h.seats.join(" + ")} booked.`);
+  };
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · midnight, row D</p>
+      <div style={{ display: "flex", gap: 4, marginBottom: 10, alignItems: "center" }}>
+        {seats.map((s) => {
+          const o = owner(s);
+          return (
+            <span key={s} data-seat={s} style={{ width: 52, height: 44, display: "grid", placeItems: "center", borderRadius: 8, font: "500 12px var(--sans)", border: `1.5px ${o ? "solid" : "dashed"} ${o ? (o.paid ? "var(--ink-2)" : "var(--accent)") : "var(--rule-2)"}`, background: o ? (o.paid ? "var(--page-2)" : "var(--accent-soft)") : "transparent" }}>
+              {s}
+              <span style={{ fontSize: 12, color: "var(--ink-3)" }}>{o ? (o.paid ? `${o.who[0]} ✓` : o.who[0]) : "free"}</span>
+            </span>
+          );
+        })}
+        <span style={{ marginLeft: "auto", fontFamily: "var(--mono)", fontSize: 13 }} data-testid="race-clock">00:{String(clock).padStart(2, "0")}</span>
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+        <button className="btn small" onClick={() => hold("Asha", ["D5", "D6"])}>Asha holds D5 + D6</button>
+        <button className="btn small" onClick={() => hold("Bilal", ["D6", "D7"])}>Bilal holds D6 + D7</button>
+        <button className="btn small" onClick={() => pay("Asha")}>Asha pays</button>
+        <button className="btn small" onClick={() => pay("Bilal")}>Bilal pays</button>
+        <button className="btn small" onClick={() => setClock(clock + 5)}>Wait 5 minutes</button>
+        <button className="btn small" onClick={() => { setClock(0); setHolds([]); setLine("Reset to midnight."); }} aria-label="Reset the race">↺</button>
+      </div>
+      <p role="status" style={{ margin: 0, fontSize: 13.5, color: "var(--ink-2)" }} data-testid="race-line">{line}</p>
+    </div>
+  );
+}
+
+/** One lift running SCAN: add stops, step time, and watch it sweep up and down. */
+export function ScanLift() {
+  const floors = 10;
+  const [floor, setFloor] = useState(4);
+  const [dir, setDir] = useState<"up" | "down" | "idle">("idle");
+  const [stops, setStops] = useState<number[]>([]);
+  const [log, setLog] = useState<number[]>([]);
+  const step = () => {
+    if (!stops.length) return;
+    if (stops.includes(floor)) {
+      setStops(stops.filter((s) => s !== floor));
+      setLog([...log, floor]);
+      if (stops.length === 1) setDir("idle");
+      return;
+    }
+    const ahead = (d: string) => stops.some((s) => (d === "up" ? s > floor : s < floor));
+    let d = dir;
+    if (d === "idle" || !ahead(d)) {
+      if (d !== "idle" && ahead(d === "up" ? "down" : "up")) d = d === "up" ? "down" : "up";
+      else if (d === "idle") {
+        const near = [...stops].sort((a, b) => Math.abs(a - floor) - Math.abs(b - floor) || b - a)[0];
+        d = near > floor ? "up" : "down";
+      }
+    }
+    const next = floor + (d === "up" ? 1 : -1);
+    setDir(d);
+    setFloor(next);
+    if (stops.includes(next)) {
+      const rest = stops.filter((s) => s !== next);
+      setStops(rest);
+      setLog([...log, next]);
+      if (!rest.length) setDir("idle");
+    }
+  };
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · one lift, SCAN</p>
+      <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <div style={{ display: "grid", gap: 3 }} aria-label="Floors, top first">
+          {Array.from({ length: floors }, (_, i) => floors - 1 - i).map((f) => (
+            <button
+              key={f}
+              onClick={() => !stops.includes(f) && setStops([...stops, f])}
+              aria-label={`Floor ${f}${f === floor ? ", the lift is here" : ""}${stops.includes(f) ? ", a stop" : ""}`}
+              data-floor={f}
+              style={{ width: 120, height: 40, display: "flex", alignItems: "center", gap: 8, padding: "0 10px", borderRadius: 7, border: `1.5px solid ${stops.includes(f) ? "var(--accent)" : "var(--rule)"}`, background: f === floor ? "var(--accent-soft)" : "transparent", font: "500 13px var(--sans)", color: "var(--ink)", cursor: "pointer" }}
+            >
+              <span style={{ width: 20, color: "var(--ink-3)" }}>{f}</span>
+              {f === floor && <span aria-hidden="true">▣ {dir === "up" ? "↑" : dir === "down" ? "↓" : ""}</span>}
+              {stops.includes(f) && f !== floor && <span style={{ marginLeft: "auto", color: "var(--accent)" }}>stop</span>}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: "grid", gap: 8, minWidth: 180, flex: 1 }}>
+          <p style={{ margin: 0, fontSize: 13.5, color: "var(--ink-2)" }}>Tap floors to add stops, then step time. The lift keeps going while there are stops ahead, then turns.</p>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <button className="btn small" onClick={step}>Step one tick</button>
+            <button className="btn small" onClick={() => { setFloor(4); setDir("idle"); setStops([]); setLog([]); }} aria-label="Reset the lift">↺</button>
+          </div>
+          <p style={{ margin: 0, fontSize: 13.5 }} data-testid="scan-log">Stopped at: {log.length ? log.join(", ") : "nowhere yet"}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
