@@ -24,6 +24,7 @@ import { kvStore } from "./lld/kv-store";
 import { vendingMachine } from "./lld/vending-machine";
 import { movieBooking } from "./lld/movie-booking";
 import { elevator } from "./lld/elevator";
+import { orderBook } from "./lld/order-book";
 import { urlShortenerLab } from "./hld/url-shortener";
 import { distributedRateLimiterLab } from "./hld/distributed-rate-limiter";
 import { notificationSystemLab } from "./hld/notification-system";
@@ -38,7 +39,7 @@ export const problems: Problem[] = [
   busiestStretch, riderBonus, uniqueDishes, surgeZones, coverMenu, peakLoad, reviewCalmStretch,
   // Chapter 10 · Prefix sums
   rangeTotals, netStock, othersOutput,
-  // Low-level design · chapters 14–17, 19–21 and 25
+  // Low-level design · chapters 14–17, 19–21, 25 and 28
   parkingLot,
   splitwise,
   elevator,
@@ -47,6 +48,7 @@ export const problems: Problem[] = [
   lruLfu,
   vendingMachine,
   kvStore,
+  orderBook,
   // System design · chapters 22, 24, 25 and 26
   urlShortenerLab,
   distributedRateLimiterLab,

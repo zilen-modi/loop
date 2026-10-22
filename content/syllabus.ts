@@ -140,7 +140,7 @@ export const books: Book[] = [
           ch(25, "Key-value store with TTL and transactions", { slug: "kv-store", available: true }),
           ch(26, "Task scheduler with retries"),
           ch(27, "Cart, inventory and coupons"),
-          ch(28, "Stock exchange order book"),
+          ch(28, "Stock exchange order book", { slug: "order-book", available: true }),
           ch(29, "File system and text editor"),
         ],
       },

@@ -1,0 +1,109 @@
+<ChapterHead kicker="Book 2 · Classic builds · Chapter 28" title="Stock exchange order book" concept="price-time" meta="About 20 minutes of reading · one 90-minute build" />
+
+<Story when="Tuesday, 10:00 am">
+Tiffin's buyers and the cardamom growers agree prices on a group chat. Two growers offer the same price, and the one whose message Asha scrolled to first gets the deal; the other complains, rightly. A buyer offers 1,450 and a grower asks 1,400, and nobody can agree what price they actually traded at. The team decides to stop negotiating by message and build a tiny exchange instead.
+</Story>
+
+An order book is the classic "build an exchange" round, asked at trading firms, fintechs and anywhere interviewers want to see a data structure chosen for a reason. The rules fit on a card, but they're exact, and every one of them shows up in the tests: who trades first, at what price, and what happens to what's left.
+
+## Questions to ask first
+
+- Limit orders only, or market orders too? (Both. A market order takes what's there and never rests.)
+- Who goes first at the same price? (Whoever arrived first.)
+- At what price does a trade happen? (The resting order's price.)
+- Can an order be partly filled? (Yes, and what's left keeps its place.)
+- One instrument or many? (One. Many is a follow-up: one book per instrument.)
+
+## The model
+
+The book has two sides. **Bids** are resting buys, best (highest) first. **Asks** are resting sells, best (lowest) first. When the best bid is below the best ask, nothing can trade; the gap between them is the *spread*.
+
+A new order is matched against the other side under <Term id="price-time">price-time priority</Term>:
+
+1. Is the best opposite price acceptable? For a buy, is the best ask at or below my limit? If not, stop.
+2. Trade with the **first** order at that price, at **its** price, for the smaller of the two quantities.
+3. If my order still has quantity left, go back to step 1.
+4. Whatever's left of a limit order rests in the book. Whatever's left of a market order is cancelled.
+
+<BookLadder />
+
+<Checkpoint id="ob-match" />
+
+## The key decision: the data structure
+
+Two questions are asked on every single trade: *what's the best price?* and *who's first at that price?* Scanning a list of every resting order answers both, slowly. The bench's opening-bell scenario (20,000 resting orders, then 20,000 market orders) takes that version about seven times past the time limit.
+
+The standard answer, per side:
+
+- A **map from price to a queue** of orders, oldest first. The front of the queue is first in line.
+- The **prices present, kept sorted**, best first. The best price is the first element.
+- A **map from order id to the order**, so cancel goes straight to it.
+
+Keeping prices sorted can be a sorted array (simple, and fast while there are few price levels), a balanced tree or a heap. Real engines often use an array indexed by price tick, because prices cluster in a narrow band. Say which you chose and why.
+
+## Trades happen at the resting price
+
+The order that was waiting set the price; the newcomer accepted it. So a buy at 1,450 meeting a resting sell at 1,400 trades at 1,400, and a sell at 1,400 meeting a resting buy at 1,450 trades at 1,450. This isn't a convention you can choose; tests will check it.
+
+<Checkpoint id="ob-sweep" />
+
+## Invalid input changes nothing
+
+A repeated id, a side that isn't buy or sell, a price of 0 or 100.5, a time earlier than the last one: each is an error, and the book, the clock and the set of used ids are exactly as they were. The trap is recording the id or moving the clock *before* checking the price. Validate everything, then change anything.
+
+## The extension
+
+**Modify.** Shrinking an order keeps its place in the queue, because it doesn't hurt anyone behind it. Growing one sends it to the back, as if it had just arrived, or traders would rest a tiny order early and grow it later to jump the queue.
+
+**Icebergs.** A big buyer doesn't want to show 2,000 kilos, so it shows 100 at a time. When the shown part trades, the next 100 appear at the **back** of the queue: the hidden quantity never had priority. An incoming iceberg trades its whole size first; only what rests is hidden.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Stop orders." They wait outside the book and become market orders when the last trade price crosses a trigger.
+- "Immediate-or-cancel and fill-or-kill." Trade what you can and cancel the rest, or trade all of it or nothing.
+- "Self-trade prevention." A firm's buy shouldn't match its own sell.
+- "Many instruments, at scale." One book per instrument, each matched by a single thread in arrival order, which is what makes results deterministic; scale by spreading instruments across machines.
+
+Traps that cost people the round:
+
+- Trading at the incoming order's price, or the midpoint.
+- Sorting the whole book on every order.
+- Forgetting to remove empty price levels, so the "best price" has no orders.
+- Letting a partly filled order lose its place, or a grown one keep it.
+
+<PageBreak />
+
+## Your turn
+
+<ProblemLadder chapter="order-book" />
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how an incoming order is matched, and what structure makes it fast."
+  model="An incoming order trades against the other side while the best opposite price is acceptable: best price first, and the earliest order at that price first, at the resting order's price, for the smaller quantity; what's left of a limit order rests and what's left of a market order is cancelled. Each side keeps a map from price to a queue of orders plus the prices in sorted order, so the best price and the first in line are found without scanning."
+  points={["Best price first", "Earliest at the same price", "Trade at the resting price", "Limit leftovers rest, market leftovers are cancelled", "Price → queue, plus sorted prices"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "What is price-time priority?", a: "The best price trades first; at the same price, the order that arrived first trades first." },
+    { q: "At what price does a trade happen?", a: "The resting order's price: it was there first and set it." },
+    { q: "What structure answers 'best price' and 'first in line' quickly?", a: "Per side, a map from price to a FIFO queue, plus the prices kept sorted, best first, and a map from id to order for cancels." },
+    { q: "Why does growing an order lose its place, but shrinking keeps it?", a: "Shrinking harms nobody behind it; growing would let traders jump the queue." },
+    { q: "Where does an iceberg's next shown part go?", a: "To the back of its price's queue: hidden quantity never had priority." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Wikipedia: order book", href: "https://en.wikipedia.org/wiki/Order_book" },
+    { label: "Wikipedia: order matching system", href: "https://en.wikipedia.org/wiki/Order_matching_system" },
+    { label: "Wikipedia: iceberg order", href: "https://en.wikipedia.org/wiki/Iceberg_order" },
+  ]}
+/>

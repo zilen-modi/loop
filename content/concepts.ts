@@ -4,7 +4,7 @@
 export type Concept = {
   id: string;
   term: string;
-  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen" | "Workflow" | "Ticket" | "ArrowUpDown";
+  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen" | "Workflow" | "Ticket" | "ArrowUpDown" | "CandlestickChart";
   hue: "teal" | "violet" | "amber" | "rose" | "blue";
   definition: string;
   appearsIn: string[];
@@ -218,5 +218,13 @@ export const concepts: Record<string, Concept> = {
     hue: "teal",
     definition: "Serve requests by sweeping in one direction while any lie ahead, then reversing. Fair and simple: nobody waits more than about two sweeps. Also used to schedule disk heads.",
     appearsIn: ["LLD 16 · Elevator system", "OS fundamentals · Disk scheduling"],
+  },
+  "price-time": {
+    id: "price-time",
+    term: "Price-time priority",
+    glyph: "CandlestickChart",
+    hue: "amber",
+    definition: "How an exchange decides who trades first: the best price wins, and among orders at the same price, the one that arrived first. Trades happen at the price of the order that was already resting.",
+    appearsIn: ["LLD 28 · Stock exchange order book", "HLD · Low-latency systems"],
   },
 };

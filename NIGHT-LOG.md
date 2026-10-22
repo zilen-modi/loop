@@ -6,7 +6,7 @@ Legend: ✅ done · ⚠️ done with caveats · ⛔ stuck (partial work on a `wi
 
 Every item has to pass the same gate before it counts as done: tsc, lint, `check:content`, build, its own browser test, the regression suites, the responsive sweep and a screenshot review.
 
-HLD progress: 6 / 48 chapters. LLD progress: 7 / 38 chapters.
+HLD progress: 6 / 48 chapters. LLD progress: 10 / 38 chapters.
 
 | # | Item | Status | Commit | Notes |
 |---|---|---|---|---|
@@ -23,3 +23,9 @@ HLD progress: 6 / 48 chapters. LLD progress: 7 / 38 chapters.
 | 16 | HLD 24 Distributed rate-limiter lab and chapter | ✅ | 9b335e3 | 9 checks; 5 wrong designs each fail their intended check (in `check:content` and in the browser). Added `wired()` to the graph so "store down" and "never linked" are told apart. |
 | 17 | HLD 25 Notification-system lab and chapter | ✅ | 519b17b | 9 checks including a provider outage; drill now supports "tolerated" pauses (deliveries wait in the queue). |
 | 18 | HLD 26 News-feed lab and chapter | ✅ | bb54b71 | Pull, push and hybrid each fail or pass for the right reason. The failure check caught a flaw in my own reference (2 LBs → needs 3). |
+| 19 | Today view on the home page | ✅ | 68d1bc2 | Re-solves due, review cards due and "continue reading" across the three books, with empty states. 12/12 browser checks with seeded progress. |
+| 20 | Final pass: accessibility, bundle, README | ✅ | e1d93f9 | Lazy-loaded problem screens: `/problems/[id]` first load 357 → 154 kB. Four colour tokens adjusted so every theme meets WCAG AA. Canvas reachable by keyboard (6/6 a11y checks). README explains adding a build and a lab. Full responsive sweep: 1376/1376 page states. |
+| 21 | LLD 21 Vending machine build and chapter | ✅ | f0616c8 | State pattern, escrow and greedy change from the coins held; 5 mutants caught. The checks caught my scenario expecting ₹1 change from a machine with no ₹1 coins. |
+| 22 | LLD 17 Movie-ticket booking build and chapter | ✅ | f0616c8 | All-or-nothing holds that expire by time, with no timers; races staged call by call; 5 mutants caught; SeatRace figure. |
+| 23 | LLD 16 Elevator build and chapter | ✅ | f0616c8 | SCAN movement and a cost-based dispatcher in ticks; out-of-service cars hand their hall calls back; 5 mutants caught. Items 21–23 are in one commit because they share the registration files. |
+| 24 | LLD 28 Stock-exchange order book build and chapter | ✅ | (this commit) | Price-time matching, market orders, cancel, depth; extension: modify (keep or lose your place) and icebergs. 13 scenarios + 3 generated, including a 40,000-call opening bell; 7 mutants caught. A slow variant that scans the whole book is correct but 7.5× over the limit. JS and Python 16/16 in the browser; BookLadder figure; 96/96 responsive states. |

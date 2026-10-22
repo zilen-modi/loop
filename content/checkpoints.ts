@@ -96,6 +96,19 @@ function greedyChange(amount: number, box: Record<number, number>) {
   return amount === 0 ? out : null;
 }
 
+/** A buy against resting sells listed in arrival order: [price, qty] fills, best price first, then earliest. */
+function buyAgainst(sells: [number, number][], qty: number, limit: number | null) {
+  const book = sells.map(([price, q], seq) => ({ price, q, seq })).sort((a, b) => a.price - b.price || a.seq - b.seq);
+  const fills: [number, number][] = [];
+  for (const o of book) {
+    if (qty === 0 || (limit !== null && o.price > limit)) break;
+    const take = Math.min(qty, o.q);
+    fills.push([o.price, take]);
+    qty -= take;
+  }
+  return fills;
+}
+
 /** One lift, SCAN: the order it reaches its stops from a floor and direction. */
 function scanOrder(floor: number, dir: "up" | "down", stops: number[]) {
   const left = new Set(stops);
@@ -408,6 +421,23 @@ export const checkpoints: Record<string, Checkpoint> = {
       return car1 < car2 ? "Car 1" : "Car 2";
     },
     explain: "Car 1 is heading up, away from a Down call, so it would go to 10 and come back: 8 + 4 = 12 floors. Idle car 2 is 6 floors away, so it answers. Being close isn't enough; the direction matters.",
+  },
+  "ob-match": {
+    id: "ob-match",
+    prompt: "Resting sells, in the order they arrived: 101 × 5, then 100 × 3, then 100 × 4. A buy for 6 at 101 arrives. What trades happen?",
+    options: ["5 at 101, then 1 at 100", "3 at 100, then 3 at 100", "4 at 100, then 2 at 100", "6 at 101"],
+    compute: () => buyAgainst([[101, 5], [100, 3], [100, 4]], 6, 101).map(([p, q]) => `${q} at ${p}`).join(", then "),
+    explain: "Price comes first: 100 beats 101 for a buyer, although the 101 order arrived first. Between the two orders at 100, time decides: the 3 kilos that arrived earlier trade first, then 3 of the later 4. The 101 order isn't touched.",
+  },
+  "ob-sweep": {
+    id: "ob-sweep",
+    prompt: "Resting sells: 102 × 4, 103 × 6 and 110 × 20. A market buy for 10 arrives. What's the average price it pays per kilo?",
+    options: ["102", "102.6", "103", "110"],
+    compute: () => {
+      const fills = buyAgainst([[102, 4], [103, 6], [110, 20]], 10, null);
+      return String(fills.reduce((t, [p, q]) => t + p * q, 0) / fills.reduce((t, [, q]) => t + q, 0));
+    },
+    explain: "A market order walks the book from the best price: 4 at 102, then 6 at 103. That's 408 + 618 = 1,026 for 10 kilos, 102.6 each. A bigger order would reach 110, which is why large orders are split up or sent with a limit.",
   },
 };
 

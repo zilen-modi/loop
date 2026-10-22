@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Bike, Car, RotateCcw, Truck } from "lucide-react";
 
 // Interactive figures for the LLD build chapters.
@@ -450,6 +450,87 @@ export function ScanLift() {
           <p style={{ margin: 0, fontSize: 13.5 }} data-testid="scan-log">Stopped at: {log.length ? log.join(", ") : "nowhere yet"}</p>
         </div>
       </div>
+    </div>
+  );
+}
+
+type BookOrder = { id: string; side: "buy" | "sell"; price: number; qty: number };
+
+const openingBook: BookOrder[] = [
+  { id: "S1", side: "sell", price: 103, qty: 6 },
+  { id: "S2", side: "sell", price: 101, qty: 5 },
+  { id: "S3", side: "sell", price: 102, qty: 4 },
+  { id: "S4", side: "sell", price: 101, qty: 3 },
+  { id: "B1", side: "buy", price: 99, qty: 6 },
+  { id: "B2", side: "buy", price: 100, qty: 4 },
+  { id: "B3", side: "buy", price: 99, qty: 2 },
+  { id: "B4", side: "buy", price: 98, qty: 8 },
+];
+
+/** A small order book: send orders and watch them match by price, then time. */
+export function BookLadder() {
+  const [book, setBook] = useState<BookOrder[]>(openingBook);
+  const [next, setNext] = useState(1);
+  const [line, setLine] = useState("The book before the open. Send an order.");
+  const send = (side: "buy" | "sell", qty: number, limit: number | null) => {
+    const id = `${side === "buy" ? "N" : "M"}${next}`;
+    const rest = book.map((o) => ({ ...o }));
+    const fills: string[] = [];
+    let left = qty;
+    while (left > 0) {
+      // the array keeps arrival order, so the first order at the best price is first in line
+      const other = rest.filter((o) => o.side !== side && o.qty > 0);
+      if (!other.length) break;
+      const best = side === "buy" ? Math.min(...other.map((o) => o.price)) : Math.max(...other.map((o) => o.price));
+      if (limit !== null && (side === "buy" ? best > limit : best < limit)) break;
+      const front = other.find((o) => o.price === best)!;
+      const q = Math.min(left, front.qty);
+      fills.push(`${q} at ${best} from ${front.id}`);
+      front.qty -= q;
+      left -= q;
+    }
+    const after = rest.filter((o) => o.qty > 0);
+    if (left > 0 && limit !== null) after.push({ id, side, price: limit, qty: left });
+    setBook(after);
+    setNext(next + 1);
+    const what = `${id}: ${side} ${qty}${limit === null ? " at market" : ` at ${limit}`}`;
+    const tail = left === 0 ? "Filled." : limit === null ? `${left} left over, cancelled.` : `${left} rest${left === qty ? "s" : ""} at ${limit}.`;
+    setLine(`${what}. ${fills.length ? `Traded ${fills.join(", ")}.` : "No trade."} ${tail}`);
+  };
+  const prices = [...new Set(book.map((o) => o.price))].sort((a, b) => b - a);
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · price, then time</p>
+      <div style={{ display: "grid", gap: 3, marginBottom: 10 }} aria-label="The book, highest price first">
+        {prices.map((p, i) => {
+          const here = book.filter((o) => o.price === p);
+          const side = here[0].side;
+          const firstBid = side === "buy" && (i === 0 || book.find((o) => o.price === prices[i - 1])!.side === "sell");
+          return (
+            <Fragment key={p}>
+              {firstBid && i > 0 && <p style={{ margin: "2px 0", fontSize: 12, color: "var(--ink-3)", textAlign: "center" }} data-testid="book-spread">spread {prices[i - 1] - p}</p>}
+              <div data-price={p} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 34, padding: "4px 8px", borderRadius: 7, background: side === "sell" ? "var(--warn-soft)" : "var(--accent-soft)" }}>
+                <span style={{ width: 70, fontSize: 12, color: "var(--ink-2)" }}>{side === "sell" ? "sell" : "buy"} {p}</span>
+                <span style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                  {here.map((o) => (
+                    <span key={o.id} style={{ font: "500 12px var(--mono)", padding: "2px 7px", borderRadius: 5, border: `1px solid ${side === "sell" ? "var(--warn)" : "var(--accent)"}`, background: "var(--page)" }}>
+                      {o.id} · {o.qty}
+                    </span>
+                  ))}
+                </span>
+              </div>
+            </Fragment>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+        <button className="btn small" onClick={() => send("buy", 7, 101)}>Buy 7 at 101</button>
+        <button className="btn small" onClick={() => send("sell", 9, 99)}>Sell 9 at 99</button>
+        <button className="btn small" onClick={() => send("buy", 10, null)}>Market buy 10</button>
+        <button className="btn small" onClick={() => send("sell", 3, 100)}>Sell 3 at 100</button>
+        <button className="btn small" onClick={() => { setBook(openingBook); setNext(1); setLine("Back to the opening book."); }} aria-label="Reset the book">↺</button>
+      </div>
+      <p role="status" style={{ margin: 0, fontSize: 13.5, color: "var(--ink-2)" }} data-testid="book-line">{line}</p>
     </div>
   );
 }
