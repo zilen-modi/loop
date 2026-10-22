@@ -49,7 +49,7 @@ export default function BuildBench({ problem: p, from }: { problem: BuildProblem
   }
 
   async function execute(kind: "run" | "submit") {
-    const cases = buildScenarioCases(p, kind, stage);
+    const cases = buildScenarioCases(p, kind, stage, lang);
     setTab("code");
     setRunning(lang === "py" ? "Starting Python…" : "Running…");
     const out = await runCases(

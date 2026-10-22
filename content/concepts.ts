@@ -4,7 +4,7 @@
 export type Concept = {
   id: string;
   term: string;
-  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking";
+  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle";
   hue: "teal" | "violet" | "amber" | "rose" | "blue";
   definition: string;
   appearsIn: string[];
@@ -146,5 +146,13 @@ export const concepts: Record<string, Concept> = {
     hue: "violet",
     definition: "The exact order in which a system hands out a scarce resource (a slot, a seat, a driver). Writing it down as a precise order makes it testable and easy to change.",
     appearsIn: ["LLD 14 · Parking lot", "LLD 17 · Movie ticket booking", "LLD 23 · Ride sharing"],
+  },
+  "eviction-policy": {
+    id: "eviction-policy",
+    term: "Eviction policy",
+    glyph: "Recycle",
+    hue: "blue",
+    definition: "The rule a full cache uses to choose what to drop. LRU drops whatever was used longest ago; LFU drops whatever was used the fewest times.",
+    appearsIn: ["LLD 20 · LRU and LFU cache", "HLD 6 · Caching", "DSA 36 · Designing data structures"],
   },
 };

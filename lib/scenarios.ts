@@ -1,5 +1,8 @@
 import { deepEqual, mulberry32, preview, snake, type BuildProblem, type Lang, type Step } from "@/content/problem-types";
 
+/** Python runs in the browser through WebAssembly, several times slower than JavaScript. */
+export const PY_SLOWER = 4;
+
 // Machine-coding scenarios: each is a list of calls on a fresh instance of the class under test.
 
 export type StepOutcome = { ok: true; got: unknown } | { threw: true; message: string };
@@ -38,15 +41,21 @@ export function withExpectations(p: BuildProblem, steps: Step[]): Step[] {
 const stages = (stage: "core" | "extension") => (stage === "core" ? ["core"] : ["core", "extension"]);
 
 /** Run = the visible scenarios for this stage. Submit = all scenarios up to this stage, generated ones included. */
-export function buildScenarioCases(p: BuildProblem, mode: "run" | "submit", stage: "core" | "extension"): ScenarioCase[] {
+export function buildScenarioCases(p: BuildProblem, mode: "run" | "submit", stage: "core" | "extension", lang: Lang = "js"): ScenarioCase[] {
   const allowed = stages(stage);
   const hand = p.scenarios
     .filter((s) => allowed.includes(s.stage) && (mode === "submit" || s.visible))
-    .map((s) => ({ name: s.name, stage: s.stage, steps: s.steps, limitMs: SCENARIO_LIMIT_MS }));
+    .map((s) => ({ name: s.name, stage: s.stage, steps: s.steps, limitMs: lang === "py" ? SCENARIO_LIMIT_MS * 2 : SCENARIO_LIMIT_MS }));
   if (mode === "run") return hand;
   const gen = p.generated
     .filter((g) => allowed.includes(g.stage))
-    .map((g, i) => ({ name: g.name, stage: g.stage, steps: withExpectations(p, g.gen(mulberry32(1000 + i))), limitMs: g.limitMs, generated: true }));
+    .map((g, i) => ({
+      name: g.name,
+      stage: g.stage,
+      steps: withExpectations(p, g.gen(mulberry32(1000 + p.generated.indexOf(g)))),
+      limitMs: lang === "py" ? (g.pyLimitMs ?? g.limitMs * PY_SLOWER) : g.limitMs,
+      generated: true,
+    }));
   return [...hand, ...gen];
 }
 

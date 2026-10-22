@@ -87,3 +87,53 @@ export function ParkingBoard() {
     </div>
   );
 }
+
+type Entry = { key: string; uses: number };
+
+/** Use menus and watch which one each policy drops: LRU remembers when, LFU remembers how often. */
+export function EvictionLab() {
+  const [policy, setPolicy] = useState<"lru" | "lfu">("lru");
+  const [items, setItems] = useState<Entry[]>([]); // least to most recently used
+  const [line, setLine] = useState("Capacity 3. Use menus and watch what gets dropped.");
+  function use(key: string) {
+    const hit = items.find((e) => e.key === key);
+    let next = items.filter((e) => e.key !== key);
+    let msg = hit ? `${key} is a hit: now the most recent, ${hit.uses + 1} uses.` : `${key} is a miss: added.`;
+    if (!hit && next.length >= 3) {
+      const victim = policy === "lru" ? next[0] : next.reduce((best, e) => (e.uses < best.uses ? e : best), next[0]);
+      next = next.filter((e) => e !== victim);
+      msg = `${key} is a miss and the cache is full: ${victim.key} is dropped (${policy === "lru" ? "least recently used" : `fewest uses (${victim.uses})${next.some((e) => e.uses === victim.uses) ? ", and older than the others with as few" : ""}`}).`;
+    }
+    setItems([...next, { key, uses: (hit?.uses ?? 0) + 1 }]);
+    setLine(msg);
+  }
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · a cache of 3 menus</p>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
+        <div className="seg" role="group" aria-label="Eviction policy">
+          {(["lru", "lfu"] as const).map((p) => (
+            <button key={p} aria-pressed={policy === p} onClick={() => { setPolicy(p); setItems([]); setLine(`${p.toUpperCase()}: empty again.`); }}>{p.toUpperCase()}</button>
+          ))}
+        </div>
+        {["A", "B", "C", "D", "E"].map((k) => (
+          <button key={k} className="btn small" onClick={() => use(k)} aria-label={`Use menu ${k}`}>{k}</button>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 6, alignItems: "center", minHeight: 52 }} aria-label="Cache contents, oldest use first">
+        <span className="kicker" style={{ margin: 0, width: 54 }}>oldest</span>
+        {items.map((e, i) => (
+          <span key={e.key} data-entry={e.key} style={{ display: "grid", placeItems: "center", width: 52, height: 48, borderRadius: 8, border: "1.5px solid var(--accent)", background: i === items.length - 1 ? "var(--accent-soft)" : "transparent", font: "600 15px var(--sans)" }}>
+            {e.key}
+            <span style={{ font: "400 12px var(--sans)", color: "var(--ink-3)" }}>{e.uses}×</span>
+          </span>
+        ))}
+        {Array.from({ length: 3 - items.length }, (_, i) => (
+          <span key={`empty${i}`} style={{ width: 52, height: 48, borderRadius: 8, border: "1.5px dashed var(--rule-2)" }} aria-hidden="true" />
+        ))}
+        <span className="kicker" style={{ margin: 0 }}>newest</span>
+      </div>
+      <p role="status" style={{ margin: "8px 0 0", fontSize: 13.5, color: "var(--ink-2)" }} data-testid="cache-line">{line}</p>
+    </div>
+  );
+}

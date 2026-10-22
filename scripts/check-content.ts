@@ -183,6 +183,22 @@ function checkBuild(p: BuildProblem) {
     if (caught) ok(`bug "${m.name}" is caught by "${caught.name}"`);
     else fail(`bug "${m.name}" passes every scenario: the tests have a gap`);
   }
+  // A correct but slow version must give the right answers and still miss a time limit clearly.
+  if (p.slowVariant) {
+    const Slow = compileClass(p.slowVariant.js, p.className);
+    let worst = { name: "", ratio: 0, ms: 0 };
+    const wrong: string[] = [];
+    for (const c of cases.filter((x) => x.stage === "core")) {
+      const t0 = performance.now();
+      const got = runSteps(Slow, c.steps);
+      const ms = performance.now() - t0;
+      if (!judgeScenario(c, { kind: "ok", got, ms: 0 }).pass) wrong.push(c.name);
+      if (ms / c.limitMs > worst.ratio) worst = { name: c.name, ratio: ms / c.limitMs, ms };
+    }
+    if (wrong.length) fail(`slow variant "${p.slowVariant.name}" gives wrong answers on: ${wrong.join(", ")}`);
+    else if (worst.ratio < 1.5) fail(`slow variant "${p.slowVariant.name}" isn't clearly too slow: ${Math.round(worst.ms)} ms on "${worst.name}" (${worst.ratio.toFixed(2)}× the limit)`);
+    else ok(`slow variant "${p.slowVariant.name}" is correct but takes ${Math.round(worst.ms)} ms on "${worst.name}", ${worst.ratio.toFixed(1)}× the limit`);
+  }
 }
 
 function checkCatalog() {

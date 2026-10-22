@@ -42,6 +42,25 @@ function allocate(floors: [string, Record<string, number>][], arrivals: string[]
   });
 }
 
+/** Replays cache uses and returns the evicted keys, for LRU or LFU (ties: least recently used). */
+function evictions(capacity: number, uses: string[], policy: "lru" | "lfu") {
+  const order: string[] = []; // least to most recent
+  const count: Record<string, number> = {};
+  const out: string[] = [];
+  for (const k of uses) {
+    if (k in count) order.splice(order.indexOf(k), 1);
+    else if (order.length >= capacity) {
+      const victim = policy === "lru" ? order[0] : order.reduce((best, x) => (count[x] < count[best] ? x : best), order[0]);
+      order.splice(order.indexOf(victim), 1);
+      delete count[victim];
+      out.push(victim);
+    }
+    order.push(k);
+    count[k] = (count[k] ?? 0) + 1;
+  }
+  return out;
+}
+
 const approx = (x: number) => {
   const p = 10 ** (Math.floor(Math.log10(x)) - 1);
   return `About ${(Math.round(x / p) * p).toLocaleString("en-US")}`;
@@ -167,6 +186,20 @@ export const checkpoints: Record<string, Checkpoint> = {
     options: ["₹100", "₹110", "₹150", "₹200"],
     compute: () => `₹${Math.max(1, Math.ceil((12 * 60 + 20 - (10 * 60 + 10)) / 60)) * 50}`,
     explain: "130 minutes is 2 hours and 10 minutes, so 3 started hours: 3 × ₹50 = ₹150. Charging per minute would give about ₹108, which is why the rule has to be written down before you code.",
+  },
+  "cache-lru": {
+    id: "cache-lru",
+    prompt: "An LRU cache holds 3 menus. Menus are used in this order: A, B, C, A, D, B, E. Which menus get dropped, in order?",
+    options: ["A, B, C", "B, C, A", "B, A, C", "C, A, B"],
+    compute: () => evictions(3, ["A", "B", "C", "A", "D", "B", "E"], "lru").join(", "),
+    explain: "After A is used again, the order from oldest to newest is B, C, A. D arrives: B goes. B comes back: now C is oldest, so C goes. E arrives: the order is A, D, B, so A goes, even though it was used twice. LRU only remembers when, not how often.",
+  },
+  "cache-lfu": {
+    id: "cache-lfu",
+    prompt: "Same uses, A, B, C, A, D, B, E, but the cache is LFU (ties go to the least recently used). Which menus get dropped, in order?",
+    options: ["B, C, A", "C, D, B", "B, C, D", "B, D, C"],
+    compute: () => evictions(3, ["A", "B", "C", "A", "D", "B", "E"], "lfu").join(", "),
+    explain: "A has 2 uses after its second use, so LFU protects it. D arrives: B and C have 1 use each, B is older, so B goes. B comes back: C and D have 1 use, C is older, so C goes. E arrives: D and B have 1 use, D is older, so D goes. A is never dropped.",
   },
 };
 

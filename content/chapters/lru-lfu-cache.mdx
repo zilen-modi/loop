@@ -1,0 +1,112 @@
+<ChapterHead kicker="Book 2 · Classic builds · Chapter 20" title="LRU and LFU cache" concept="eviction-policy" meta="About 20 minutes of reading · one 60-minute build" />
+
+<Story when="Saturday, 7 pm">
+Saturday dinner. Every restaurant page on Tiffin fetches its menu from a service that takes 300 ms to answer. A small in-memory cache cut that to under a millisecond for most pages, until it filled up. The first version dropped a random menu when full, and the most popular restaurant in the city kept falling out of the cache at peak.
+</Story>
+
+When a cache is full, something has to go. The rule that picks it is the <Term id="eviction-policy">eviction policy</Term>, and two are asked about constantly: drop whatever was used **least recently** (LRU), or whatever was used **least often** (LFU). Both appear as LeetCode problems, as coding-round questions and as 60-minute machine-coding builds, and both have a catch: every operation must take constant time.
+
+## The two policies, side by side
+
+Use the menus below in any order and watch what each policy drops. Then try the sequence A, B, C, A, D, B, E under both.
+
+<EvictionLab />
+
+LRU remembers **when** something was last used. A menu used a hundred times an hour ago loses to one used once a minute ago. LFU remembers **how often**, so a popular menu survives a burst of one-off visits, but yesterday's favourite can linger long after it stops being popular.
+
+<Checkpoint id="cache-lru" />
+
+<Checkpoint id="cache-lfu" />
+
+## Why O(1) is the whole problem
+
+A first attempt usually keeps the keys in a list in recency order. Every get moves its key to the end: find it (O(n)), remove it from the middle (O(n)), append it. With 50,000 menus that's tens of thousands of steps per lookup. The bench's scale scenario fills a 50,000-item cache, then runs 100,000 more operations against a time limit. An array version gives the right answers and still misses the limit by nearly 2×.
+
+Each operation needs two things instantly:
+
+1. **The value for a key.** A <Term id="hash-map">hash map</Term> gives that.
+2. **The least recently used key, and a way to move any key to "most recent".** A list does that only if you can unlink a node from the middle in O(1): a **doubly linked list**, with the hash map pointing at each key's node.
+
+That pairing, a hash map to nodes of a doubly linked list, is the classic answer. Many languages already have it built in. A JavaScript `Map` keeps keys in insertion order, so deleting a key and setting it again moves it to the end. Python's `OrderedDict` has `move_to_end`. Use them in a timed round, and say what's underneath.
+
+```js
+get(key) {
+  if (!this.values.has(key)) return null;
+  const value = this.values.get(key);
+  this.values.delete(key);      // unlink…
+  this.values.set(key, value);  // …and append: now the most recent
+  return value;
+}
+// When full, the least recently used key is the first one:
+const oldest = this.values.keys().next().value;
+```
+
+## LFU without scanning
+
+LFU needs the key with the **fewest uses**, and among those the **least recent**. Scanning for the minimum is O(n) again. The trick is to keep keys in a bucket per use count, each bucket in recency order, and to remember the smallest count present:
+
+- A new key goes into bucket 1, and the smallest count becomes 1.
+- A use moves a key from bucket n to the end of bucket n + 1. If bucket n is now empty and it was the smallest, the smallest becomes n + 1.
+- Eviction takes the first key of the smallest bucket.
+
+The smallest count only ever moves up by one on a use, or back to 1 on a new key, so it never needs a search. The one exception is shrinking the cache, which can empty the smallest bucket with no new key to follow. That's rare, so a one-off scan of the buckets is fine.
+
+## Details the hidden tests check
+
+- **Falsy values.** A cached 0, empty string or false is a hit. Writing `if (!cache.get(k))` turns them into misses.
+- **Updates are uses.** Putting a new value for an existing key refreshes its recency (and its count, under LFU), and never evicts anything.
+- **Misses change nothing.** A get for a missing key mustn't touch the order.
+- **Shrinking** drops keys by the current policy until the cache fits, and reports them in order.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Write the doubly linked list yourself." Sentinel head and tail nodes remove all the edge cases: insert after head, unlink with two pointer swaps.
+- "Add a time-to-live." Store an expiry per key; check it on get, and evict expired keys lazily.
+- "Make it thread-safe." A lock around each operation works; under contention, shard the cache by key so each shard has its own lock.
+- "LFU never forgets." Real caches age their counts, halving them periodically or counting over a window (TinyLFU), so old favourites can fall out.
+
+Traps that cost people the round:
+
+- An array or list with indexOf: right answers, wrong complexity.
+- Two structures that drift apart: updating the map but not the order, or vice versa. Do both in one helper.
+- Scanning for the minimum count on every eviction in LFU.
+- Treating a stored 0 as a miss.
+
+<PageBreak />
+
+## Your turn
+
+<ProblemLadder chapter="lru-lfu-cache" />
+
+The build gives you 60 minutes: LRU first, then the interviewer switches the policy to LFU. The hidden scale scenario is the real test, so think about complexity before you type.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how an LRU cache gets every operation to O(1), and what LFU adds."
+  model="A hash map finds a key's value instantly, and a recency-ordered list that can unlink from the middle in O(1) (a doubly linked list, or an insertion-ordered map) keeps the least recently used key at the front, so every use moves its key to the back. LFU also keeps keys in buckets by use count, each in recency order, plus the smallest count present, so eviction takes the oldest key of the smallest bucket without scanning."
+  points={["Hash map for values", "A recency list you can unlink from in O(1)", "Every use moves the key to the most-recent end", "LFU: buckets per use count, each in recency order", "Track the smallest count instead of scanning"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "What two structures make LRU O(1)?", a: "A hash map from key to node, and a doubly linked list in recency order (or a language map that keeps insertion order)." },
+    { q: "How does LFU find the key to drop without scanning?", a: "Keys sit in buckets by use count, each in recency order, and the cache tracks the smallest count present. It drops the oldest key in that bucket." },
+    { q: "Why does the smallest count never need a search on a use?", a: "A use moves a key from n to n + 1, so the smallest count can only become n + 1; a new key resets it to 1." },
+    { q: "Which value bug do hidden tests love?", a: "Treating a cached 0, empty string or false as a miss by testing the value instead of checking whether the key exists." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "LeetCode 146: LRU Cache", href: "https://leetcode.com/problems/lru-cache/" },
+    { label: "LeetCode 460: LFU Cache", href: "https://leetcode.com/problems/lfu-cache/" },
+    { label: "Shah, Mitra and Matani: An O(1) algorithm for implementing the LFU cache eviction scheme", href: "http://dhruvbird.com/lfu.pdf" },
+    { label: "Einziger, Friedman and Manes: TinyLFU, a highly efficient cache admission policy", href: "https://arxiv.org/abs/1512.00727" },
+  ]}
+/>

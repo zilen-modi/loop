@@ -18,6 +18,7 @@ import { netStock } from "./prefix-sums/net-stock";
 import { othersOutput } from "./prefix-sums/others-output";
 import { splitwise } from "./lld/splitwise";
 import { parkingLot } from "./lld/parking-lot";
+import { lruLfu } from "./lld/lru-lfu";
 import { urlShortenerLab } from "./hld/url-shortener";
 
 export const problems: Problem[] = [
@@ -29,9 +30,10 @@ export const problems: Problem[] = [
   busiestStretch, riderBonus, uniqueDishes, surgeZones, coverMenu, peakLoad, reviewCalmStretch,
   // Chapter 10 · Prefix sums
   rangeTotals, netStock, othersOutput,
-  // Low-level design · chapters 14 and 15
+  // Low-level design · chapters 14, 15 and 20
   parkingLot,
   splitwise,
+  lruLfu,
   // System design · chapter 22
   urlShortenerLab,
 ];

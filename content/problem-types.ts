@@ -86,12 +86,14 @@ export type BuildProblem = {
   /** Hand-written scenarios with explicit expectations (checked against both reference solutions). */
   scenarios: Scenario[];
   /** Large generated scenarios; expected values come from the JS reference. */
-  generated: { name: string; stage: "core" | "extension"; limitMs: number; gen: (rand: Rand) => Step[] }[];
+  generated: { name: string; stage: "core" | "extension"; limitMs: number; pyLimitMs?: number; gen: (rand: Rand) => Step[] }[];
   hints: [string, string, string];
   review: string[];
   walkthrough: { design: string; classes: { name: string; role: string }[]; tradeoffs: string[]; followUps: string[] };
   /** Plausible bugs, made by editing the JS reference; check-content makes sure each one fails a scenario. */
   mutants?: { name: string; from: string; to: string }[];
+  /** A correct but slow JS version; check-content makes sure the core's timed scenarios reject it. */
+  slowVariant?: { name: string; js: string };
 };
 
 /** A system-design lab: build an architecture on the canvas; the simulator and rules score it. */

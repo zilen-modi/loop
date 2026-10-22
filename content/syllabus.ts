@@ -132,7 +132,7 @@ export const books: Book[] = [
           ch(17, "Movie ticket booking"),
           ch(18, "Board games"),
           ch(19, "Rate limiter"),
-          ch(20, "LRU and LFU cache"),
+          ch(20, "LRU and LFU cache", { slug: "lru-lfu-cache", available: true }),
           ch(21, "Vending machine"),
           ch(22, "Food ordering and delivery"),
           ch(23, "Ride sharing"),
