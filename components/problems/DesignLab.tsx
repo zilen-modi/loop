@@ -24,7 +24,9 @@ import { Activity, Check, ChevronLeft, Lightbulb, Lock, Minus, Plus, Trash2, X }
 import type { DesignProblem } from "@/content/problem-types";
 import { designScenarios } from "@/content/designs";
 import { evaluate, type DesignScenario, type Evaluation } from "@/lib/design/evaluate";
-import { catalog, fmtLatency, fmtPct, kindsInPalette, simulate, type Design, type NodeKind } from "@/lib/design/sim";
+import { catalog, kindsInPalette, type NodeKind } from "@/lib/design/catalog";
+import { fmtLatency, fmtPct, simulate } from "@/lib/design/engine";
+import type { Design } from "@/lib/design/graph";
 import { problemsProgress, scheduleSolve, updateProblem } from "@/lib/progress";
 import MiniMarkdown from "@/components/ui/MiniMarkdown";
 import { useMounted } from "@/lib/use-mounted";
@@ -32,7 +34,7 @@ import { useMounted } from "@/lib/use-mounted";
 type BoxData = { kind: NodeKind; count: number };
 type BoxNode = Node<BoxData, "box">;
 
-const DEFAULT_POS: Record<NodeKind, [number, number]> = {
+const DEFAULT_POS: Partial<Record<NodeKind, [number, number]>> = {
   client: [0, 200], cdn: [0, 60], lb: [170, 200], app: [340, 200], cache: [540, 70], sql: [540, 230], replica: [720, 120],
   kv: [720, 230], idgen: [340, 380], queue: [540, 390], worker: [720, 390], analytics: [900, 390],
 };
@@ -103,7 +105,7 @@ function Lab({ problem: p, from }: { problem: DesignProblem; from: string }) {
     [nodes, edges, decisions],
   );
   const key = JSON.stringify([design.nodes.map((n) => [n.kind, n.count]), design.edges, decisions]);
-  const live = useMemo(() => simulate(design, s.traffic), [design, s.traffic]);
+  const live = useMemo(() => simulate(s, design), [design, s]);
   const loads = useMemo(() => Object.fromEntries(Object.entries(live.load).map(([k, v]) => [k, v!.utilization])), [live]);
 
   // Save shortly after each change, and straight away if the page is closed or left first.
@@ -138,7 +140,7 @@ function Lab({ problem: p, from }: { problem: DesignProblem; from: string }) {
 
   function addKind(kind: NodeKind) {
     if (nodes.some((n) => n.id === kind)) return;
-    let [x, y] = DEFAULT_POS[kind];
+    let [x, y] = DEFAULT_POS[kind] ?? [900, 120];
     while (nodes.some((n) => Math.abs(n.position.x - x) < 60 && Math.abs(n.position.y - y) < 40)) [x, y] = [x + 30, y + 30];
     const spec = catalog[kind];
     setNodes((ns) => [...ns.map((n) => ({ ...n, selected: false })), { id: kind, type: "box", position: { x, y }, data: { kind, count: spec.fixedCount ?? 1 }, selected: true }]);
@@ -300,8 +302,8 @@ function Lab({ problem: p, from }: { problem: DesignProblem; from: string }) {
             )}
 
             <div className="lab-metrics" aria-label="Live estimate at peak">
-              <Metric label="Redirect" value={live.read.ok ? fmtLatency(live.read.latencyMs) : "—"} bad={!live.read.ok} />
-              <Metric label="New link" value={live.write.ok ? fmtLatency(live.write.latencyMs) : "—"} bad={!live.write.ok} />
+              <Metric label="Redirect" value={live.flows.redirect.ok ? fmtLatency(live.flows.redirect.latencyMs) : "—"} bad={!live.flows.redirect.ok} />
+              <Metric label="New link" value={live.flows.create.ok ? fmtLatency(live.flows.create.latencyMs) : "—"} bad={!live.flows.create.ok} />
               <Metric label="Busiest" value={live.bottleneck ? `${catalog[live.bottleneck.kind].short} ${fmtPct(live.bottleneck.utilization)}` : "—"} bad={(live.bottleneck?.utilization ?? 0) >= 1} />
               <Metric label="Cost" value={`$${live.costPerMonth.toLocaleString("en-US")}/mo`} />
             </div>
@@ -309,7 +311,7 @@ function Lab({ problem: p, from }: { problem: DesignProblem; from: string }) {
             <div className="results" style={{ paddingTop: 4 }}>
               {!report ? (
                 <p style={{ color: "var(--ink-3)", margin: "6px 0" }}>
-                  Simulate runs your design at peak ({s.traffic.readsPerSec.toLocaleString("en-US")} redirects and {s.traffic.writesPerSec} new links a second), checks every requirement, then knocks out one machine at a time.
+                  Simulate runs your design at peak ({s.trafficLabel(1)}), checks every requirement, then knocks out one machine at a time.
                 </p>
               ) : (
                 <>
@@ -329,13 +331,13 @@ function Lab({ problem: p, from }: { problem: DesignProblem; from: string }) {
                     <>
                       <p className="kicker" style={{ margin: "14px 0 4px" }}>Failure drill</p>
                       {report.ev.failures.map((f) => {
-                        const fine = f.sim.read.ok && f.sim.write.ok;
+                        const fine = f.sim.flows.redirect.ok && f.sim.flows.create.ok;
                         return (
                           <div key={f.kind} className="result-row">
                             <span aria-hidden="true">{fine ? <Check size={15} color="var(--pass)" /> : <X size={15} color="var(--fail)" />}</span>
                             <span>{f.note}</span>
                             <span />
-                            {!fine && <div className="detail">{(!f.sim.read.ok ? f.sim.read.reason : f.sim.write.reason) ?? ""}</div>}
+                            {!fine && <div className="detail">{(!f.sim.flows.redirect.ok ? f.sim.flows.redirect.reason : f.sim.flows.create.reason) ?? ""}</div>}
                           </div>
                         );
                       })}

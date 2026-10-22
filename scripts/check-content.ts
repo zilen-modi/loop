@@ -16,6 +16,9 @@ import { buildScenarioCases, compileClass, judgeScenario, runSteps } from "../li
 import { buildCases } from "../lib/tests";
 import { designScenarios } from "../content/designs";
 import { evaluate } from "../lib/design/evaluate";
+import { catalog, type NodeKind } from "../lib/design/catalog";
+import { simulate, type FlowDef } from "../lib/design/engine";
+import { rateKey } from "../lib/design/graph";
 
 let failures = 0;
 const fail = (msg: string) => {
@@ -165,6 +168,40 @@ function checkBuild(p: BuildProblem) {
   else fail("starter code passes every core scenario");
 }
 
+function checkCatalog() {
+  console.log("\nSimulator components");
+  const kinds = Object.keys(catalog) as NodeKind[];
+  const shorts = new Set<string>();
+  for (const k of kinds) {
+    const c = catalog[k];
+    const problems = [
+      !c.label && "label",
+      !c.short && "short",
+      !["users", "edge", "compute", "data", "async", "external"].includes(c.category) && "category",
+      !(c.capacity > 0) && "capacity",
+      !(c.latencyMs >= 0) && "latency",
+      !(c.costPerMonth >= 0) && "cost",
+      !(c.maxCount >= 1) && "maxCount",
+      !c.note && "note",
+      shorts.has(c.short) && "duplicate short name",
+    ].filter(Boolean);
+    shorts.add(c.short);
+    if (problems.length) fail(`${k}: ${problems.join(", ")}`);
+  }
+  // A tiny scenario routes one flow through each component: Users → LB → App → component.
+  const others = kinds.filter((k) => !["client", "lb", "app"].includes(k));
+  const flows: FlowDef[] = others.map((k) => ({ id: k, label: k, route: () => ({ rate: 100, hops: [{ kind: "lb" }, { kind: "app" }, { kind: k, from: "app" }] }) }));
+  const design = {
+    nodes: [{ kind: "client" as NodeKind, count: 1, x: 0, y: 0 }, { kind: "lb" as NodeKind, count: 2, x: 0, y: 0 }, { kind: "app" as NodeKind, count: 4, x: 0, y: 0 }, ...others.map((k) => ({ kind: k, count: catalog[k].minCount?.count ?? 1, x: 0, y: 0 }))],
+    edges: [["client", "lb"], ["lb", "app"], ...others.map((k) => ["app", k])] as [NodeKind, NodeKind][],
+    decisions: {},
+  };
+  const sim = simulate({ flows, traffic: {} }, design);
+  const broken = others.filter((k) => !sim.flows[k].ok || !(sim.load[k]!.load > 0) || !(sim.edgeRates[rateKey("app", k)] > 0));
+  if (broken.length) fail(`flows don't route through: ${broken.join(", ")}`);
+  else ok(`${kinds.length} components: every field set, short names unique, a flow routes through each one`);
+}
+
 function checkDesign(p: DesignProblem) {
   console.log(`\n${p.n}. ${p.title} (${p.id})`);
   const s = designScenarios[p.scenarioId];
@@ -175,8 +212,35 @@ function checkDesign(p: DesignProblem) {
   }
   const ref = evaluate(s, s.reference);
   const bad = ref.checks.filter((c) => !c.pass);
+  const first = ref.sim.flows[s.metrics[0].flow];
   if (bad.length) bad.forEach((c) => fail(`reference fails "${c.label}": ${c.detail}`));
-  else ok(`reference passes all ${ref.checks.length} checks ($${ref.sim.costPerMonth}/month, ${Math.round(ref.sim.read.latencyMs)} ms redirect)`);
+  else ok(`reference passes all ${ref.checks.length} checks ($${ref.sim.costPerMonth}/month, ${Math.round(first.latencyMs)} ms ${s.metrics[0].label.toLowerCase()})`);
+
+  // Pinned numbers: a change to the engine or the catalog that moves these is deliberate, or a bug.
+  if (s.pinned) {
+    const off: string[] = [];
+    if (ref.sim.costPerMonth !== s.pinned.cost) off.push(`cost ${ref.sim.costPerMonth} ≠ ${s.pinned.cost}`);
+    for (const [f, ms] of Object.entries(s.pinned.latencyMs)) if (Math.abs(ref.sim.flows[f].latencyMs - ms) > 0.5) off.push(`${f} ${ref.sim.flows[f].latencyMs.toFixed(2)} ms ≠ ${ms}`);
+    for (const [k, u] of Object.entries(s.pinned.utilization)) if (Math.abs(ref.sim.load[k as NodeKind]!.utilization - u!) > 0.005) off.push(`${k} ${(ref.sim.load[k as NodeKind]!.utilization * 100).toFixed(1)}% ≠ ${(u! * 100).toFixed(1)}%`);
+    if (off.length) fail(`pinned numbers moved: ${off.join("; ")}`);
+    else ok("pinned numbers unchanged (cost, latency per flow, utilisation per component)");
+  }
+
+  // Link traffic adds up: nothing arrives at a component that it doesn't handle.
+  const into: Partial<Record<NodeKind, number>> = {};
+  for (const [key, r] of Object.entries(ref.sim.edgeRates)) {
+    const to = key.split(">")[1] as NodeKind;
+    into[to] = (into[to] ?? 0) + r;
+  }
+  const leaks = (Object.keys(into) as NodeKind[]).filter((k) => into[k]! > (ref.sim.load[k]?.load ?? 0) + 1e-6);
+  if (leaks.length) fail(`more traffic arrives than is handled at: ${leaks.join(", ")}`);
+  else ok(`link traffic adds up at all ${Object.keys(into).length} components that receive any`);
+
+  for (const w of s.wrong) {
+    const failed = evaluate(s, w.design).checks.filter((c) => !c.pass).map((c) => c.id);
+    if (failed.includes(w.fails)) ok(`wrong design "${w.name}" fails ${w.fails}${failed.length > 1 ? ` (and ${failed.filter((x) => x !== w.fails).join(", ")})` : ""}`);
+    else fail(`wrong design "${w.name}" should fail ${w.fails} but fails [${failed.join(", ")}]`);
+  }
   const variants = {
     naive: s.naive,
     empty: s.start,
@@ -190,6 +254,7 @@ function checkDesign(p: DesignProblem) {
 }
 
 async function main() {
+  checkCatalog();
   for (const p of problems) {
     if (p.kind === "code") await checkCode(p);
     else if (p.kind === "build") checkBuild(p);

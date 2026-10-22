@@ -1,9 +1,18 @@
-import { hotSpots, type DesignScenario } from "@/lib/design/evaluate";
-import { catalog, fmtLatency, type Design } from "@/lib/design/sim";
+import { hotSpots, pathsOf, type DesignScenario } from "@/lib/design/evaluate";
+import { catalog } from "@/lib/design/catalog";
+import { fmtLatency, fmtRate } from "@/lib/design/engine";
+import type { Design } from "@/lib/design/graph";
+import { urlShortenerFlows } from "./url-shortener-flows";
 
 const LATENCY_MS = 50;
 const HEADROOM = 0.7;
 const BUDGET = 4000;
+// The reference design's numbers. check-content fails if an engine or catalog change moves them.
+const PINNED: DesignScenario["pinned"] = {
+  cost: 2890,
+  latencyMs: { redirect: 19.19, create: 19.08, click: 35.56 },
+  utilization: { lb: 0.204, app: 0.5667, cache: 0.102, kv: 0.0533, idgen: 0.004, queue: 0.1, worker: 0.5, analytics: 0.4 },
+};
 
 const reference: Design = {
   nodes: [
@@ -56,6 +65,12 @@ Design the service on the canvas. Add components from the palette, link them, se
     { label: "Cache hit rate", value: "≈ 90%", how: "Clicks cluster on the latest campaigns: about 20% of links get 90% of clicks, and that 20% fits in memory." },
   ],
   traffic: { readsPerSec: 20_000, writesPerSec: 400, cacheHitRate: 0.9, cdnHitRate: 0.6 },
+  flows: urlShortenerFlows,
+  metrics: [
+    { flow: "redirect", label: "Redirect" },
+    { flow: "create", label: "New link" },
+  ],
+  trafficLabel: (f) => `${fmtRate(20_000 * f)} redirects, ${fmtRate(400 * f)} new links`,
   decisions: [
     {
       id: "ids",
@@ -87,19 +102,29 @@ Design the service on the canvas. Add components from the palette, link them, se
     {
       id: "reads",
       label: "Redirects work",
-      check: ({ sim }) => ({ pass: sim.read.ok, detail: sim.read.ok ? `Path: Users → ${sim.read.path.map((k) => catalog[k].short).join(" → ")}` : sim.read.reason ?? "" }),
+      short: "Redirects",
+      check: ({ sim }) => {
+        const f = sim.flows.redirect;
+        return { pass: f.ok, detail: f.ok ? `Path: Users → ${f.path.map((k) => catalog[k].short).join(" → ")}` : f.reason ?? "" };
+      },
+      focus: ({ sim }) => pathsOf(sim, ["redirect"]),
     },
     {
       id: "writes",
       label: "New links can be created",
-      check: ({ design, sim }) =>
-        !design.decisions.ids
-          ? { pass: false, detail: "Decide how short codes are made." }
-          : { pass: sim.write.ok, detail: sim.write.ok ? `Path: Users → ${sim.write.path.map((k) => catalog[k].short).join(" → ")}` : sim.write.reason ?? "" },
+      short: "New links",
+      check: ({ design, sim }) => {
+        const f = sim.flows.create;
+        if (!design.decisions.ids) return { pass: false, detail: "Decide how short codes are made." };
+        return { pass: f.ok, detail: f.ok ? `Path: Users → ${f.path.map((k) => catalog[k].short).join(" → ")}` : f.reason ?? "" };
+      },
+      focus: ({ sim }) => pathsOf(sim, ["create"]),
     },
     {
       id: "unique",
       label: "Codes never collide",
+      short: "No collisions",
+      focus: ({ design }) => design.nodes.filter((n) => n.kind === "idgen" || n.kind === "app").map((n) => n.kind),
       check: ({ design }) => {
         const v = design.decisions.ids;
         if (!v) return { pass: false, detail: "Decide how short codes are made." };
@@ -110,23 +135,31 @@ Design the service on the canvas. Add components from the palette, link them, se
     {
       id: "clicks",
       label: "Every click is counted",
+      short: "Clicks counted",
+      focus: ({ sim }) => ["app", ...pathsOf(sim, ["click"])],
       check: ({ design, sim }) => {
         if (!design.decisions.redirect || !design.decisions.analytics) return { pass: false, detail: "Decide the redirect status and how clicks are recorded." };
         if (design.decisions.redirect === "301") return { pass: false, detail: "With 301, browsers and the CDN answer repeat clicks themselves, so you never see them." };
-        return { pass: sim.analytics.ok, detail: sim.analytics.ok ? "Every click reaches the analytics store." : sim.analytics.reason ?? "" };
+        const f = sim.flows.click;
+        return { pass: f.ok, detail: f.ok ? "Every click reaches the analytics store." : f.reason ?? "" };
       },
     },
     {
       id: "latency",
       label: `Redirect under ${LATENCY_MS} ms at peak, on a cache miss`,
-      check: ({ sim }) =>
-        !sim.read.ok
-          ? { pass: false, detail: "Redirects don't work yet." }
-          : { pass: sim.read.latencyMs <= LATENCY_MS, detail: `${fmtLatency(sim.read.latencyMs)} along ${sim.read.path.map((k) => catalog[k].short).join(" → ")}. Busy machines are slower: a machine at 80% takes 5× its base time.` },
+      short: `Under ${LATENCY_MS} ms`,
+      focus: ({ sim }) => pathsOf(sim, ["redirect"]),
+      check: ({ sim }) => {
+        const f = sim.flows.redirect;
+        if (!f.ok) return { pass: false, detail: "Redirects don't work yet." };
+        return { pass: f.latencyMs <= LATENCY_MS, detail: `${fmtLatency(f.latencyMs)} along ${f.path.map((k) => catalog[k].short).join(" → ")}. Busy machines are slower: a machine at 80% takes 5× its base time.` };
+      },
     },
     {
       id: "headroom",
       label: `Every machine under ${HEADROOM * 100}% at peak`,
+      short: "Headroom",
+      focus: ({ sim }) => (Object.keys(sim.load) as (keyof typeof sim.load)[]).filter((k) => (sim.load[k]?.utilization ?? 0) > HEADROOM * 0.85),
       check: ({ sim }) => {
         const hot = hotSpots(sim, HEADROOM);
         return { pass: hot.length === 0, detail: hot.length ? `Too busy: ${hot.join(", ")}.` : sim.bottleneck ? `Busiest: ${catalog[sim.bottleneck.kind].label} at ${Math.round(sim.bottleneck.utilization * 100)}%.` : "" };
@@ -135,20 +168,32 @@ Design the service on the canvas. Add components from the palette, link them, se
     {
       id: "failures",
       label: "Survives losing any one machine",
+      short: "Failures",
+      focus: ({ sim }) => pathsOf(sim, ["redirect", "create"]),
       check: ({ sim, failures }) => {
-        if (!sim.read.ok || !sim.write.ok) return { pass: false, detail: "Get redirects and link creation working first." };
-        const bad = failures.find((f) => !f.sim.read.ok || !f.sim.write.ok);
+        const works = (x: typeof sim) => x.flows.redirect.ok && x.flows.create.ok;
+        if (!works(sim)) return { pass: false, detail: "Get redirects and link creation working first." };
+        const bad = failures.find((f) => !works(f.sim));
         if (!bad) return { pass: true, detail: `Knocked out one machine of each of ${failures.length} components; redirects and new links kept working every time.` };
-        return { pass: false, detail: `${bad.note} Then: ${(!bad.sim.read.ok ? bad.sim.read.reason : bad.sim.write.reason) ?? ""}` };
+        return { pass: false, detail: `${bad.note} Then: ${(!bad.sim.flows.redirect.ok ? bad.sim.flows.redirect.reason : bad.sim.flows.create.reason) ?? ""}` };
       },
     },
     {
       id: "cost",
       label: `Under $${BUDGET.toLocaleString("en-US")} a month`,
+      short: "Budget",
       check: ({ sim }) => ({ pass: sim.costPerMonth <= BUDGET, detail: `$${sim.costPerMonth.toLocaleString("en-US")} a month.` }),
     },
   ],
   start: { nodes: [{ kind: "client", count: 1, x: 0, y: 200 }], edges: [], decisions: {} },
+  wrong: [
+    { name: "Truncated hashes for codes", design: { ...reference, decisions: { ...reference.decisions, ids: "hash" } }, fails: "unique" },
+    { name: "301 redirects", design: { ...reference, decisions: { ...reference.decisions, redirect: "301" } }, fails: "clicks" },
+    { name: "Clicks written before redirecting", design: { ...reference, edges: [...reference.edges, ["app", "analytics"]], decisions: { ...reference.decisions, analytics: "sync" } }, fails: "latency" },
+    { name: "One load balancer", design: { ...reference, nodes: reference.nodes.map((n) => (n.kind === "lb" ? { ...n, count: 1 } : n)) }, fails: "failures" },
+    { name: "Too few app servers", design: { ...reference, nodes: reference.nodes.map((n) => (n.kind === "app" ? { ...n, count: 8 } : n)) }, fails: "headroom" },
+  ],
+  pinned: PINNED,
   reference,
   naive: {
     nodes: [
