@@ -4,12 +4,18 @@
 // - the reference passes the scale test in time, and the brute force does not
 // - the Python reference gives the same answers as the JS one on every test
 // - each bug-hunt snippet really fails, and checkpoints' answer keys are computed, not typed
+// - machine-coding references pass every scenario in both languages; the starter code fails
+// - each design lab's reference passes every check; the naive and empty designs, and the reference with
+//   one machine per component, do not
 import { spawnSync } from "node:child_process";
 import { Worker } from "node:worker_threads";
 import { problems, problemById } from "../content/problems";
 import { checkpoints, correctIndex } from "../content/checkpoints";
-import { compile, deepEqual, preview, type CodeProblem } from "../content/problem-types";
+import { compile, deepEqual, preview, snake, type BuildProblem, type CodeProblem, type DesignProblem } from "../content/problem-types";
+import { buildScenarioCases, compileClass, judgeScenario, runSteps } from "../lib/scenarios";
 import { buildCases } from "../lib/tests";
+import { designScenarios } from "../content/designs";
+import { evaluate } from "../lib/design/evaluate";
 
 let failures = 0;
 const fail = (msg: string) => {
@@ -105,9 +111,89 @@ async function checkCode(p: CodeProblem) {
   }
 }
 
+function runPythonScenarios(p: BuildProblem, cases: { steps: { call: string; args: unknown[] }[] }[]) {
+  const harness = `
+import json, sys, time
+src = json.loads(sys.stdin.readline())
+cases = json.loads(sys.stdin.readline())
+ns = {}
+exec(src, ns)
+cls = ns[${JSON.stringify(p.className)}]
+out = []
+for steps in cases:
+    obj = cls()
+    res = []
+    t0 = time.perf_counter()
+    for name, args in steps:
+        try:
+            res.append({"ok": True, "got": getattr(obj, name)(*args)})
+        except Exception as e:
+            res.append({"threw": True, "message": str(e)})
+    out.append({"got": res, "ms": (time.perf_counter() - t0) * 1000})
+print(json.dumps(out))`;
+  const wire = cases.map((c) => c.steps.map((st) => [snake(st.call), st.args]));
+  const res = spawnSync("python3", ["-c", harness], { input: JSON.stringify(p.solution.py) + "\n" + JSON.stringify(wire) + "\n", maxBuffer: 1 << 30, encoding: "utf8" });
+  if (res.status !== 0) throw new Error(res.stderr);
+  return JSON.parse(res.stdout) as { got: unknown; ms: number }[];
+}
+
+function checkBuild(p: BuildProblem) {
+  console.log(`\n${p.n}. ${p.title} (${p.id})`);
+  const cases = buildScenarioCases(p, "submit", "extension");
+  const ref = compileClass(p.solution.js, p.className);
+  for (const c of cases) {
+    const t0 = performance.now();
+    const got = runSteps(ref, c.steps);
+    const v = judgeScenario(c, { kind: "ok", got, ms: performance.now() - t0 });
+    if (v.pass) ok(`JS reference passes "${c.name}" (${c.steps.length} steps, ${Math.round(v.ms ?? 0)} ms)`);
+    else fail(`JS reference fails "${c.name}": ${v.detail}`);
+  }
+  try {
+    const py = runPythonScenarios(p, cases);
+    cases.forEach((c, i) => {
+      const v = judgeScenario(c, { kind: "ok", got: py[i].got, ms: py[i].ms });
+      if (!v.pass) fail(`Python reference fails "${c.name}": ${v.detail}`);
+    });
+    if (cases.every((c, i) => judgeScenario(c, { kind: "ok", got: py[i].got, ms: py[i].ms }).pass)) ok(`Python reference passes all ${cases.length} scenarios`);
+  } catch (e) {
+    fail(`Python reference crashed: ${(e as Error).message.split("\n").slice(-3).join(" ")}`);
+  }
+  const starter = compileClass(p.starter.js, p.className);
+  const core = buildScenarioCases(p, "submit", "core");
+  const starterPasses = core.filter((c) => judgeScenario(c, { kind: "ok", got: runSteps(starter, c.steps), ms: 0 }).pass).length;
+  if (starterPasses < core.length) ok(`starter code fails ${core.length - starterPasses} of ${core.length} core scenarios (tests aren't trivial)`);
+  else fail("starter code passes every core scenario");
+}
+
+function checkDesign(p: DesignProblem) {
+  console.log(`\n${p.n}. ${p.title} (${p.id})`);
+  const s = designScenarios[p.scenarioId];
+  if (!s) return fail(`design scenario "${p.scenarioId}" missing`);
+  for (const d of s.decisions) {
+    const v = s.reference.decisions[d.id];
+    if (!d.options.some((o) => o.value === v)) fail(`reference decision "${d.id}" = ${v} isn't an option`);
+  }
+  const ref = evaluate(s, s.reference);
+  const bad = ref.checks.filter((c) => !c.pass);
+  if (bad.length) bad.forEach((c) => fail(`reference fails "${c.label}": ${c.detail}`));
+  else ok(`reference passes all ${ref.checks.length} checks ($${ref.sim.costPerMonth}/month, ${Math.round(ref.sim.read.latencyMs)} ms redirect)`);
+  const variants = {
+    naive: s.naive,
+    empty: s.start,
+    "one machine each": { ...s.reference, nodes: s.reference.nodes.map((n) => ({ ...n, count: 1 })) },
+  };
+  for (const [name, d] of Object.entries(variants)) {
+    const failed = evaluate(s, d).checks.filter((c) => !c.pass);
+    if (failed.length) ok(`${name} design fails ${failed.length} check(s): ${failed.map((c) => c.id).join(", ")}`);
+    else fail(`${name} design passes every check`);
+  }
+}
+
 async function main() {
   for (const p of problems) {
     if (p.kind === "code") await checkCode(p);
+    else if (p.kind === "build") checkBuild(p);
+    else if (p.kind === "design") checkDesign(p);
     else {
       console.log(`\n${p.n}. ${p.title} (${p.id})`);
       const target = problemById(p.referenceProblemId);

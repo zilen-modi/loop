@@ -60,7 +60,55 @@ export type BugHuntProblem = {
   referenceProblemId: string;
 };
 
-export type Problem = CodeProblem | BugHuntProblem;
+/** One call in a machine-coding scenario. Omit `expect` when only "doesn't throw" matters. */
+export type Step = { call: string; args: unknown[]; expect?: unknown; throws?: boolean; note?: string };
+
+export type Scenario = { name: string; stage: "core" | "extension"; visible?: boolean; steps: Step[] };
+
+/** A machine-coding build: implement a class against a spec; hidden scenarios drive it. */
+export type BuildProblem = {
+  kind: "build";
+  id: string;
+  chapter: string;
+  n: number;
+  title: string;
+  level: Level;
+  shape: string;
+  rounds: string[];
+  minutes: number;
+  statement: string;
+  requirements: { core: string[]; extension: string[] };
+  api: { js: string; py: string; does: string; stage: "core" | "extension" }[];
+  rules: string[];
+  className: string;
+  starter: Record<Lang, string>;
+  solution: Record<Lang, string>;
+  /** Hand-written scenarios with explicit expectations (checked against both reference solutions). */
+  scenarios: Scenario[];
+  /** Large generated scenarios; expected values come from the JS reference. */
+  generated: { name: string; stage: "core" | "extension"; limitMs: number; gen: (rand: Rand) => Step[] }[];
+  hints: [string, string, string];
+  review: string[];
+  walkthrough: { design: string; classes: { name: string; role: string }[]; tradeoffs: string[]; followUps: string[] };
+};
+
+/** A system-design lab: build an architecture on the canvas; the simulator and rules score it. */
+export type DesignProblem = {
+  kind: "design";
+  id: string;
+  chapter: string;
+  n: number;
+  title: string;
+  level: Level;
+  shape: string;
+  rounds: string[];
+  scenarioId: string; // key into content/designs
+};
+
+export type Problem = CodeProblem | BugHuntProblem | BuildProblem | DesignProblem;
+
+/** Python method name for a JS-style call name: addExpense → add_expense. */
+export const snake = (name: string) => name.replace(/[A-Z]/g, (c) => "_" + c.toLowerCase());
 
 /** Small, fast, seeded generator so hidden tests are the same every time. */
 export function mulberry32(seed: number): Rand {

@@ -1,0 +1,132 @@
+<ChapterHead kicker="Book 2 · Classic builds · Chapter 15" title="Splitwise" concept="strategy-pattern" meta="About 20 minutes of reading · one 90-minute build" />
+
+<Story when="Friday, 1 pm">
+The Tiffin platform team orders lunch together every Friday. Someone pays, someone else pays for the cabs, and a shared spreadsheet keeps score. This week the spreadsheet says the team owes Chen ₹0.01 that nobody can account for, and there's an argument about whether "split by what you ordered" and "split by percentage" were applied the right way round.
+</Story>
+
+Expense sharing is a favourite machine-coding prompt because it looks simple and isn't. It has money (so rounding matters), several rules for the same job (so design matters), and an obvious extension the interviewer can add halfway through. If you haven't tried the build yet, do that first: this chapter is the debrief.
+
+## Clarify the money first
+
+Before any classes, settle how money is stored. Rupees with decimals look natural, and they're a trap. ₹100 split three ways is ₹33.333…, which rounds to ₹33.33, and three of those make ₹99.99. A paisa has vanished, and it's exactly the kind of bug that ends up in a spreadsheet argument.
+
+Store whole **paise** (or cents) as integers, and decide who gets the leftover. A common rule, and the one the bench uses: everyone pays the rounded-down share, and the leftover paise go one each to the first participants in order. Try a few bills.
+
+<SplitCalculator />
+
+<Checkpoint id="split-equal" />
+
+Ask the interviewer whether they have a rule for leftovers. If they don't, propose one, say it out loud and write it down. Any rule is fine as long as every paisa is accounted for and the result is the same every time.
+
+## What do you need to remember?
+
+The tempting start is to model everything: User, Group, Expense, Split, Payment, Ledger. Start from the questions instead. The core asks "who owes whom" and "what's my overall balance". To answer those you don't need the history of every bill. You need one number per pair of people.
+
+Keeping one signed balance per pair is called <Term id="netting">netting</Term>. If Asha owes Bilal ₹300 and later Bilal owes Asha ₹100, store one fact: Asha owes Bilal ₹200. Every write goes through one small method that adjusts the pair's number, so the netting logic lives in exactly one place.
+
+<Checkpoint id="split-net" />
+
+Storing only net balances is a trade-off, and worth saying so. It makes balance queries fast and the state tiny, but you can't show history or edit an old bill. If the interviewer asks for either, you'll need to store the expenses too and recompute or adjust.
+
+## The part that changes: how a bill is split
+
+Equal, exact amounts and percentages are three answers to one question: given an amount and the people involved, what does each person owe? That's a single method with different implementations, which is the <Term id="strategy-pattern">strategy pattern</Term>.
+
+```js
+class EqualSplit {
+  shares(amount, people) {
+    const base = Math.floor(amount / people.length);
+    const extra = amount % people.length;
+    return people.map((_, i) => base + (i < extra ? 1 : 0));
+  }
+}
+
+class ExactSplit {
+  shares(amount, people, values) {
+    // check: one value per person, whole numbers, adding up to amount
+    return values;
+  }
+}
+
+class ExpenseManager {
+  constructor() {
+    this.rules = { equal: new EqualSplit(), exact: new ExactSplit() /* , ... */ };
+  }
+}
+```
+
+The manager looks the rule up by name, asks for the shares, and records one debt per participant. It never needs to know how the shares were worked out.
+
+Percentages and the extension's "shares" (2 : 1 : 1) turn out to be the same rule with different totals: each person's portion is amount × theirs ÷ total, rounded down, with leftovers handed out in order. One proportional class can serve both. Spotting that kind of sharing is the sort of thing interviewers note.
+
+## Validate, then write
+
+Every way a call can be wrong should be caught before any balance changes: an unknown payer, a participant listed twice, exact amounts that don't add up, percentages that make 90, a settlement bigger than the debt. The pattern is always the same:
+
+1. Check every input.
+2. Compute all the shares.
+3. Only then apply them.
+
+If step 1 or 2 fails, throw and nothing has changed. Half-applied expenses are the bug that hidden tests and interviewers both look for first.
+
+## The extension
+
+When the core passes, the bench adds two requirements, the way an interviewer would.
+
+**Split by shares.** With the strategy in place this is one new entry in the rules table, and none of the existing code changes. That's the payoff for the design choice you made in minute fifteen.
+
+**Simplify debts.** Instead of everyone paying everyone, suggest a short list of payments that settles the group. Work from each person's overall balance, not the pairs. Repeatedly take the person who owes the most and the person who is owed the most, have one pay the other the smaller of the two amounts, and repeat until everyone is at zero. With n people that's at most n − 1 payments.
+
+Be ready for the follow-up "is that the fewest payments possible?" Not always. Finding the true minimum is NP-hard in general, so the greedy answer is the standard practical choice. Saying that unprompted is a strong signal.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Add groups." Balances per group, and a total across groups. Decide whether a pair's debts net across groups.
+- "Let people edit or delete a bill." Now you must store expenses, and reverse the old shares before applying new ones.
+- "Two people add bills at the same moment." Guard updates with a lock, or make each pair's update atomic.
+- "Support several currencies." Keep balances per currency, or convert at a recorded rate. Never mix units silently.
+
+Traps that cost people the round:
+
+- Floating-point money, and leftover paise that disappear.
+- An if/else on split type inside addExpense that grows with every extension.
+- Netting logic copied into addExpense and settle separately, so one of them gets it wrong.
+- Changing balances before validation finishes.
+
+<PageBreak />
+
+## Your turn
+
+<ProblemLadder chapter="splitwise" />
+
+If you've already solved it, open the bench's reference design and compare it with yours. Then use the self-review checklist on your own code. Interviewers grade the design, not only the passing tests.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how you'd structure Splitwise so that adding a new split type is easy, and how you'd keep the money exact."
+  model="Each split type is its own small class with one method that turns an amount and participants into shares, so a new type is a new class and the manager doesn't change. Money is stored as whole paise, leftovers go to participants in a fixed order, and debts are kept as one netted number per pair, updated only after every input has been validated."
+  points={["Each split type is a class behind one method (strategy)", "A new type adds a class, not an if-branch", "Money in whole paise with a fixed leftover rule", "One netted balance per pair", "Validate everything before changing state"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "Why store money as whole paise?", a: "Floating-point rupees round, and the rounded shares stop adding up to the bill. Integers with a fixed leftover rule account for every paisa." },
+    { q: "What is netting?", a: "Keeping one signed balance per pair: A owes B ₹300 and B owes A ₹100 becomes A owes B ₹200." },
+    { q: "How do percent and shares splits relate?", a: "Both are proportional: amount × theirs ÷ total, rounded down, leftovers in order. One class can serve both." },
+    { q: "Does greedy simplify always give the fewest payments?", a: "No. It gives at most n − 1 payments, but the true minimum is NP-hard in general." },
+  ]}
+/>
+
+<Sources
+  reviewed="22 October 2026"
+  items={[
+    { label: "Refactoring.Guru: the strategy pattern", href: "https://refactoring.guru/design-patterns/strategy" },
+    { label: "Martin Fowler: the money pattern", href: "https://martinfowler.com/eaaCatalog/money.html" },
+    { label: "Python documentation: floating-point arithmetic, issues and limitations", href: "https://docs.python.org/3/tutorial/floatingpoint.html" },
+  ]}
+/>

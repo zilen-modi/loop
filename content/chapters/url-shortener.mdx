@@ -1,0 +1,145 @@
+<ChapterHead kicker="Book 3 · Classic designs · Chapter 22" title="URL shortener" concept="cache-aside" meta="About 20 minutes of reading · one design lab" />
+
+<Story when="Thursday, 6 pm">
+Tiffin's Diwali promo goes out by SMS to eight million people at once. Every message carries a tracking link, and the long URL uses up a third of the 160 characters. Growth wants short links like tfn.in/aZ3kQ9x. Marketing wants to know how many people tapped each one, by the end of the evening.
+</Story>
+
+The URL shortener is the most-asked starter design question, and it's popular for a reason. The feature fits on one line, but the design touches nearly everything in Part A: estimation, ID generation, caching, HTTP semantics, async processing and failure handling. If you haven't tried the design lab yet, try it first. This chapter is the debrief.
+
+## Requirements and numbers
+
+Functional, kept to three:
+
+- Create a short link for a long URL, with a 7-character code.
+- Opening the short link redirects to the long URL.
+- Count clicks per link. A few seconds' delay is fine.
+
+Non-functional: redirects are fast (under 50 ms inside our network, even when the link isn't cached), losing a machine doesn't stop the service, codes never collide.
+
+Now the numbers, using Chapter 1's habits:
+
+- 100 million new links a month is about 40 a second. Promo blasts go out all at once, so plan for 10×: **400 a second** at peak.
+- About 50 clicks per link gives 2,000 redirects a second on average and **20,000 a second** at peak.
+- 6 billion links over five years at about 500 bytes each is **3 TB**: too much to keep comfortably on one machine forever, easy for a partitioned store.
+
+Reads outnumber writes 50 to 1. That ratio is the headline: almost all of the design is about making one redirect cheap.
+
+## The API and the data
+
+```
+POST /links   { url }      →  201 { code }
+GET  /{code}               →  302, Location: <long url>
+```
+
+The data is a single mapping, code → long URL, plus a little metadata (who made it, when). Every redirect is one lookup by key, with no joins and no range scans. A partitioned key-value store fits that exactly, and it grows by adding nodes. SQL with read replicas also works at this size. Either is a fine answer if you say why.
+
+## Making the codes
+
+A code uses <Term id="base62">base 62</Term>: 0–9, a–z and A–Z, so it's safe in a URL and readable.
+
+<Checkpoint id="url-codes" />
+
+There are three common ways to choose the code, and the trade-offs are the interesting part.
+
+**Hash the long URL and keep 7 characters.** Easy, but two different URLs can share those 7 characters, and you'd only find out when a click goes to the wrong page. And the same URL used in two campaigns gets one code, so their click counts merge. Fixing that needs a collision check, which removes the advantage.
+
+**Pick 7 random characters.** Collisions are rare, but at billions of links they happen, so every create must check first: one extra read per new link. In return, codes can't be guessed.
+
+**Use a counter.** Every number is used once, so collisions are impossible. A single counter would be a bottleneck, so each app server leases a block, say 1,000 numbers, from a small ID service and hands them out locally. The ID service is called rarely and can run as two machines. The catch: sequential codes are guessable, so someone could walk through every link. If links can be private, scramble the number with a reversible shuffle before encoding.
+
+Pick one, and name what you're giving up.
+
+## 301 or 302?
+
+Both redirect the browser. They differ in what gets remembered.
+
+A **301 Moved Permanently** may be cached by the browser and by a CDN. The next click on the same link never reaches your servers. That's cheaper and faster, and it also means you never see those clicks and can't change where the link points.
+
+A **302 Found** is temporary, so it isn't cached by default. Every click reaches you, every click can be counted, and a link can be edited later.
+
+Click counts are a requirement here, so the answer is 302. It's a real trade-off, though: a service with no analytics could save most of its traffic with 301.
+
+## The read path
+
+Every redirect goes: load balancer → app server → cache → store. The cache follows the <Term id="cache-aside">cache-aside</Term> pattern. The app checks the cache first. On a miss it reads the store and puts the result into the cache for next time.
+
+Clicks cluster heavily on recent campaigns, so a modest cache answers most of them. Slide the hit rate and watch what reaches the database.
+
+<CacheMath />
+
+<Checkpoint id="url-cache" />
+
+Links never change once created (or rarely, with 302), so cache entries can live a long time, and least-recently-used eviction keeps the hot ones. One caution: when a cache node fails, its share of traffic all goes to the store at once. Size the store so it survives that, or run enough cache nodes that losing one only moves a small fraction.
+
+## Counting clicks without slowing redirects
+
+The naive version writes the click to the analytics store before sending the redirect. Now every redirect waits for that write, and if the analytics store is slow or down, redirects are too. The least important work is holding up the most important path.
+
+Instead, the app puts a small event (code, time, country, device) on a <Term id="message-queue">message queue</Term> and returns the redirect immediately. Workers read from the queue in batches and write to a store built for counting. The counts lag by a few seconds, which the requirements allow.
+
+Two details worth mentioning. If a worker crashes after writing but before acknowledging, the batch is redelivered, so give every click an id and ignore duplicates. And if the analytics store is down, the queue simply grows and drains when it recovers. That's the buffering you added the queue for.
+
+## Surviving failures
+
+Walk the request path and ask, for each box, "what if one machine dies?"
+
+- Two or more load balancers, and enough app servers that losing one keeps the rest under about 70%.
+- Two cache nodes, so a failure halves the cache instead of removing it.
+- A store with replicas, or a key-value store that keeps three copies of each item.
+- Two ID services, so creating links never depends on one machine.
+
+The lab's simulator runs exactly this drill: it removes one machine at a time and checks that redirects and link creation still work.
+
+<PageBreak />
+
+## Your turn
+
+<ProblemLadder chapter="url-shortener" />
+
+If you've solved it, try variations in the lab. Switch to 301 and watch what it saves and what it costs. Swap the key-value store for SQL with replicas. Find the cheapest design that still passes every check.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Custom aliases, like tfn.in/diwali." Check and insert with a uniqueness constraint, in a namespace that can't clash with generated codes.
+- "Links that expire." Store an expiry, check it on read, clean up in the background, and don't reuse old codes for a while.
+- "Stop abuse." Rate-limit link creation per account, and scan destinations against a malware list.
+- "Serve users worldwide." Replicate the link table to every region (rows are small and rarely written) and redirect locally.
+
+Traps that cost people the round:
+
+- Jumping to Kafka and microservices before stating the numbers.
+- Truncated hashes with no collision handling.
+- 301 redirects alongside a click-counting requirement.
+- Recording clicks synchronously on the redirect path.
+- A single machine anywhere on the request path.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain the key decisions in a URL shortener's design and why they follow from the numbers."
+  model="Reads outnumber writes about 50 to 1, so the design centres on a cheap redirect: stateless app servers behind a load balancer, a cache in front of a key-value store, and click counting moved onto a queue. Codes come from a counter encoded in base 62 so they never collide, and redirects use 302 so every click can be counted."
+  points={["Read-heavy, so optimise the redirect path", "Cache in front of a key-value store", "Counter IDs in base 62 never collide", "302 so clicks reach you and can be counted", "Clicks recorded asynchronously through a queue", "Two of everything on the request path"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "Why 302 instead of 301 when clicks are counted?", a: "Browsers and CDNs may cache a 301, so repeat clicks never reach your servers. A 302 isn't cached by default, so every click arrives." },
+    { q: "How do counter-based codes avoid a single bottleneck?", a: "Each app server leases a block of numbers from a small ID service and hands them out locally, so the service is called rarely." },
+    { q: "What's cache-aside?", a: "Check the cache; on a miss, read the database and put the result in the cache for next time." },
+    { q: "Why put clicks on a queue?", a: "So the redirect doesn't wait for the analytics write. The queue also buffers clicks if the analytics store is slow or down." },
+  ]}
+/>
+
+<Sources
+  reviewed="22 October 2026"
+  items={[
+    { label: "MDN: 301 Moved Permanently", href: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301" },
+    { label: "MDN: 302 Found", href: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302" },
+    { label: "RFC 9110, HTTP Semantics: redirection 3xx", href: "https://www.rfc-editor.org/rfc/rfc9110#name-redirection-3xx" },
+    { label: "Azure Architecture Center: the cache-aside pattern", href: "https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside" },
+  ]}
+/>

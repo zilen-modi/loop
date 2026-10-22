@@ -4,7 +4,7 @@
 export type Concept = {
   id: string;
   term: string;
-  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers";
+  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2";
   hue: "teal" | "violet" | "amber" | "rose" | "blue";
   definition: string;
   appearsIn: string[];
@@ -66,5 +66,77 @@ export const concepts: Record<string, Concept> = {
     hue: "rose",
     definition: "A key–value table with O(1) average lookup. In window problems it remembers counts or the last position of each item.",
     appearsIn: ["DSA 3 · Hashing", "DSA 9 · Sliding window"],
+  },
+  "machine-coding": {
+    id: "machine-coding",
+    term: "Machine coding",
+    glyph: "Timer",
+    hue: "amber",
+    definition: "An interview round where you build a small working system in 60 to 120 minutes: clean classes, a runnable demo, and an extra requirement the interviewer adds partway through.",
+    appearsIn: ["LLD 9 · The 90-minute playbook", "LLD 14–29 · Classic builds"],
+  },
+  "strategy-pattern": {
+    id: "strategy-pattern",
+    term: "Strategy pattern",
+    glyph: "Split",
+    hue: "violet",
+    definition: "Each variant of a behaviour (equal, exact or percentage split) lives in its own class behind one interface, so adding a variant means adding a class, not editing a growing if/else.",
+    appearsIn: ["LLD 7 · Behavioural patterns", "LLD 15 · Splitwise", "LLD 19 · Rate limiter"],
+  },
+  "service-layer": {
+    id: "service-layer",
+    term: "Service layer",
+    glyph: "Boxes",
+    hue: "violet",
+    definition: "The class that holds the use cases (add an expense, settle up). It validates input, coordinates the entities and storage, and is the API the interviewer calls.",
+    appearsIn: ["LLD 9 · The 90-minute playbook", "LLD 10 · Storage, repositories, services"],
+  },
+  netting: {
+    id: "netting",
+    term: "Netting",
+    glyph: "ArrowLeftRight",
+    hue: "amber",
+    definition: "Keeping one signed balance per pair instead of a list of debts: A owes B ₹200 and B owes A ₹50 becomes A owes B ₹150.",
+    appearsIn: ["LLD 15 · Splitwise", "HLD 32 · Payments and ledgers"],
+  },
+  "back-of-envelope": {
+    id: "back-of-envelope",
+    term: "Back-of-the-envelope estimate",
+    glyph: "Calculator",
+    hue: "blue",
+    definition: "Quick arithmetic with round numbers (a day is about 10⁵ seconds) to size traffic, storage and machines before choosing a design.",
+    appearsIn: ["HLD 1 · The interview framework", "HLD 2 · Estimation", "HLD 22 · URL shortener"],
+  },
+  "peak-factor": {
+    id: "peak-factor",
+    term: "Peak factor",
+    glyph: "Gauge",
+    hue: "blue",
+    definition: "How much busier the busiest moment is than the average. Systems are sized for the peak: a 10× promo blast, not a quiet Tuesday.",
+    appearsIn: ["HLD 1 · The interview framework", "HLD 39 · Flash sale"],
+  },
+  "cache-aside": {
+    id: "cache-aside",
+    term: "Cache-aside",
+    glyph: "Database",
+    hue: "blue",
+    definition: "The app checks the cache first. On a miss it reads the database, then stores the result in the cache for next time.",
+    appearsIn: ["HLD 6 · Caching", "HLD 22 · URL shortener", "HLD 26 · News feed"],
+  },
+  base62: {
+    id: "base62",
+    term: "Base 62",
+    glyph: "Link2",
+    hue: "rose",
+    definition: "Writing a number with 62 symbols: 0–9, a–z and A–Z. Seven characters cover 62⁷, about 3.5 trillion values.",
+    appearsIn: ["HLD 22 · URL shortener", "HLD 23 · Pastebin"],
+  },
+  "message-queue": {
+    id: "message-queue",
+    term: "Message queue",
+    glyph: "Layers",
+    hue: "rose",
+    definition: "A durable buffer between the code that produces work and the workers that do it, so slow or failing work (like recording a click) doesn't hold up the request.",
+    appearsIn: ["HLD 15 · Queues and streams", "HLD 22 · URL shortener", "HLD 25 · Notification system"],
   },
 };

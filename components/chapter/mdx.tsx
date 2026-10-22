@@ -4,6 +4,7 @@ import WindowExplorer from "./WindowExplorer";
 import ScaleRace from "./ScaleRace";
 import ProblemLadder from "./ProblemLadder";
 import { ExplainBack, Recap } from "./Reflect";
+import { CacheMath, Estimator, RoundTimeline, SplitCalculator, StepTable } from "./DesignFigures";
 
 // Everything an MDX chapter can use without importing it.
 export const chapterComponents = {
@@ -19,4 +20,9 @@ export const chapterComponents = {
   ProblemLadder,
   ExplainBack,
   Recap,
+  RoundTimeline,
+  SplitCalculator,
+  Estimator,
+  CacheMath,
+  StepTable,
 };

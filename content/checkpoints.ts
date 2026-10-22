@@ -24,6 +24,16 @@ function windowLeftAfter(readings: number[], k: number, uptoRight: number) {
   return left;
 }
 
+/** Equal split in whole paise: the first (amount mod n) people pay one paisa more. */
+function equalSplit(paise: number, n: number) {
+  return Array.from({ length: n }, (_, i) => Math.floor(paise / n) + (i < paise % n ? 1 : 0));
+}
+
+const approx = (x: number) => {
+  const p = 10 ** (Math.floor(Math.log10(x)) - 1);
+  return `About ${(Math.round(x / p) * p).toLocaleString("en-US")}`;
+};
+
 export const checkpoints: Record<string, Checkpoint> = {
   "sw-next-sum": {
     id: "sw-next-sum",
@@ -63,6 +73,73 @@ export const checkpoints: Record<string, Checkpoint> = {
     ],
     answer: 1,
     explain: "The others name the window size up front. The longest run without a repeat has no fixed size: it grows while it's valid and shrinks when a dish repeats.",
+  },
+  "mc-time": {
+    id: "mc-time",
+    prompt: "A 90-minute round. You spend 10 minutes clarifying, 10 modelling, and keep the last 15 for testing and the demo. How many minutes are left to build the core and the extension?",
+    options: ["45", "55", "65", "75"],
+    compute: () => String(90 - 10 - 10 - 15),
+    explain: "90 − 10 − 10 − 15 = 55 minutes of building. That's why the core has to be small and the happy path comes first: you need time left when the interviewer adds a requirement.",
+  },
+  "mc-extend": {
+    id: "mc-extend",
+    prompt: "Your parking lot charges by the hour. Forty minutes in, the interviewer says weekend rates are different. Which design absorbs that best?",
+    options: [
+      "Add an if (isWeekend) branch inside ParkingLot.exit()",
+      "A PricingStrategy interface, with HourlyPricing and WeekendPricing classes",
+      "Copy ParkingLot into a WeekendParkingLot subclass",
+      "Store a weekend flag on every Ticket",
+    ],
+    answer: 1,
+    explain: "Pricing is the part that changes, so it goes behind an interface. A new rule is then a new class, and ParkingLot doesn't change. The if-branch works once, but the third rule turns it into a tangle; the subclass duplicates everything else.",
+  },
+  "split-equal": {
+    id: "split-equal",
+    prompt: "₹100.00 is 10,000 paise. Split equally between 3 friends, with the leftover paise going to the first friends in order, what does each pay?",
+    options: ["3334, 3333, 3333", "3333, 3333, 3333", "3333, 3333, 3334", "3334, 3334, 3332"],
+    compute: () => equalSplit(10_000, 3).join(", "),
+    explain: "10,000 ÷ 3 is 3,333 with 1 paisa left over, and that paisa goes to the first friend. Every paisa is accounted for: 3,334 + 3,333 + 3,333 = 10,000.",
+  },
+  "split-net": {
+    id: "split-net",
+    prompt: "Asha pays ₹600 for a meal split equally between Asha, Bilal and Chen. Then Bilal pays ₹300 for cabs, split equally between the same three. After netting, what's between Asha and Bilal?",
+    options: ["Bilal owes Asha ₹200", "Asha owes Bilal ₹100", "Bilal owes Asha ₹100", "They're even"],
+    compute: () => {
+      const bilalOwesAsha = 600 / 3 - 300 / 3;
+      return bilalOwesAsha === 0 ? "They're even" : bilalOwesAsha > 0 ? `Bilal owes Asha ₹${bilalOwesAsha}` : `Asha owes Bilal ₹${-bilalOwesAsha}`;
+    },
+    explain: "Bilal owes Asha ₹200 for the meal, and Asha owes Bilal ₹100 for the cabs. Netted, that's one number: Bilal owes Asha ₹100.",
+  },
+  "hld-qps": {
+    id: "hld-qps",
+    prompt: "50 million people use the app each day and each opens 10 feeds a day. Roughly how many feed reads per second is that, on average?",
+    options: ["About 600", "About 5,800", "About 58,000", "About 500,000"],
+    compute: () => approx((50_000_000 * 10) / 86_400),
+    explain: "500 million reads ÷ 86,400 seconds ≈ 5,800 a second. In your head: 5 × 10⁸ ÷ 10⁵ = 5,000, which is close enough to design with. Then multiply by the peak factor.",
+  },
+  "hld-storage": {
+    id: "hld-storage",
+    prompt: "1 million new posts a day, about 1 KB each, kept for 5 years. Roughly how much storage, before replication?",
+    options: ["About 180 GB", "About 1.8 TB", "About 18 TB", "About 180 TB"],
+    compute: () => {
+      const gb = (1_000_000 * 1000 * 365 * 5) / 1e9;
+      return gb >= 1000 ? `About ${(Math.round(gb / 100) / 10).toString()} TB` : `About ${Math.round(gb)} GB`;
+    },
+    explain: "10⁶ × 1 KB = 1 GB a day; × 365 × 5 ≈ 1,825 GB, so about 1.8 TB. Three copies make it about 5.5 TB: still small enough for a handful of machines.",
+  },
+  "url-codes": {
+    id: "url-codes",
+    prompt: "Short codes use 0–9, a–z and A–Z. How many different 6-character codes are there?",
+    options: ["About 2.2 million", "About 57 billion", "About 3.5 trillion", "About 56 million"],
+    compute: () => `About ${Math.round(62 ** 6 / 1e9)} billion`,
+    explain: "62⁶ ≈ 5.7 × 10¹⁰, about 57 billion. That's enough for 6 billion links, but only 10× over; 7 characters (3.5 trillion) leaves room for decades of growth.",
+  },
+  "url-cache": {
+    id: "url-cache",
+    prompt: "20,000 redirects a second, and the cache answers 90% of them. How many reads a second reach the database?",
+    options: ["200", "2,000", "18,000", "20,000"],
+    compute: () => Math.round(20_000 * (1 - 0.9)).toLocaleString("en-US"),
+    explain: "Only misses reach the database: 10% of 20,000 is 2,000. Raise the hit rate to 99% and it's 200, which is why caching hot keys is the first move for read-heavy systems.",
   },
 };
 

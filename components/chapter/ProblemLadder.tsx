@@ -47,6 +47,8 @@ export default function ProblemLadder({ chapter }: { chapter: string }) {
                 <span className={`chip ${p.level.toLowerCase()}`}>{p.level}</span>
                 <span>{p.shape}</span>
                 {p.kind === "code" && <span>· {p.reference.label}</span>}
+                  {p.kind === "build" && <span>· {p.minutes}-minute build</span>}
+                  {p.kind === "design" && <span>· design lab</span>}
                 {due && (
                   <span className="chip new">
                     <Repeat size={11} /> Re-solve due

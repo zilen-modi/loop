@@ -1,0 +1,129 @@
+<ChapterHead kicker="Book 3 · Foundations · Chapter 1" title="The interview framework" concept="back-of-envelope" meta="About 20 minutes of reading · then a design lab" />
+
+<Story when="Monday, 10 am">
+Tiffin's architecture review. An engineer presents a design for live order tracking: Kafka, three microservices, a graph database. Someone at the back asks how many orders are tracked at once. Nobody knows. It turns out to be about 40,000, which one well-chosen database handles comfortably on its own.
+</Story>
+
+System design interviews test the habit that review was missing: understand the problem and its size before reaching for components. There's no single right answer. There is a right *order*, and interviewers look for it.
+
+## The shape of 45 minutes
+
+Most design rounds are 45 to 60 minutes, and strong answers follow roughly the same path:
+
+<StepTable
+  head={["Step", "Time", "You leave it with"]}
+  rows={[
+    ["Requirements", "5 min", "What it must do, and how well"],
+    ["Estimates", "5 min", "Requests per second, storage, the read:write ratio"],
+    ["API", "5 min", "The few calls clients make"],
+    ["Data model", "5 min", "What you store, and how you look it up"],
+    ["High-level design", "10 min", "Boxes and arrows that meet the requirements"],
+    ["Deep dives", "10–15 min", "The one or two hardest parts, in detail"],
+    ["Wrap-up", "5 min", "Trade-offs, failure handling, what's next"],
+  ]}
+/>
+
+You don't need to announce the steps, but you should be able to say where you are. If the interviewer pulls you into a deep dive early, go with it. They're telling you what they want to see.
+
+## Requirements: what, and how well
+
+Split requirements into two kinds.
+
+**Functional** requirements are what it does: "create a short link", "show a feed", "send a notification". Pick the three or four that matter most and confirm them. Say out loud which ones you're leaving out.
+
+**Non-functional** requirements are how well it does them, and they drive the design far more than the features do:
+
+- **Scale:** how many users, how many requests, how much data?
+- **Latency:** how fast must the important path be? Under 100 ms? Under a second?
+- **Availability:** what happens when a machine dies? Is a minute of downtime acceptable?
+- **Consistency:** must every reader see a write at once, or is a few seconds' delay fine?
+- **Cost**, if the interviewer gives a budget.
+
+A feed can be a few seconds stale. A bank balance can't. That one difference leads to very different designs.
+
+## Estimates: size it before you build it
+
+A <Term id="back-of-envelope">back-of-the-envelope estimate</Term> turns users into requests per second, bytes and machines. It takes two minutes and changes every decision after it. Round aggressively. You need the order of magnitude, not the third digit.
+
+The one number to remember: a day has 86,400 seconds, call it 10⁵. So 10 million actions a day is about 100 a second.
+
+Then size for the peak, not the average. Traffic isn't flat. Lunch rushes, promo blasts and match nights can be 5 to 10 times the daily average, and that ratio is the <Term id="peak-factor">peak factor</Term>. Try it.
+
+<Estimator />
+
+<Checkpoint id="hld-qps" />
+
+<Checkpoint id="hld-storage" />
+
+Read the ratio, too. If reads outnumber writes 50 to 1, the design is mostly about serving reads cheaply: caches, replicas, maybe a CDN. If writes dominate, as with logs, metrics or chat, it's about absorbing writes: queues, append-only storage, partitioning.
+
+A few latency numbers help you reason about where time goes. They're approximate, and they've changed little in a decade:
+
+- Reading from memory: about 100 ns.
+- A random read from an SSD: tens to about 150 µs.
+- A round trip inside one data centre: about 0.5 ms.
+- A round trip between continents: about 150 ms.
+
+So a cache hit is far cheaper than a database read, and a cross-region call costs more than everything else in a request put together.
+
+## API and data model
+
+Write the API as a handful of calls with their inputs and outputs: `POST /links {url} → {code}`, `GET /{code} → redirect`. Mention pagination for lists and idempotency keys for anything that charges money or must not happen twice.
+
+Then the data: the main records, their key fields, and above all **how you'll look them up**. Access patterns decide the database. One record by its key suggests a key-value store. Joins and transactions across records suggest SQL. Text search suggests a search index. "Which database?" is a question about access patterns, not about fashion.
+
+## High-level design, then go deep
+
+Draw the request path first, from client to storage and back, with only the boxes the requirements need. Then check it against the numbers: can each box handle its share of the peak? Where's the single machine whose failure takes everything down?
+
+The deep dive is where the grade is decided. Pick the hardest part, or let the interviewer pick, and go a level down: the cache's eviction policy and what happens when it's cold, how IDs are generated without collisions, how the database is partitioned, what happens to a message if a worker crashes halfway through.
+
+## Say what you're giving up
+
+Every choice has a cost, and saying it is what separates a senior answer from a list of components:
+
+- "A cache makes reads fast, but entries can be stale for up to a minute."
+- "Async processing keeps the request fast, but counts lag by a few seconds."
+- "Three replicas survive a machine failure, but triple the storage cost."
+
+Interviewers in 2026 also expect you to know when **not** to add something. One well-sized database often beats three services and a message bus. The size of the problem, which you estimated in minute ten, is your argument.
+
+Questions about AI features (a RAG search, an LLM gateway) follow exactly the same framework, with tokens, model latency and cost per request added to the estimates. Part F of this book covers them.
+
+<PageBreak />
+
+## Your turn
+
+The design lab lets you practise the whole framework: read the requirements and the numbers, build the architecture on a canvas, make the key decisions, and run it at peak traffic. The simulator then knocks out one machine at a time.
+
+<ProblemLadder chapter="url-shortener" />
+
+Chapter 22 walks through the URL shortener in detail. Try the lab first.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, describe how you'd structure a 45-minute system design interview and why the estimates come before the boxes."
+  model="Pin down functional and non-functional requirements, estimate peak requests per second, storage and the read:write ratio, and sketch the API and data model before drawing the high-level design. Then go deep on the hardest part and name the trade-offs. The numbers come first because they decide which components are needed at all."
+  points={["Functional and non-functional requirements first", "Estimate peak traffic, storage and read:write ratio", "API and data model before the boxes", "Deep-dive on the hardest part", "Name the trade-offs"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "How many seconds are in a day, for estimates?", a: "86,400. Round it to 10⁵: 10 million daily actions is about 100 per second." },
+    { q: "Why size for the peak instead of the average?", a: "Traffic is bursty. Lunch rushes or promo blasts can be 5–10× the average, and the system must survive those moments." },
+    { q: "What decides the choice of database?", a: "Access patterns: key lookups suggest a key-value store, joins and transactions suggest SQL, text search suggests a search index." },
+    { q: "What makes an answer senior rather than a list of components?", a: "Naming the trade-off of each choice, and knowing what not to add given the estimated scale." },
+  ]}
+/>
+
+<Sources
+  reviewed="22 October 2026"
+  items={[
+    { label: "Latency numbers every programmer should know (Jeff Dean and Peter Norvig, collected by Jonas Bonér)", href: "https://gist.github.com/jboner/2841832" },
+    { label: "Google SRE book: Service level objectives", href: "https://sre.google/sre-book/service-level-objectives/" },
+    { label: "Martin Kleppmann, Designing Data-Intensive Applications", href: "https://dataintensive.net/" },
+  ]}
+/>

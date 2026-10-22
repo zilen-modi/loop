@@ -50,6 +50,9 @@ export type ProblemState = {
   due?: number;     // when to re-solve
   lastSolved?: number;
   code?: Record<string, string>; // per language
+  stage?: "core" | "extension";   // machine-coding builds: the extension unlocks after the core passes
+  checks?: number[];              // self-review checklist items ticked
+  design?: unknown;               // system-design labs: the saved canvas
 };
 
 export const problemsProgress = createLocalStore<Record<string, ProblemState>>("loop:problems", {});

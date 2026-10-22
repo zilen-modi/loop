@@ -70,6 +70,8 @@ export default function ProblemList() {
                   <span>{chapterTitle(p.chapter)}</span>
                   <span>· {p.shape}</span>
                   {p.kind === "code" && <span>· {p.reference.label}</span>}
+                  {p.kind === "build" && <span>· {p.minutes}-minute build</span>}
+                  {p.kind === "design" && <span>· design lab</span>}
                 </span>
               </span>
               <span className={`chip ${p.level.toLowerCase()}`}>{p.level}</span>

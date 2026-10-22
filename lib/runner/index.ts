@@ -20,9 +20,27 @@ export type RunOutcome =
   | { kind: "compile-error"; message: string }
   | { kind: "ran"; cases: CaseOutcome[] };
 
+// In scenario mode a "case" is a list of method calls on a fresh instance of the class named fnName;
+// its result is one outcome per call ({ ok, got } or { threw, message }).
 const jsWorkerSource = `
+const msg = (err) => String((err && err.message) || err);
+const runScenario = (Cls, steps) => {
+  let obj;
+  try { obj = new Cls(); } catch (err) { return [{ threw: true, message: msg(err) }]; }
+  return steps.map((s) => {
+    try {
+      const got = obj[s.call](...s.args);
+      return { ok: true, got: got === undefined ? null : got };
+    } catch (err) {
+      return { threw: true, message: msg(err) };
+    }
+  });
+};
+const post = (m) => {
+  try { self.postMessage(m); } catch { self.postMessage({ ...m, got: JSON.parse(JSON.stringify(m.got ?? null)) }); }
+};
 self.onmessage = (e) => {
-  const { code, fnName, cases } = e.data;
+  const { code, fnName, cases, mode } = e.data;
   let fn;
   try {
     fn = new Function(code + "\\n;return typeof " + fnName + " === 'function' ? " + fnName + " : undefined;")();
@@ -31,21 +49,36 @@ self.onmessage = (e) => {
     return;
   }
   if (typeof fn !== "function") {
-    self.postMessage({ type: "compile", message: "Define a function named " + fnName + "." });
+    self.postMessage({ type: "compile", message: "Define " + (mode === "scenario" ? "a class" : "a function") + " named " + fnName + "." });
     return;
   }
   self.postMessage({ type: "ready" });
   for (let i = 0; i < cases.length; i++) {
     const t0 = performance.now();
     try {
-      const got = fn(...cases[i].args);
-      self.postMessage({ type: "case", i, got, ms: performance.now() - t0 });
+      const got = mode === "scenario" ? runScenario(fn, cases[i].args[0]) : fn(...cases[i].args);
+      post({ type: "case", i, got, ms: performance.now() - t0 });
     } catch (err) {
       self.postMessage({ type: "case", i, error: String((err && err.message) || err), ms: performance.now() - t0 });
     }
   }
   self.postMessage({ type: "done" });
 };`;
+
+const PY_SCENARIO = `
+def __scenario(cls, steps):
+    try:
+        obj = cls()
+    except Exception as e:
+        return json.dumps([{"threw": True, "message": f"{type(e).__name__}: {e}"}])
+    out = []
+    for name, args in steps:
+        try:
+            out.append({"ok": True, "got": getattr(obj, name)(*args)})
+        except Exception as e:
+            out.append({"threw": True, "message": f"{type(e).__name__}: {e}"})
+    return json.dumps(out, default=str)
+`;
 
 const pyWorkerSource = (`
 // Current Pyodide runs in module workers only; tell it where its files live.
@@ -54,7 +87,7 @@ const ready = import(BASE + "pyodide.mjs")
   .then((m) => m.loadPyodide({ indexURL: BASE }))
   .then(async (py) => { await py.runPythonAsync("import json"); return py; });
 self.onmessage = async (e) => {
-  const { code, fnName, cases } = e.data;
+  const { code, fnName, cases, mode } = e.data;
   let py;
   try { py = await ready; } catch (err) {
     self.postMessage({ type: "compile", message: "Couldn't load Python: " + String(err && err.message || err) });
@@ -75,12 +108,24 @@ self.onmessage = async (e) => {
     return;
   }
   if (!ns.has(fnName)) {
-    self.postMessage({ type: "compile", message: "Define a function named " + fnName + "." });
+    self.postMessage({ type: "compile", message: "Define " + (mode === "scenario" ? "a class" : "a function") + " named " + fnName + "." });
     ns.destroy();
     return;
   }
   self.postMessage({ type: "ready" });
+  if (mode === "scenario") py.runPython(__PY_SCENARIO__, { globals: ns });
   for (let i = 0; i < cases.length; i++) {
+    if (mode === "scenario") {
+      try {
+        ns.set("__steps_json", JSON.stringify(cases[i].args[0].map((s) => [s.call, s.args])));
+        const t0 = performance.now();
+        const out = py.runPython("__scenario(" + fnName + ", json.loads(__steps_json))", { globals: ns });
+        self.postMessage({ type: "case", i, got: JSON.parse(out), ms: performance.now() - t0 });
+      } catch (err) {
+        self.postMessage({ type: "case", i, error: lastLine(err), ms: 0 });
+      }
+      continue;
+    }
     try {
       ns.set("__args_json", JSON.stringify(cases[i].args));
       py.runPython("__args = json.loads(__args_json)", { globals: ns });
@@ -95,7 +140,7 @@ self.onmessage = async (e) => {
   }
   ns.destroy();
   self.postMessage({ type: "done" });
-};`).replace("__BASE__", PYODIDE_BASE);
+};`).replace("__BASE__", PYODIDE_BASE).replace("__PY_SCENARIO__", JSON.stringify(PY_SCENARIO));
 
 let pyWorker: Worker | null = null;
 let pyLoaded = false;
@@ -115,6 +160,7 @@ export function runCases(
   fnName: string,
   cases: RunCase[],
   onProgress?: (done: number, phase: "loading" | "running") => void,
+  mode: "function" | "scenario" = "function",
 ): Promise<RunOutcome> {
   return new Promise((resolve) => {
     const worker = lang === "js" ? blobWorker(jsWorkerSource) : (warmPython(), pyWorker!);
@@ -165,6 +211,6 @@ export function runCases(
 
     onProgress?.(0, lang === "py" && !pyLoaded ? "loading" : "running");
     arm(startupMs + (cases[0]?.limitMs ?? 0) * 2);
-    worker.postMessage({ code, fnName, cases: cases.map((c) => ({ args: c.args })) });
+    worker.postMessage({ code, fnName, mode, cases: cases.map((c) => ({ args: c.args })) });
   });
 }

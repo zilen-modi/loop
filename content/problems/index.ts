@@ -16,6 +16,8 @@ import { rooftopRain } from "./two-pointers/rooftop-rain";
 import { rangeTotals } from "./prefix-sums/range-totals";
 import { netStock } from "./prefix-sums/net-stock";
 import { othersOutput } from "./prefix-sums/others-output";
+import { splitwise } from "./lld/splitwise";
+import { urlShortenerLab } from "./hld/url-shortener";
 
 export const problems: Problem[] = [
   // Chapter 3 · Hashing
@@ -26,6 +28,10 @@ export const problems: Problem[] = [
   busiestStretch, riderBonus, uniqueDishes, surgeZones, coverMenu, peakLoad, reviewCalmStretch,
   // Chapter 10 · Prefix sums
   rangeTotals, netStock, othersOutput,
+  // Low-level design · chapter 15
+  splitwise,
+  // System design · chapter 22
+  urlShortenerLab,
 ];
 
 export const problemById = (id: string) => problems.find((p) => p.id === id);

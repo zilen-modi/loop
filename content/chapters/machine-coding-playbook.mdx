@@ -1,0 +1,135 @@
+<ChapterHead kicker="Book 2 · Machine-coding craft · Chapter 9" title="The 90-minute playbook" concept="machine-coding" meta="About 20 minutes of reading · then a 90-minute build" />
+
+<Story when="Tuesday, 11 am">
+Tiffin is hiring backend engineers, and the second round is the same for everyone: "Build a parking lot. You have 90 minutes. It should run." The last candidate wrote 400 careful lines of classes and interfaces. At minute 88 nothing had run yet, and the demo was a stack trace.
+</Story>
+
+The candidate before that wrote 120 lines in one function. It ran perfectly. Then the interviewer said "now add weekend pricing", and every change broke something else.
+
+Neither failed for lack of skill. They failed the format. A <Term id="machine-coding">machine-coding</Term> round grades four things at once, and you have to deliver all four in the time:
+
+- **It works.** Code that runs and can be demoed beats a better design that doesn't.
+- **The design bends.** A new requirement lands partway through. Good structure absorbs it with a small change.
+- **The code reads well.** Clear names, small methods, validation at the edges, errors that say what went wrong.
+- **You explain as you go.** Interviewers grade your reasoning, not only the result.
+
+Product companies in India, Flipkart among the best known, have run this format for years, and it has spread to many teams elsewhere that prefer "build something real" to puzzle questions. Some companies now let you use an AI coding assistant during the round. That doesn't change the playbook. If anything it raises the bar on the parts a tool can't do for you: choosing the structure, reading code critically and proving it works.
+
+## The shape of the round
+
+Ninety minutes feels long until you split it up. This is the split that works for most people. Pick a phase to see what goes in it.
+
+<RoundTimeline />
+
+The numbers matter less than the order: clarify before you model, model before you code, get the core running before anything clever, and stop coding in time to demo.
+
+<Checkpoint id="mc-time" />
+
+## Clarify: ten minutes that save forty
+
+The prompt is short on purpose. "Build Splitwise" could mean groups, currencies, receipts, notifications. The interviewer wants to see you narrow it. Good questions are concrete:
+
+- What are the inputs and outputs of each operation? "When I add an expense, what do I get back?"
+- What happens with bad input? Throw an error, return a code, or ignore it?
+- How exact must numbers be? Money almost always means whole paise or cents, never floating point.
+- What's out of scope? Persistence, authentication, a user interface: usually all out.
+- Is there a scale or concurrency concern? Usually not for the core, but ask.
+
+Write the answers down where the interviewer can see them, then write the API: the method names, arguments and return values. Agreeing on the API early means the interviewer can follow your code, and it fixes the target you're building to.
+
+## Model: nouns, verbs and the part that will change
+
+Read the requirements again and pull out the nouns and the verbs. Nouns become entities, the data with rules attached: a User, an Expense, a Ticket, a Slot. Verbs become use cases, which live in a <Term id="service-layer">service layer</Term>: addExpense, settle, park, exit.
+
+Then ask the most useful question in the round: **which part is most likely to change?** In a parking lot it's pricing. In Splitwise it's how a bill is split. In an elevator it's the scheduling rule. Put that part behind an interface now, with one simple implementation. That's the <Term id="strategy-pattern">strategy pattern</Term>, and it's how you'll survive the extension later.
+
+A layout that fits almost every build:
+
+```js
+// Entities: data plus the rules that keep it valid
+class Ticket { constructor(id, plate, slot, enteredAt) { /* ... */ } }
+
+// The part that changes, behind one interface
+class HourlyPricing { price(ticket, exitAt) { /* ... */ } }
+
+// Storage, in memory, behind small classes you could swap later
+class SlotRepository { free(type) { /* ... */ } take(slot) { /* ... */ } }
+
+// Use cases: validate, coordinate, return results
+class ParkingLot {
+  constructor(slots, pricing) { this.slots = slots; this.pricing = pricing; }
+  park(plate, type) { /* ... */ }
+  exit(ticketId, exitAt) { /* ... */ }
+}
+```
+
+Don't draw every class you can think of. Interviewers mark down "pattern soup", meaning factories and abstract bases with nothing behind them, as readily as a single giant function. Add structure only where something varies or where it makes a test easier.
+
+## Core: make it run, then make it right
+
+Build the happy path end to end first: one user, one expense, one balance. Run it. Then the next operation. Run it again. Running every few minutes is how you avoid the 88th-minute stack trace, and it gives you something to show at any point.
+
+Keep state in memory: a Map or dict per kind of thing, wrapped in a small class. Don't build persistence unless it was asked for.
+
+Validate at the service boundary, and do it before changing anything. If a bill's percentages add up to 90, the call should throw and leave every balance exactly as it was. Half-applied changes are the most common bug interviewers find, and the easiest to avoid: check everything first, then write.
+
+## Extend: the requirement you knew was coming
+
+At some point the interviewer adds something: weekend pricing, a new split type, a VIP floor. This is the most important moment of the round. They're watching whether your design absorbs the change or collapses.
+
+<Checkpoint id="mc-extend" />
+
+Before typing, say what you'll change and why. "Pricing is already behind an interface, so this is a new class plus one line choosing which pricing to use." If your design doesn't have a seam in the right place, say that too, and make the smallest refactor that adds one. Honesty about a trade-off scores better than a silent hack.
+
+## Test and demo
+
+Leave fifteen minutes. Write a short driver, or a handful of tests, that walks through every use case including one invalid input. Then demo it, talk through the classes in one or two sentences each, and finish with what you'd do with more time: persistence, concurrency, more tests.
+
+Concurrency deserves one sentence even when nobody asks. "Two people booking the last seat at once would need a lock or an atomic check-and-set around the booking; here everything runs on one thread." Chapter 12 goes deeper.
+
+## The mistakes that cost the round
+
+- Coding in the first minute, before the API is agreed.
+- Building every feature halfway instead of the core all the way.
+- Floating-point money. Use whole paise or cents.
+- Validation scattered everywhere, or nowhere, and state changed before it's checked.
+- One class that does everything, or twelve classes that do nothing.
+- Going silent for twenty minutes. Narrate your decisions as you go.
+
+<PageBreak />
+
+## Your turn
+
+Practise the whole playbook on a real build: Splitwise in 90 minutes. The bench gives you the API and the rules, runs hidden scenarios against your class (in JavaScript or Python), and adds the interviewer's extension once the core passes. Start the clock if you want the real pressure.
+
+<ProblemLadder chapter="splitwise" />
+
+Chapter 15 walks through the design afterwards. Try the build first.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain to a friend how to spend 90 minutes in a machine-coding round, and what to do about the requirement the interviewer adds."
+  model="Spend the first twenty minutes clarifying requirements, agreeing the API and modelling the classes, putting the part most likely to change behind an interface. Build the happy path end to end and run it often, add the interviewer's new requirement as a new class rather than a rewrite, and stop with time to test and demo."
+  points={["Clarify requirements and agree the API first", "Model entities, a service and the part that changes", "Core happy path first, running often", "The extension slots in as a new class", "Save time to test and demo"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "What four things does a machine-coding round grade?", a: "Working code you can demo, a design that absorbs change, readable code with validation, and clear reasoning as you go." },
+    { q: "What's the most useful modelling question in the round?", a: "Which part is most likely to change? Put it behind an interface with one simple implementation (the strategy pattern)." },
+    { q: "How do you avoid half-applied changes on invalid input?", a: "Validate everything at the service boundary first, and only then change state." },
+    { q: "Why stop coding with about 15 minutes left?", a: "To run every use case, show validation, demo the code and explain the design. Code that doesn't run scores badly however good it is." },
+  ]}
+/>
+
+<Sources
+  reviewed="22 October 2026"
+  items={[
+    { label: "Refactoring.Guru: the strategy pattern", href: "https://refactoring.guru/design-patterns/strategy" },
+    { label: "Martin Fowler, Patterns of Enterprise Application Architecture: service layer", href: "https://martinfowler.com/eaaCatalog/serviceLayer.html" },
+    { label: "Martin Fowler, Patterns of Enterprise Application Architecture: repository", href: "https://martinfowler.com/eaaCatalog/repository.html" },
+  ]}
+/>

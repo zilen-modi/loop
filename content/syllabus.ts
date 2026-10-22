@@ -116,7 +116,7 @@ export const books: Book[] = [
       {
         title: "Machine-coding craft",
         chapters: [
-          ch(9, "The 90-minute playbook", { newFormat: true }),
+          ch(9, "The 90-minute playbook", { newFormat: true, slug: "machine-coding-playbook", available: true }),
           ch(10, "Storage, repositories and services"),
           ch(11, "Validation, errors and extensibility"),
           ch(12, "Concurrency"),
@@ -127,7 +127,7 @@ export const books: Book[] = [
         title: "Classic builds",
         chapters: [
           ch(14, "Parking lot"),
-          ch(15, "Splitwise"),
+          ch(15, "Splitwise", { slug: "splitwise", available: true }),
           ch(16, "Elevator system"),
           ch(17, "Movie ticket booking"),
           ch(18, "Board games"),
@@ -168,7 +168,7 @@ export const books: Book[] = [
       {
         title: "Foundations",
         chapters: [
-          ch(1, "The interview framework"),
+          ch(1, "The interview framework", { slug: "interview-framework", available: true }),
           ch(2, "Back-of-the-envelope estimation"),
           ch(3, "Networking"),
           ch(4, "APIs"),
@@ -204,7 +204,7 @@ export const books: Book[] = [
       {
         title: "Classic designs",
         chapters: [
-          ch(22, "URL shortener"),
+          ch(22, "URL shortener", { slug: "url-shortener", available: true }),
           ch(23, "Pastebin"),
           ch(24, "Distributed rate limiter"),
           ch(25, "Notification system"),
