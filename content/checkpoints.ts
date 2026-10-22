@@ -61,6 +61,30 @@ function evictions(capacity: number, uses: string[], policy: "lru" | "lfu") {
   return out;
 }
 
+/** A tiny undo-log store: ops are ["set", k, v] | ["begin"] | ["commit"] | ["rollback"]. Returns the final value of key. */
+function replayTx(ops: (string | number)[][], key: string) {
+  const store = new Map<string, string | number>();
+  const logs: [string, string | number | undefined][][] = [];
+  for (const [op, k, v] of ops) {
+    if (op === "begin") logs.push([]);
+    else if (op === "commit") {
+      const log = logs.pop()!;
+      logs[logs.length - 1]?.push(...log);
+    } else if (op === "rollback") {
+      const log = logs.pop()!;
+      for (let i = log.length - 1; i >= 0; i--) {
+        const [kk, prev] = log[i];
+        if (prev === undefined) store.delete(kk);
+        else store.set(kk, prev);
+      }
+    } else {
+      logs[logs.length - 1]?.push([k as string, store.get(k as string)]);
+      store.set(k as string, v);
+    }
+  }
+  return store.has(key) ? String(store.get(key)) : "Nothing (the key is gone)";
+}
+
 const approx = (x: number) => {
   const p = 10 ** (Math.floor(Math.log10(x)) - 1);
   return `About ${(Math.round(x / p) * p).toLocaleString("en-US")}`;
@@ -214,6 +238,25 @@ export const checkpoints: Record<string, Checkpoint> = {
     options: ["Yes", "No"],
     compute: () => ([0, 4, 9].filter((t) => t > 10 - 10).length < 3 ? "Yes" : "No"),
     explain: "The window is (0 s, 10 s]: the request at 0 s is exactly 10 seconds old, so it no longer counts. That leaves 4 s and 9 s, two of three, so the request is allowed. Boundary rules like this are what hidden tests check.",
+  },
+  "kv-rollback": {
+    id: "kv-rollback",
+    prompt: "set price = 100. begin. set price = 120. begin. set price = 150. commit. rollback. What is price now?",
+    options: ["150", "120", "100", "Nothing (the key is gone)"],
+    compute: () => replayTx([["set", "price", 100], ["begin"], ["set", "price", 120], ["begin"], ["set", "price", 150], ["commit"], ["rollback"]], "price"),
+    explain: "The inner commit hands its change to the outer transaction instead of making it permanent. The outer rollback then undoes both the 150 and the 120, back to the value before the outer begin: 100.",
+  },
+  "kv-expiry": {
+    id: "kv-expiry",
+    prompt: "At t = 0, set otp = 4821 with a TTL of 300 ms. Nobody reads it. At t = 300 you count how many keys hold 4821. What should the count be?",
+    options: ["0", "1"],
+    compute: () => {
+      const setAt = 0;
+      const ttl = 300;
+      const now = 300;
+      return now < setAt + ttl ? "1" : "0"; // live while now < set time + TTL
+    },
+    explain: "The key is live while t < 0 + 300, so at t = 300 it's gone, even though nothing read it. That's why expiry needs its own structure (a min-heap of expiry times) instead of only checking on reads.",
   },
 };
 

@@ -202,3 +202,87 @@ export function TokenBucketLab() {
     </div>
   );
 }
+
+type TxOp = { label: string; run: (s: TxState) => TxState | string };
+type TxState = { store: Record<string, number>; logs: [string, number | null][][] };
+
+/** Nested transactions as an undo log you can watch: each open transaction remembers what it overwrote. */
+export function TransactionLab() {
+  const [s, setS] = useState<TxState>({ store: { price: 100 }, logs: [] });
+  const [line, setLine] = useState("price is 100. Open a transaction and change it.");
+  const set = (v: number): TxOp => ({
+    label: `price = ${v}`,
+    run: (st) => {
+      const logs = st.logs.map((l) => [...l]);
+      if (logs.length) logs[logs.length - 1].push(["price", st.store.price ?? null]);
+      return { store: { ...st.store, price: v }, logs };
+    },
+  });
+  const ops: TxOp[] = [
+    { label: "begin", run: (st) => ({ ...st, logs: [...st.logs, []] }) },
+    set(120),
+    set(150),
+    {
+      label: "commit",
+      run: (st) => {
+        if (!st.logs.length) return "No open transaction to commit.";
+        const logs = st.logs.map((l) => [...l]);
+        const inner = logs.pop()!;
+        if (logs.length) logs[logs.length - 1].push(...inner);
+        return { ...st, logs };
+      },
+    },
+    {
+      label: "rollback",
+      run: (st) => {
+        if (!st.logs.length) return "No open transaction to roll back.";
+        const logs = st.logs.map((l) => [...l]);
+        const inner = logs.pop()!;
+        const store = { ...st.store };
+        for (let i = inner.length - 1; i >= 0; i--) {
+          const [k, prev] = inner[i];
+          if (prev === null) delete store[k];
+          else store[k] = prev;
+        }
+        return { store, logs };
+      },
+    },
+  ];
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · undo logs for nested transactions</p>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+        {ops.map((op) => (
+          <button
+            key={op.label}
+            className="btn small"
+            onClick={() => {
+              const next = op.run(s);
+              if (typeof next === "string") return setLine(next);
+              setS(next);
+              setLine(`${op.label} → price is ${next.store.price ?? "gone"}, ${next.logs.length} transaction${next.logs.length === 1 ? "" : "s"} open.`);
+            }}
+          >
+            {op.label}
+          </button>
+        ))}
+        <button className="btn small" onClick={() => { setS({ store: { price: 100 }, logs: [] }); setLine("Reset: price is 100."); }} aria-label="Reset the store">↺</button>
+      </div>
+      <div style={{ display: "grid", gap: 6 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <span className="kicker" style={{ margin: 0, width: 92 }}>Store</span>
+          <span style={{ fontFamily: "var(--mono)", fontSize: 14 }} data-testid="tx-store">price = {s.store.price ?? "(gone)"}</span>
+        </div>
+        {s.logs.map((log, i) => (
+          <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", paddingLeft: i * 14 }}>
+            <span className="kicker" style={{ margin: 0, width: 92 - i * 14 }}>Undo log {i + 1}</span>
+            <span style={{ fontFamily: "var(--mono)", fontSize: 13, color: "var(--ink-2)" }}>
+              {log.length ? log.map(([k, v]) => `${k} was ${v ?? "unset"}`).join(" · ") : "(nothing changed yet)"}
+            </span>
+          </div>
+        ))}
+      </div>
+      <p role="status" style={{ margin: "8px 0 0", fontSize: 13.5, color: "var(--ink-2)" }} data-testid="tx-line">{line}</p>
+    </div>
+  );
+}

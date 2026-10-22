@@ -1,0 +1,94 @@
+<ChapterHead kicker="Book 2 · Classic builds · Chapter 25" title="Key-value store with TTL and transactions" concept="undo-log" meta="About 20 minutes of reading · one 90-minute build" />
+
+<Story when="Thursday, 9 pm">
+Checkout at Tiffin keeps one-time passwords, carts and feature flags in a small in-memory store. A coupon bug changes six prices before failing halfway, and the "undo" script restores only three of them. Elsewhere, OTPs that should have expired after five minutes still work, because they're only checked when someone reads them, and a dashboard that counts active OTPs never sees them leave.
+</Story>
+
+This build turns up as "design an in-memory database", "build Redis-lite" or "a key-value store with transactions". It looks like a hash map with extras. The interviewer is really testing two ideas that are easy to get subtly wrong: **undoing** a group of changes, nested to any depth, and **expiring** keys whether or not anyone reads them.
+
+## Clarify
+
+- **What does commit mean when transactions are nested?** In the bench, committing the innermost transaction hands its changes to the one around it; only the outermost commit makes them permanent. Some versions commit everything at once, so ask.
+- **When exactly does a key expire?** "Live while now < set time + TTL" is the bench's rule. Is the boundary inclusive? The hidden tests check it.
+- **Does a new set clear an old TTL?** Here it does: a set without a TTL never expires.
+- **What happens when you roll back to a value that has expired since?** It stays gone.
+
+## Undo, two ways
+
+There are two classic designs for nested transactions.
+
+**Layers.** Each transaction is a map of changes on top of the store. A read walks the layers from the top. Commit merges the top layer into the one below, and rollback throws it away. Rollback is O(1), but every read gets slower as transactions nest, and counting values means looking through every layer.
+
+**An <Term id="undo-log">undo log</Term>.** Changes go straight into the store, and each open transaction remembers what it overwrote. Reads stay O(1). Rollback replays the log backwards. Commit appends the inner log to the outer one, so a later outer rollback still undoes everything. This is the design the reference uses, and it's how many real databases work.
+
+Try it: the store starts with price = 100.
+
+<TransactionLab />
+
+<Checkpoint id="kv-rollback" />
+
+## Expiry that doesn't wait for reads
+
+Checking expiry only when a key is read ("lazy expiry") makes get correct, but nothing else. Counts, listings and memory all keep the dead key until someone happens to touch it.
+
+The fix is a **min-heap of (expiry time, key)**. Time only moves forward, so whenever a call brings a new time, pop everything that's due and remove it. If a key was overwritten since, its old heap entry no longer matches, so skip it. Each key costs O(log n) once, and the store never holds anything expired.
+
+<Checkpoint id="kv-expiry" />
+
+Expiry and transactions meet in one rule: rolling back restores old values *unless they've expired by now*. One function that writes entries, and drops any that are already dead, handles rollback, expiry and plain sets the same way.
+
+## One function changes entries
+
+The extension asks for `count(value)` in O(1): how many live keys hold this value. With every change going through a single `put(key, entry)` that also updates a value → count map, counting is a lookup. Set, delete, rollback and expiry all call `put()`, so the counts can't drift. Scanning the keys on each count works, but it's the answer the interviewer is waiting for you to improve.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Return the remaining TTL of a key." Store the expiry, subtract the current time.
+- "Two clients, each with their own transaction." Now you need isolation: lock keys as they're written, or keep versions (MVCC) so readers see a snapshot.
+- "Survive a restart." Append every command to a log file and replay it on start; compact it now and then.
+- "Cap the memory." Evict with LRU (chapter 20), and decide what eviction means for keys inside an open transaction.
+
+Traps that cost people the round:
+
+- Committing the inner transaction straight to the store, so an outer rollback can't undo it.
+- Expiry only on read, so counts and listings include dead keys.
+- Rollback that resurrects values that have expired.
+- A stored 0 or empty string treated as missing.
+
+<PageBreak />
+
+## Your turn
+
+<ProblemLadder chapter="kv-store" />
+
+The scenarios include generated sessions of 3,000 operations with transactions nested up to five deep, keys expiring in the middle of them, and calls that must be refused.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how you'd support nested transactions and expiry in a key-value store."
+  model="Write changes straight to the store while each open transaction keeps an undo log of what it overwrote; rollback replays the log backwards, and committing an inner transaction appends its log to the outer one. Expiry times go in a min-heap that's popped whenever time moves forward, so keys disappear on time even if nobody reads them, and rollback never restores a value that has expired."
+  points={["Undo log per open transaction", "Rollback replays the log backwards", "Inner commit hands its log to the outer transaction", "Min-heap of expiry times, popped as time moves", "Expired values stay gone after a rollback"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "Undo log or layers: what's the trade-off?", a: "An undo log keeps reads O(1) and makes rollback replay the changes; layers make rollback O(1) but slow every read as transactions nest." },
+    { q: "What does committing an inner transaction do here?", a: "It appends its undo log to the outer transaction, so rolling back the outer one later undoes the inner changes too." },
+    { q: "Why isn't checking expiry on read enough?", a: "Counts, listings and memory would still include dead keys. A min-heap of expiry times removes them as time moves forward." },
+    { q: "Which single function keeps counts correct?", a: "The one put() that every change goes through (set, delete, rollback, expiry), which updates the value counts as it writes." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Redis documentation: how keys expire (EXPIRE)", href: "https://redis.io/docs/latest/commands/expire/" },
+    { label: "Redis documentation: transactions (MULTI, EXEC, DISCARD)", href: "https://redis.io/docs/latest/develop/interact/transactions/" },
+    { label: "PostgreSQL documentation: savepoints (nested rollback)", href: "https://www.postgresql.org/docs/current/sql-savepoint.html" },
+  ]}
+/>

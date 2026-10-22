@@ -4,7 +4,7 @@
 export type Concept = {
   id: string;
   term: string;
-  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle";
+  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2";
   hue: "teal" | "violet" | "amber" | "rose" | "blue";
   definition: string;
   appearsIn: string[];
@@ -162,5 +162,13 @@ export const concepts: Record<string, Concept> = {
     hue: "amber",
     definition: "A rate limit as a bucket of tokens that refills at a steady rate up to a capacity. Each request takes one token; an empty bucket means wait. The capacity is the biggest burst allowed.",
     appearsIn: ["LLD 19 · Rate limiter", "HLD 17 · Distributed rate limiting", "HLD 24 · Distributed rate limiter"],
+  },
+  "undo-log": {
+    id: "undo-log",
+    term: "Undo log",
+    glyph: "Undo2",
+    hue: "violet",
+    definition: "A record of what each change overwrote, kept while a transaction is open. Rolling back replays it backwards; committing keeps the changes (or hands the log to the transaction outside).",
+    appearsIn: ["LLD 25 · Key-value store", "HLD 11 · Transactions and isolation"],
   },
 };

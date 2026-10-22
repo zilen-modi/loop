@@ -6,6 +6,7 @@ export const chapterLoaders: Record<string, () => Promise<{ default: React.Compo
   "lld/splitwise": () => import("./splitwise.mdx"),
   "lld/rate-limiter": () => import("./rate-limiter.mdx"),
   "lld/lru-lfu-cache": () => import("./lru-lfu-cache.mdx"),
+  "lld/kv-store": () => import("./kv-store.mdx"),
   "hld/interview-framework": () => import("./interview-framework.mdx"),
   "hld/url-shortener": () => import("./url-shortener.mdx"),
 };
