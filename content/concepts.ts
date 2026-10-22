@@ -4,7 +4,7 @@
 export type Concept = {
   id: string;
   term: string;
-  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2";
+  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen";
   hue: "teal" | "violet" | "amber" | "rose" | "blue";
   definition: string;
   appearsIn: string[];
@@ -170,5 +170,13 @@ export const concepts: Record<string, Concept> = {
     hue: "violet",
     definition: "A record of what each change overwrote, kept while a transaction is open. Rolling back replays it backwards; committing keeps the changes (or hands the log to the transaction outside).",
     appearsIn: ["LLD 25 · Key-value store", "HLD 11 · Transactions and isolation"],
+  },
+  "fail-open": {
+    id: "fail-open",
+    term: "Fail open / fail closed",
+    glyph: "DoorOpen",
+    hue: "rose",
+    definition: "What a check does when something it depends on is down. Fail open lets requests through unchecked (stays available); fail closed refuses them (stays safe). The right choice depends on which failure costs more.",
+    appearsIn: ["HLD 24 · Distributed rate limiter", "HLD 18 · Reliability", "HLD 20 · Security"],
   },
 };

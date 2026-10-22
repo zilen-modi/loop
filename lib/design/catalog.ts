@@ -49,7 +49,7 @@ export const catalog: Record<NodeKind, Spec> = {
   search: { label: "Search index", short: "Search", category: "data", capacity: 2_000, writeCapacity: 1_000, latencyMs: 25, writeLatencyMs: 50, costPerMonth: 350, maxCount: 20, note: "Elasticsearch-style inverted index. 2k queries/s per node; indexing a document is slower than a query (1k docs/s)." },
   wsgw: { label: "WebSocket gateway", short: "WS", category: "edge", capacity: 20_000, latencyMs: 2, costPerMonth: 120, maxCount: 50, note: "Holds long-lived connections (about 100k per machine) and pushes messages to clients. 20k msgs/s each." },
   stream: { label: "Stream (partitions)", short: "Stream", category: "async", capacity: 10_000, latencyMs: 5, costPerMonth: 40, maxCount: 200, note: "Kafka-style partitioned log you can replay. Order is kept within a partition. Count = partitions, 10k msgs/s each." },
-  limiter: { label: "Rate limiter", short: "Limiter", category: "edge", capacity: 50_000, latencyMs: 1, costPerMonth: 60, maxCount: 10, note: "Checks every request against its client's limit (token bucket) before it reaches the app. 50k checks/s each." },
+  limiter: { label: "Rate-limit gateway", short: "Gateway", category: "edge", capacity: 8_000, latencyMs: 1, costPerMonth: 60, maxCount: 20, note: "API gateway nodes that check every call against its client's limit (token bucket) before passing it on. 8k calls/s each." },
   provider: { label: "Notification provider", short: "Provider", category: "external", capacity: 5_000, latencyMs: 200, costPerMonth: 0, maxCount: 1, fixedCount: 1, external: true, note: "Third-party SMS, push or email service. Your account allows 5k sends/s; you can't scale it, and sometimes it goes down." },
 };
 

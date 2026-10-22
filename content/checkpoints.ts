@@ -279,6 +279,24 @@ export const checkpoints: Record<string, Checkpoint> = {
     compute: () => `About ${Math.round(10_000 / (300 * 0.2) / 10) * 10}`,
     explain: "±10% of 300 s is a 60-second spread, so 10,000 ÷ 60 ≈ 167 a second. The database sees a gentle stream of refills instead of 10,000 at the same moment.",
   },
+  "drl-local": {
+    id: "drl-local",
+    prompt: "A partner's limit is 100 calls a minute. You run 8 gateways, each counting on its own and allowing 100 a minute, with calls spread round robin. The partner sends 1,000 calls in a minute. How many get through?",
+    options: ["100", "125", "800", "1,000"],
+    compute: () => Math.min(1000, 8 * 100).toLocaleString("en-US"),
+    explain: "Each gateway sees about 125 of the partner's calls and lets 100 of them through: 8 × 100 = 800, eight times the limit. Local counts only work if each partner always lands on the same gateway, or if the counts are shared.",
+  },
+  "drl-nodes": {
+    id: "drl-nodes",
+    prompt: "Every one of 30,000 calls a second runs one counter update on Redis. One Redis node handles about 100,000 operations a second. How many nodes do you need to stay under 70% even after one fails?",
+    options: ["1", "2", "3", "5"],
+    compute: () => {
+      const work = 30_000 / 100_000; // the load as a fraction of one node
+      // the smallest count that still leaves at least one node, under 70%, after one fails
+      for (let n = 2; ; n++) if (work / (n - 1) <= 0.7) return String(n);
+    },
+    explain: "One node would be 30% busy, but if it fails there's nothing left. With two, losing one leaves a single node at 30%. Memory isn't the issue either: 50,000 partners × ~100 bytes is about 5 MB.",
+  },
 };
 
 export function correctIndex(c: Checkpoint): number {

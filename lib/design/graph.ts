@@ -14,6 +14,8 @@ export type Graph = {
   firstLinked: (from: NodeKind[], candidates: NodeKind[]) => NodeKind | null;
   /** True when this count comes from the failure drill rather than the design. */
   overridden: (k: NodeKind) => boolean;
+  /** A link drawn in the design, even if one end is down in the failure drill. */
+  wired: (a: NodeKind, b: NodeKind) => boolean;
 };
 
 export function makeGraph(design: Design, override: Partial<Record<NodeKind, number>> = {}): Graph {
@@ -30,6 +32,7 @@ export function makeGraph(design: Design, override: Partial<Record<NodeKind, num
     edge,
     firstLinked: (from, candidates) => candidates.find((c) => from.some((f) => edge(f, c))) ?? null,
     overridden: (k) => override[k] !== undefined,
+    wired: (a, b) => design.nodes.some((n) => n.kind === a) && design.nodes.some((n) => n.kind === b) && design.edges.some(([x, y]) => (x === a && y === b) || (x === b && y === a)),
   };
 }
 

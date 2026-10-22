@@ -272,3 +272,44 @@ export function StampedeLab() {
     </div>
   );
 }
+
+/** How many of one partner's calls get through when several gateways count them. */
+export function GatewayCounts() {
+  const [n, setN] = useState(6);
+  const [mode, setMode] = useState<"local" | "central" | "sync">("local");
+  const limit = 100;
+  const sent = 300; // per minute, spread round robin
+  const through = mode === "central" ? limit : mode === "sync" ? limit + Math.ceil((sent / 60) * 0.1) : Math.min(sent, limit * n);
+  const labels = { local: "Each gateway counts alone", central: "One shared counter", sync: "Local, synced every 100 ms" };
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · one partner, limit {limit} a minute, sending {sent}</p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
+        <div className="seg" role="group" aria-label="Where counts live">
+          {(["local", "central", "sync"] as const).map((m) => (
+            <button key={m} aria-pressed={mode === m} onClick={() => setMode(m)}>{labels[m]}</button>
+          ))}
+        </div>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-2)" }}>
+          Gateways <input type="range" min={1} max={10} value={n} onChange={(e) => setN(+e.target.value)} aria-label="Number of gateways" /> <span style={{ fontFamily: "var(--mono)" }}>{n}</span>
+        </label>
+      </div>
+      <div style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 72, marginBottom: 6 }} aria-hidden="true">
+        {Array.from({ length: n }, (_, i) => {
+          const sees = sent / n;
+          const allows = mode === "local" ? Math.min(sees, limit) : through / n;
+          return (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
+              <span style={{ height: `${(Math.max(0, sees - allows) / sent) * 100 * 2}%`, background: "var(--fail-soft)", borderRadius: "4px 4px 0 0" }} />
+              <span style={{ height: `${(allows / sent) * 100 * 2}%`, background: "var(--accent)" }} />
+            </div>
+          );
+        })}
+      </div>
+      <p style={{ margin: 0, fontSize: 13.5 }} data-testid="gateway-through">
+        <strong style={{ color: through > limit * 1.1 ? "var(--fail)" : "var(--pass)" }}>{through}</strong> of {sent} calls get through
+        {through > limit * 1.1 ? `: ${(through / limit).toFixed(1)}× the limit` : mode === "sync" ? ": within one sync interval of the limit" : ": exactly the limit"}.
+      </p>
+    </div>
+  );
+}

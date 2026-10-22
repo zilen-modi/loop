@@ -1,0 +1,94 @@
+<ChapterHead kicker="Book 3 · Classic designs · Chapter 24" title="Distributed rate limiter" concept="token-bucket" meta="About 20 minutes of reading · one design lab" />
+
+<Story when="Monday, 11 am">
+The partner API's rate limiter worked perfectly in testing: 100 calls a minute per partner, enforced by a token bucket in the gateway's memory. In production there are eight gateways behind a load balancer. One partner's runaway script gets 800 calls a minute through, and the on-call engineer spends an hour finding out why.
+</Story>
+
+The LLD book built a rate limiter for one machine. This chapter is about the same limiter spread across a fleet. A limit is about a *partner*, but the work is spread across *machines*, so the question becomes: where does the count live, and what does that cost each call?
+
+## Requirements and numbers
+
+- Every API call is checked against its partner's limit before it reaches the API servers. Over the limit means a 429 with a retry time.
+- Limits are accurate to within about 10% however many gateways are running, and the check adds at most a couple of milliseconds.
+- A counter-store outage mustn't take the API down. No single partner can swamp a machine.
+
+The numbers: 30,000 calls a second at peak from 50,000 partners. The biggest, a national chain, sends about 30% of them. The state is tiny: 50,000 partners × about 100 bytes is roughly 5 MB. Memory isn't the hard part; agreement between machines is.
+
+## Where does the count live?
+
+<GatewayCounts />
+
+<Checkpoint id="drl-local" />
+
+There are three answers, each with a cost.
+
+**Each gateway on its own.** Nothing shared, no extra hop. But a partner spread over N gateways is counted N times separately, so it can get N times its limit through. You can make local counts exact by sending each partner to the same gateway (consistent hashing on the partner id), but then the chain's 9,000 calls a second land on one machine.
+
+**A shared counter store.** A token bucket per partner in an in-memory store such as Redis, updated on every call by a short atomic script: refill, check, take. It's exact, and costs one round trip (well under a millisecond) per call. The store must be in memory: a disk-backed database adds milliseconds and can't take 30,000 writes a second on one primary.
+
+<Checkpoint id="drl-nodes" />
+
+**Local counts, synced.** Each gateway counts in memory and pushes its counts to the shared store every 100 ms or so. There's no hop on the call path, and it's accurate to within whatever arrives in one sync interval. It's more to build, and more to explain.
+
+## When the store is down
+
+A shared counter is a new dependency, so decide what happens without it. This is <Term id="fail-open">fail open or fail closed</Term>:
+
+- **Fail open:** let calls through, unchecked, until the store is back, and alert. The API stays up; limits pause.
+- **Fail closed:** refuse calls. Limits always hold, but a cache outage becomes an API outage.
+
+Most public APIs fail open, because a few minutes without limits is cheaper than refusing every customer. Systems that limit to protect something fragile downstream (a payment provider with strict quotas, say) may fail closed. Either is a fine answer if you say why.
+
+## Spreading the load
+
+Round robin spreads every partner across every gateway, so even the chain's 9,000 calls a second are shared among six machines. Pair it with a shared or synced counter, and accuracy doesn't depend on where calls land.
+
+## Try it in the lab
+
+The lab has the pieces: a load balancer, rate-limit gateways (8,000 calls a second each), a cache for counters, API servers and a key-value store for menus. Choose where counts live, how calls are routed and what happens in an outage. The simulator runs 30,000 calls a second, then knocks out one machine at a time, and the scorecard checks accuracy, the added latency, the outage behaviour and the biggest partner separately.
+
+<ProblemLadder chapter="distributed-rate-limiter" />
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Limits per endpoint too." Check a second bucket keyed by partner and endpoint; take from both only if both allow it.
+- "Multi-region." One global limit needs cross-region coordination (slow), so most systems give each region a share of the limit, or accept regional limits.
+- "Tell the client when to retry." Return Retry-After and the remaining quota in headers.
+- "Protect a struggling downstream service." That's load shedding: drop or queue low-priority work when latency rises, whoever the caller is.
+
+Traps that cost people the round:
+
+- Local token buckets behind a round-robin load balancer, with no mention of the N× problem.
+- Counters in the main SQL database.
+- No answer to "what if Redis is down?"
+- Sticky routing by partner without noticing the biggest partner's load.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain where you'd keep rate-limit counts for a fleet of gateways, and what happens if that store fails."
+  model="Keep a token bucket per partner in a shared in-memory store, updated atomically on every call, so every gateway agrees and calls can be spread round robin; it costs one sub-millisecond hop. If the store is unreachable, fail open and alert, so the API stays up with limits paused, or sync local counts periodically to avoid both the hop and the dependency."
+  points={["Counts must be shared (or synced) across gateways", "An in-memory store, updated atomically", "Round robin so no partner swamps one machine", "Decide fail open vs fail closed", "Local counts with periodic sync as the alternative"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "Why do local token buckets fail behind a round-robin load balancer?", a: "Each of N gateways counts a partner separately, so the partner can get up to N times its limit through." },
+    { q: "What's the cost of a shared counter, and where must it live?", a: "One round trip per call, so it must be an in-memory store close by (Redis-style), updated atomically." },
+    { q: "Fail open vs fail closed?", a: "Open keeps the API up with limits paused during an outage; closed keeps limits but turns a store outage into an API outage." },
+    { q: "Why not route each partner to one gateway?", a: "Local counts become exact, but the biggest partner's whole load lands on one machine." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Stripe: scaling your API with rate limiters", href: "https://stripe.com/blog/rate-limiters" },
+    { label: "Redis documentation: rate limiting with Redis", href: "https://redis.io/glossary/rate-limiting/" },
+    { label: "Cloudflare: how we built rate limiting capable of scaling to millions of domains", href: "https://blog.cloudflare.com/counting-things-a-lot-of-different-things/" },
+  ]}
+/>
