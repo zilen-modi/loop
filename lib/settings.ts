@@ -12,7 +12,10 @@ export type ReaderSettings = {
   spacing: number; // index into LINE_HEIGHTS
   margins: number; // index into MARGINS
   spread: boolean; // two pages side by side on wide screens
+  turn: PageTurn;
 };
+
+export type PageTurn = "flip" | "slide" | "none";
 
 export const FONT_SIZES = [15, 16.5, 18, 20, 22.5];
 export const LINE_HEIGHTS = [1.5, 1.7, 1.9];
@@ -25,6 +28,7 @@ export const settings = createLocalStore<ReaderSettings>("loop:settings", {
   spacing: 1,
   margins: 1,
   spread: true,
+  turn: "flip",
 });
 
 export const THEMES: { id: Theme; label: string }[] = [

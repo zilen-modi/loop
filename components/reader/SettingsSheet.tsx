@@ -67,6 +67,7 @@ export default function SettingsSheet({ wide, onClose }: { wide: boolean; onClos
       )}
       {row("Line spacing", steps(LINE_HEIGHTS.length, s.spacing, (i) => set({ spacing: i }), ["Tight", "Normal", "Airy"]))}
       {row("Margins", steps(MARGINS.length, s.margins, (i) => set({ margins: i }), ["Narrow", "Normal", "Wide"]))}
+      {row("Page turn", steps(3, ["flip", "slide", "none"].indexOf(s.turn), (i) => set({ turn: (["flip", "slide", "none"] as const)[i] }), ["Turn", "Slide", "None"]))}
       {wide &&
         row(
           "Layout",

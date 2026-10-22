@@ -7,6 +7,8 @@ import { applyTheme, FONT_SIZES, LINE_HEIGHTS, MARGINS, settings } from "@/lib/s
 import { addCard, clozeFromHighlight, pace, reading, recordPageRead, removeCard, updateChapter, type Highlight } from "@/lib/progress";
 import { clearMarks, isTextBlock, offsetIn, wrapRange } from "@/lib/highlight-dom";
 import SettingsSheet from "./SettingsSheet";
+import { turnPage, type FlipHandle } from "@/lib/page-flip";
+import { usePrefersReducedMotion } from "@/lib/use-mounted";
 import XRayPopover from "./XRayPopover";
 import SelectionMenu, { type SelectionState } from "./SelectionMenu";
 import HighlightsDrawer from "./HighlightsDrawer";
@@ -51,6 +53,11 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
   const swipe = useRef<{ x: number; y: number; t: string } | null>(null);
   const suppressClick = useRef(false);
   const restored = useRef(false);
+  const flipLayerRef = useRef<HTMLDivElement>(null);
+  const flipRef = useRef<FlipHandle | null>(null);
+  const pageRef = useRef(0);
+  pageRef.current = page;
+  const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => applyTheme(s.theme), [s.theme]);
 
@@ -103,6 +110,7 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
   useLayoutEffect(() => {
     const art = articleRef.current;
     if (!art || !box.w) return;
+    flipRef.current?.finish();
     const list = blocks();
     const last = list[list.length - 1];
     const artLeft = art.getBoundingClientRect().left;
@@ -137,23 +145,35 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
 
   const go = useCallback(
     (delta: number) => {
-      setAnimate(true);
       setPanel(null);
       setTerm(null);
       setSelection(null);
       setChrome(false);
-      setPage((p) => {
-        const next = Math.min(Math.max(p + delta, 0), pages - 1);
-        if (delta > 0 && next !== p) {
-          const startChars = offsets.starts[anchor] ?? 0;
-          const wordsOnPage = Math.max(0, ((offsets.starts[anchor + 3] ?? offsets.total) - startChars) / CHARS_PER_WORD);
-          recordPageRead(wordsOnPage, (Date.now() - arrivedAt.current) / 1000);
-        }
-        arrivedAt.current = Date.now();
-        return next;
-      });
+      flipRef.current?.finish(); // a quick second press completes the turn in progress
+      const p = pageRef.current;
+      const next = Math.min(Math.max(p + delta, 0), pages - 1);
+      if (next === p) return;
+      if (delta > 0) {
+        const startChars = offsets.starts[anchor] ?? 0;
+        const wordsOnPage = Math.max(0, ((offsets.starts[anchor + 3] ?? offsets.total) - startChars) / CHARS_PER_WORD);
+        recordPageRead(wordsOnPage, (Date.now() - arrivedAt.current) / 1000);
+      }
+      arrivedAt.current = Date.now();
+      const commit = () => {
+        pageRef.current = next;
+        setPage(next);
+      };
+      const mode = reduceMotion ? "none" : s.turn;
+      if (mode === "flip" && articleRef.current && flipLayerRef.current) {
+        setAnimate(false);
+        const handle = turnPage(flipLayerRef.current, articleRef.current, layout, p, next, commit);
+        flipRef.current = handle;
+        return;
+      }
+      setAnimate(mode === "slide");
+      commit();
     },
-    [pages, offsets, anchor],
+    [pages, offsets, anchor, reduceMotion, s.turn, layout],
   );
 
   const goToElement = useCallback(
@@ -348,6 +368,7 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
             >
               {children}
             </article>
+            <div ref={flipLayerRef} className="flip-layer" aria-hidden="true" />
           </div>
           <p className="reader-foot-min" aria-hidden={chrome}>
             {chrome ? "" : `Location ${location} · ${leftText}`}

@@ -160,6 +160,18 @@ button { cursor: pointer; }
   widows: 3;
 }
 .reader-article.no-anim { transition: none; }
+
+/* ——— page turn (lib/page-flip.ts) */
+.flip-layer { position: absolute; inset: 0; z-index: 5; pointer-events: none; perspective: 2400px; }
+.leaf { position: absolute; top: 0; transform-style: preserve-3d; will-change: transform; }
+.leaf-page { overflow: hidden; background: var(--page); }
+.leaf > .leaf-page { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.leaf > .leaf-page:first-child { box-shadow: 0 0 28px rgb(0 0 0 / 14%); }
+.leaf-back { transform: rotateY(180deg); }
+.leaf-blank { background: var(--page-2); }
+.leaf-shade { position: absolute; inset: 0; opacity: 0; pointer-events: none; background: linear-gradient(to left, rgb(0 0 0 / 22%), rgb(0 0 0 / 4%) 45%, transparent 70%); }
+.leaf-shade.back { background: linear-gradient(to right, rgb(0 0 0 / 22%), rgb(0 0 0 / 4%) 45%, transparent 70%); }
+:root[data-theme="night"] .leaf > .leaf-page:first-child { box-shadow: 0 0 28px rgb(0 0 0 / 55%); }
 .reader-chrome { position: absolute; left: 0; right: 0; z-index: 20; display: flex; align-items: center; gap: 8px; padding: 10px 14px; font: 13px var(--sans); color: var(--ink-3); background: var(--page); transition: opacity 180ms ease, transform 180ms ease; }
 .reader-chrome.top { top: 0; border-bottom: 1px solid var(--rule); }
 .reader-chrome.bottom { bottom: 0; border-top: 1px solid var(--rule); }
