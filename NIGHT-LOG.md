@@ -6,7 +6,7 @@ Legend: ✅ done · ⚠️ done with caveats · ⛔ stuck (partial work on a `wi
 
 Every item has to pass the same gate before it counts as done: tsc, lint, `check:content`, build, its own browser test, the regression suites, the responsive sweep and a screenshot review.
 
-HLD progress: 2 / 48 chapters. LLD progress: 7 / 38 chapters.
+HLD progress: 6 / 48 chapters. LLD progress: 7 / 38 chapters.
 
 | # | Item | Status | Commit | Notes |
 |---|---|---|---|---|
@@ -19,3 +19,7 @@ HLD progress: 2 / 48 chapters. LLD progress: 7 / 38 chapters.
 | 12 | LLD 20 LRU and LFU cache build and chapter | ✅ | 6f67064 | O(1) required: a slow-variant check shows the array version is correct but 1.8× over the limit, while the references take 91 ms (JS) and 362 ms (Python) in the browser. Python now gets 4× JS's limit on generated scenarios. The computed checkpoint caught my own wrong option set. |
 | 13 | LLD 19 Rate limiter build and chapter | ✅ | 91e2928 | Exact integer refill; 13 scenarios + 3 generated; 6 mutants caught. The reference caught two mistakes in my scenario text (a 1506/1006 boundary, and a capacity that capped the fraction). |
 | 14 | LLD 25 Key-value store with TTL and nested transactions | ✅ | 3119e85 | Undo logs + expiry min-heap; 13 scenarios + 2 generated; 6 mutants caught. Planned "snapshot" became `items(time)`, a sorted listing. |
+| 15 | HLD 6 Caching chapter | ✅ | 7784655 | Write strategies, stampedes, jitter, hot keys; a stampede figure; 3 computed checkpoints. |
+| 16 | HLD 24 Distributed rate-limiter lab and chapter | ✅ | 9b335e3 | 9 checks; 5 wrong designs each fail their intended check (in `check:content` and in the browser). Added `wired()` to the graph so "store down" and "never linked" are told apart. |
+| 17 | HLD 25 Notification-system lab and chapter | ✅ | 519b17b | 9 checks including a provider outage; drill now supports "tolerated" pauses (deliveries wait in the queue). |
+| 18 | HLD 26 News-feed lab and chapter | ✅ | bb54b71 | Pull, push and hybrid each fail or pass for the right reason. The failure check caught a flaw in my own reference (2 LBs → needs 3). |
