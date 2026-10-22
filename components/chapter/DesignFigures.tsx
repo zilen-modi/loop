@@ -221,3 +221,54 @@ export function StepTable({ head, rows }: { head: string[]; rows: string[][] }) 
     </div>
   );
 }
+
+/** A cache stampede: what one expiring hot key, or many keys expiring together, does to the database. */
+export function StampedeLab() {
+  const [rps, setRps] = useState(20_000);
+  const [fetchMs, setFetchMs] = useState(200);
+  const [coalesce, setCoalesce] = useState(false);
+  const [jitter, setJitter] = useState(false);
+  const hotQueries = coalesce ? 1 : Math.round((rps * fetchMs) / 1000);
+  const keys = 10_000;
+  const ttl = 300;
+  const peakPerSec = jitter ? Math.round(keys / (ttl * 0.2)) : keys;
+  const bar = (n: number, max: number) => `${Math.max(1, Math.min(100, (Math.log10(n + 1) / Math.log10(max + 1)) * 100))}%`;
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · when cache entries expire</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+        <div>
+          <strong style={{ display: "block", marginBottom: 6 }}>One hot key expires</strong>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-2)" }}>
+            Requests/s <input type="range" min={1000} max={50000} step={1000} value={rps} onChange={(e) => setRps(+e.target.value)} aria-label="Requests per second on the hot key" /> <span style={{ fontFamily: "var(--mono)" }}>{rps.toLocaleString("en-US")}</span>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-2)" }}>
+            Refill time <input type="range" min={20} max={500} step={10} value={fetchMs} onChange={(e) => setFetchMs(+e.target.value)} aria-label="Database refill time in ms" /> <span style={{ fontFamily: "var(--mono)" }}>{fetchMs} ms</span>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5, margin: "6px 0" }}>
+            <input type="checkbox" checked={coalesce} onChange={(e) => setCoalesce(e.target.checked)} /> Coalesce requests (one fetch, everyone waits for it)
+          </label>
+          <div style={{ height: 12, borderRadius: 6, background: "var(--page-2)", overflow: "hidden" }} aria-hidden="true">
+            <span style={{ display: "block", height: "100%", width: bar(hotQueries, 50_000), background: coalesce ? "var(--pass)" : "var(--fail)" }} />
+          </div>
+          <p style={{ margin: "6px 0 0", fontSize: 13.5 }} data-testid="hot-queries">
+            <strong>{hotQueries.toLocaleString("en-US")}</strong> database {hotQueries === 1 ? "query" : "queries"} for one key
+          </p>
+        </div>
+        <div>
+          <strong style={{ display: "block", marginBottom: 6 }}>10,000 keys cached at the same moment</strong>
+          <p style={{ margin: "0 0 6px", fontSize: 13, color: "var(--ink-2)" }}>All with a 5-minute TTL, say after a deploy warmed the cache.</p>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5, margin: "6px 0" }}>
+            <input type="checkbox" checked={jitter} onChange={(e) => setJitter(e.target.checked)} /> Add ±10% random jitter to each TTL
+          </label>
+          <div style={{ height: 12, borderRadius: 6, background: "var(--page-2)", overflow: "hidden" }} aria-hidden="true">
+            <span style={{ display: "block", height: "100%", width: bar(peakPerSec, keys), background: jitter ? "var(--pass)" : "var(--fail)" }} />
+          </div>
+          <p style={{ margin: "6px 0 0", fontSize: 13.5 }} data-testid="jitter-peak">
+            Peak: <strong>{peakPerSec.toLocaleString("en-US")}</strong> refills {jitter ? "a second, spread over a minute" : "in the same second"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

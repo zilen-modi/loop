@@ -8,5 +8,6 @@ export const chapterLoaders: Record<string, () => Promise<{ default: React.Compo
   "lld/lru-lfu-cache": () => import("./lru-lfu-cache.mdx"),
   "lld/kv-store": () => import("./kv-store.mdx"),
   "hld/interview-framework": () => import("./interview-framework.mdx"),
+  "hld/caching": () => import("./caching.mdx"),
   "hld/url-shortener": () => import("./url-shortener.mdx"),
 };

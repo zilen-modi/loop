@@ -258,6 +258,27 @@ export const checkpoints: Record<string, Checkpoint> = {
     },
     explain: "The key is live while t < 0 + 300, so at t = 300 it's gone, even though nothing read it. That's why expiry needs its own structure (a min-heap of expiry times) instead of only checking on reads.",
   },
+  "cache-stampede": {
+    id: "cache-stampede",
+    prompt: "A hot menu gets 20,000 requests a second. Its cache entry expires, and refilling it from the database takes 200 ms. With plain cache-aside, roughly how many requests go to the database before the entry is back?",
+    options: ["1", "200", "About 4,000", "About 20,000"],
+    compute: () => `About ${(20_000 * 0.2).toLocaleString("en-US")}`,
+    explain: "Every request that misses during the 200 ms refill goes to the database itself: 20,000 × 0.2 s = 4,000 identical queries for one key. With request coalescing, the first miss fetches and the other 3,999 wait for its result: 1 query.",
+  },
+  "cache-average": {
+    id: "cache-average",
+    prompt: "A cache answers in 1 ms and has a 95% hit rate. A miss checks the cache (1 ms), then the database (20 ms). What's the average read time?",
+    options: ["About 1 ms", "About 2 ms", "About 5 ms", "About 20 ms"],
+    compute: () => `About ${Math.round(0.95 * 1 + 0.05 * (1 + 20))} ms`,
+    explain: "0.95 × 1 ms + 0.05 × 21 ms = 1.95 ms, about 2. The misses dominate: at 99% hits it's about 1.2 ms. That's why raising the hit rate a few points matters more than shaving the cache's own latency.",
+  },
+  "cache-jitter": {
+    id: "cache-jitter",
+    prompt: "10,000 menus are cached at the same moment with a 5-minute TTL. If each TTL gets a random ±10% jitter, the expiries spread over 60 seconds. About how many expire per second, instead of all 10,000 at once?",
+    options: ["About 17", "About 170", "About 1,700", "10,000"],
+    compute: () => `About ${Math.round(10_000 / (300 * 0.2) / 10) * 10}`,
+    explain: "±10% of 300 s is a 60-second spread, so 10,000 ÷ 60 ≈ 167 a second. The database sees a gentle stream of refills instead of 10,000 at the same moment.",
+  },
 };
 
 export function correctIndex(c: Checkpoint): number {

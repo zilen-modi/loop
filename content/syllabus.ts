@@ -173,7 +173,7 @@ export const books: Book[] = [
           ch(3, "Networking"),
           ch(4, "APIs"),
           ch(5, "Load balancers and gateways"),
-          ch(6, "Caching"),
+          ch(6, "Caching", { slug: "caching", available: true }),
         ],
       },
       {

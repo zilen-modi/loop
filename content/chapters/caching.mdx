@@ -1,0 +1,115 @@
+<ChapterHead kicker="Book 3 · Foundations · Chapter 6" title="Caching" concept="cache-aside" meta="About 25 minutes of reading · practise in two labs and a build" />
+
+<Story when="Friday, 8:00 pm">
+Every popular restaurant's menu is cached for exactly five minutes, and the cache was warmed by a deploy at 7:55. At 8:00:00, at the peak of dinner, every one of those entries expires in the same second. Thousands of identical queries hit the menu database at once, it slows to a crawl, and the pages that should have taken a millisecond take eight seconds.
+</Story>
+
+A cache is a copy of data kept somewhere faster than where it lives. Caches are the most common answer in system design, because most systems read far more than they write. They're also behind some of the most common outages: stale prices, stampedes and hot keys. This chapter covers where caches go, how reads and writes keep them in step with the database, and how to keep the cache from turning on you.
+
+## Where caches live
+
+From closest to the user to furthest:
+
+- **The browser**, controlled by HTTP headers such as `Cache-Control` and `ETag`.
+- **A CDN**: copies of responses at the edge, close to users. Good for anything public and the same for everyone.
+- **The app server's memory.** Fastest of all, but each server has its own copy, so they can disagree.
+- **A shared cache** such as Redis or Memcached: one copy for every app server, about a millisecond away.
+
+Each layer cuts load on the next one in. The cost is another copy that can be out of date.
+
+## Reading: cache-aside
+
+The default pattern is <Term id="cache-aside">cache-aside</Term>. The app checks the cache; on a miss it reads the database and puts the result in the cache for next time. The cache only ever holds what's actually asked for, and if the cache goes down, the app still works (slowly). The URL-shortener lab uses exactly this.
+
+<Checkpoint id="cache-average" />
+
+**Read-through** is the same idea with the cache doing the fetching itself (the app only talks to the cache). It's tidier code, but it ties the cache to the database.
+
+## Writing: keep the copies honest
+
+When data changes, the cached copy is wrong until something fixes it. Four strategies:
+
+- **Invalidate on write (cache-aside's partner).** Write to the database, then **delete** the cache entry, and let the next read refill it. Deleting rather than updating matters. If two writers race, "update the cache" can leave the older value in it for good, while a delete just causes one extra miss.
+- **Write-through.** Write to the cache and the database together. Reads are always fresh, but every write pays for both.
+- **Write-back (write-behind).** Write to the cache only, and flush to the database later in batches. Very fast writes, but a cache crash loses data. Fine for counters and view counts, not for payments.
+- **Write-around.** Write only to the database and let entries expire. Simple, and good for data that's written once and rarely read again.
+
+And a safety net for all of them: a **TTL**. Even if an invalidation is lost, a stale entry dies after its time-to-live.
+
+## When the cache turns on you
+
+A **stampede** (or thundering herd) happens when a popular entry expires and every request that misses goes to the database at the same time, all asking for the same thing. A **synchronised expiry** is the same problem spread across many keys: everything cached at once expires at once, as in the story. Play with both:
+
+<StampedeLab />
+
+<Checkpoint id="cache-stampede" />
+
+The fixes:
+
+- **Request coalescing** (single-flight). The first miss for a key fetches it; every other miss for the same key waits for that one result. Facebook's memcache does this with "leases".
+- **Jittered TTLs.** Add a little randomness to each expiry so they spread out.
+
+<Checkpoint id="cache-jitter" />
+
+- **Refresh ahead.** Refetch a hot entry shortly *before* it expires, in the background.
+- **Serve stale while revalidating.** Return the old value for a moment while one request refreshes it.
+
+A **hot key** is the other trap. One celebrity restaurant's menu can get more traffic than a single cache node can serve. Keep copies of the hottest keys in each app server's memory for a few seconds, or replicate them across several cache nodes.
+
+## Eviction
+
+A cache is smaller than the data, so something has to go. Least recently used (LRU) is the usual default. Least frequently used (LFU) protects popular items from bursts of one-off reads. Building both in O(1) is a classic build: see the LRU and LFU chapter in the LLD book.
+
+## In interviews
+
+What you'll be asked next:
+
+- "Where would you cache?" Name the layer, say what's cached and for how long, and say how it's invalidated.
+- "How stale can this be?" A menu can be a minute old; a wallet balance can't be cached at all, or only with write-through and short TTLs.
+- "What happens when the cache goes down?" Cache-aside degrades to slow, but if the database can't take the full load, that's an outage. Size for it, or protect the database with rate limits.
+- "A key is too hot." Local in-memory copies, replicas of the key, or splitting the key.
+
+Traps that cost people the round:
+
+- Updating the cache on write instead of deleting it, and the race that leaves stale data.
+- No TTL, so a lost invalidation lasts forever.
+- Caching per-user data in a CDN.
+- Forgetting the stampede when an interviewer says "hot key" or "flash sale".
+
+<PageBreak />
+
+## Your turn
+
+Practise caching where it's used:
+
+- <ProblemLink id="url-shortener">The URL-shortener lab</ProblemLink>: cache-aside in front of a key-value store, with a hit rate you can see on the canvas.
+- <ProblemLink id="lru-lfu-cache">The LRU and LFU build</ProblemLink>: write the eviction policies yourself, in O(1).
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how cache-aside works, how you keep it fresh on writes, and how you'd stop a stampede."
+  model="The app checks the cache first and, on a miss, reads the database and stores the result; on a write it updates the database and deletes the cached entry, with a TTL as a safety net. To stop a stampede, coalesce concurrent misses for the same key into one fetch and add jitter to TTLs so entries don't all expire at once."
+  points={["Cache-aside: check, miss, read the database, fill", "On write, delete the entry (don't update it)", "A TTL as a safety net", "Coalesce concurrent misses into one fetch", "Jitter TTLs so expiries spread out"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "Why delete a cache entry on write instead of updating it?", a: "Two racing writers can leave the older value in the cache for good if they update it; a delete only costs one extra miss." },
+    { q: "Write-through vs write-back?", a: "Write-through writes the cache and database together (fresh, slower writes). Write-back writes the cache and flushes later (fast, but a crash can lose data)." },
+    { q: "What's a cache stampede, and two fixes?", a: "Many simultaneous misses for one expired key all hit the database. Coalesce them into one fetch, and jitter TTLs (or refresh ahead)." },
+    { q: "How do you handle a hot key?", a: "Short-lived copies in each app server's memory, or replicate the key across several cache nodes." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Nishtala et al., Scaling Memcache at Facebook (NSDI 2013): leases and thundering herds", href: "https://www.usenix.org/conference/nsdi13/technical-sessions/presentation/nishtala" },
+    { label: "Azure Architecture Center: the cache-aside pattern", href: "https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside" },
+    { label: "Redis documentation: key eviction", href: "https://redis.io/docs/latest/develop/reference/eviction/" },
+    { label: "MDN: HTTP caching", href: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching" },
+  ]}
+/>
