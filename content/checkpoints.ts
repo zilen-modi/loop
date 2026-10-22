@@ -201,6 +201,20 @@ export const checkpoints: Record<string, Checkpoint> = {
     compute: () => evictions(3, ["A", "B", "C", "A", "D", "B", "E"], "lfu").join(", "),
     explain: "A has 2 uses after its second use, so LFU protects it. D arrives: B and C have 1 use each, B is older, so B goes. B comes back: C and D have 1 use, C is older, so C goes. E arrives: D and B have 1 use, D is older, so D goes. A is never dropped.",
   },
+  "rl-tokens": {
+    id: "rl-tokens",
+    prompt: "A token bucket holds 5 tokens and refills at 2 tokens a second. A client sends 5 requests at once, then waits 1.2 seconds. How many more requests can it make right away?",
+    options: ["1", "2", "3", "5"],
+    compute: () => String(Math.floor(Math.min(5, 0 + 1.2 * 2))),
+    explain: "The burst empties the bucket. 1.2 s × 2 tokens/s = 2.4 tokens, and a request needs a whole token, so 2 requests. The 0.4 isn't lost: it's still there towards the next one.",
+  },
+  "rl-window": {
+    id: "rl-window",
+    prompt: "A sliding window allows 3 requests in any 10 seconds. Requests were allowed at 0 s, 4 s and 9 s. Is a request at exactly 10 s allowed?",
+    options: ["Yes", "No"],
+    compute: () => ([0, 4, 9].filter((t) => t > 10 - 10).length < 3 ? "Yes" : "No"),
+    explain: "The window is (0 s, 10 s]: the request at 0 s is exactly 10 seconds old, so it no longer counts. That leaves 4 s and 9 s, two of three, so the request is allowed. Boundary rules like this are what hidden tests check.",
+  },
 };
 
 export function correctIndex(c: Checkpoint): number {

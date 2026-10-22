@@ -1,0 +1,107 @@
+<ChapterHead kicker="Book 2 · Classic builds · Chapter 19" title="Rate limiter" concept="token-bucket" meta="About 20 minutes of reading · one 60-minute build" />
+
+<Story when="Tuesday, 3 pm">
+A restaurant chain's menu integration has a bug: it retries every failed update immediately, forever. Within a minute it sends 40,000 requests to Tiffin's partner API, and every other partner's updates start timing out. The fix everyone agrees on is a rate limiter. The argument is about what "100 requests a minute" actually means.
+</Story>
+
+A rate limiter answers one question per request: may this client go ahead now? It turns up as a machine-coding build, as a coding question and as a system-design topic, and in each one the interviewer is watching for the same two things. Can you state the limit precisely, and can you implement it without timers, threads or floating-point drift?
+
+## What does "100 a minute" mean?
+
+Three readings, three algorithms:
+
+- **Fixed window:** at most 100 between 10:00:00 and 10:00:59, then the count resets. Simple, but a client can send 100 at 10:00:59 and 100 more at 10:01:00, so 200 in two seconds.
+- **Sliding-window log:** at most 100 in *any* 60 seconds. Exact, but you store a timestamp per allowed request.
+- **<Term id="token-bucket">Token bucket</Term>:** a bucket holds up to C tokens and refills at R per second; each request takes one. It allows short bursts up to C and a steady rate of R, and stores just two numbers per client.
+
+Clarify which one the interviewer wants. If they don't mind, propose the token bucket: it's the most common in real APIs, and the cheapest to store.
+
+## A bucket you can play with
+
+The clock below is simulated, so nothing happens until you press a button. Send a burst, wait, and watch the fractions of a token build up.
+
+<TokenBucketLab />
+
+<Checkpoint id="rl-tokens" />
+
+## No timers needed
+
+The tempting design adds a token every 1/R seconds with a timer. Don't: with a million clients that's a million timers, and tests become timing-dependent. Instead, refill **lazily**. Each client stores its tokens and the time they were last worked out, and every call first adds the tokens earned since then:
+
+```js
+refill(now) {
+  const earned = (now - this.last) * this.perSecond; // in thousandths of a token
+  this.milli = Math.min(this.capacity * 1000, this.milli + earned);
+  this.last = now;
+}
+```
+
+Two details make this exact. First, the bench passes the time in as a whole number of milliseconds instead of reading a clock, so a test can say "exactly one second later" and mean it. Second, the bucket counts **thousandths of a token** as whole numbers, so refill is integer arithmetic. With floats, 0.1 + 0.2 isn't 0.3, and "exactly one token after one second" can come out as 0.9999999.
+
+The other common bug is rounding the tokens down on every call and moving the clock forward anyway. Requests that arrive every 300 ms at 2 tokens a second then never get through, because each call throws away the 0.6 it earned.
+
+## The sliding window and its boundary
+
+For an exact "at most N in any W ms", keep the times of allowed requests in a queue. On each call, drop the ones that have left the window from the front, then compare the length with N. Each timestamp enters and leaves the queue once, so this is O(1) amortised. It's the <Term id="sliding-window">sliding window</Term> from the DSA book, applied to time.
+
+The detail that decides the hidden tests is the boundary. The bench's rule is that the window is **(t − W, t]**: a request exactly W ms old no longer counts.
+
+<Checkpoint id="rl-window" />
+
+Two more rules people miss: **refused requests aren't logged** (otherwise a client that keeps retrying would lock itself out forever), and `retryAfter` is when the *oldest* logged request leaves the window.
+
+## One shape for both algorithms
+
+In the extension the interviewer adds per-client limits and the sliding window. If each algorithm is a small class with the same methods (`tryTake`, `remaining`, `retryAfter`), the limiter only has to find or create the right one for each client. It never branches on the algorithm, which is the <Term id="strategy-pattern">strategy pattern</Term> again.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Limit per client *and* per endpoint." Check both buckets, and only take tokens if both allow it, or you'll charge a request that was refused.
+- "Return headers." `Retry-After` from retryAfter, plus the remaining quota.
+- "Run it on 20 servers." Local buckets each get a share of the limit (simple, approximate), or a shared store such as Redis updates the bucket atomically in a script (exact, one network hop). That's the HLD version of this chapter.
+- "Memory keeps growing." Evict clients that have been idle long enough to have a full bucket again: nothing is lost.
+
+Traps that cost people the round:
+
+- A timer or thread per client.
+- Floats for tokens, and an off-by-a-millisecond answer in the hidden tests.
+- Losing fractions of a token on every call.
+- An inclusive window boundary, or logging refused requests.
+
+<PageBreak />
+
+## Your turn
+
+<ProblemLadder chapter="rate-limiter" />
+
+The scenarios include 20,000 bursty requests from 300 clients, many in the same millisecond, so every boundary has to be exact.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how a token bucket decides whether to allow a request, and why it needs no timers."
+  model="Each client stores its tokens and when they were last worked out; on a request you add the tokens earned since then (elapsed time × rate, capped at the capacity) and allow it only if a whole token is there, taking it. Because refill is computed from the elapsed time on each call, nothing has to run in the background."
+  points={["Store tokens and the last update time", "Refill lazily: elapsed × rate, capped at capacity", "Allow only with a whole token, then take it", "No timers or background threads", "Exact arithmetic: whole thousandths of a token"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "What do a token bucket's capacity and rate control?", a: "The capacity is the biggest burst allowed; the rate is the steady number of requests per second." },
+    { q: "Why refill lazily instead of with a timer?", a: "Elapsed time × rate gives the same answer with no timers, no threads and nothing to do for idle clients." },
+    { q: "What window does a sliding-window log use, and what's logged?", a: "(t − W, t]: a request exactly W old no longer counts. Only allowed requests are logged." },
+    { q: "How do two algorithms share one limiter cleanly?", a: "Give each the same methods (tryTake, remaining, retryAfter) so the limiter picks one per client and never branches." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Wikipedia: token bucket", href: "https://en.wikipedia.org/wiki/Token_bucket" },
+    { label: "Cloudflare: how we built rate limiting capable of scaling to millions of domains", href: "https://blog.cloudflare.com/counting-things-a-lot-of-different-things/" },
+    { label: "IETF RFC 6585: 429 Too Many Requests", href: "https://www.rfc-editor.org/rfc/rfc6585#section-4" },
+  ]}
+/>

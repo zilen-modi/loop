@@ -155,4 +155,12 @@ export const concepts: Record<string, Concept> = {
     definition: "The rule a full cache uses to choose what to drop. LRU drops whatever was used longest ago; LFU drops whatever was used the fewest times.",
     appearsIn: ["LLD 20 · LRU and LFU cache", "HLD 6 · Caching", "DSA 36 · Designing data structures"],
   },
+  "token-bucket": {
+    id: "token-bucket",
+    term: "Token bucket",
+    glyph: "Gauge",
+    hue: "amber",
+    definition: "A rate limit as a bucket of tokens that refills at a steady rate up to a capacity. Each request takes one token; an empty bucket means wait. The capacity is the biggest burst allowed.",
+    appearsIn: ["LLD 19 · Rate limiter", "HLD 17 · Distributed rate limiting", "HLD 24 · Distributed rate limiter"],
+  },
 };

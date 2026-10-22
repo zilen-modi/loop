@@ -203,6 +203,7 @@ button { cursor: pointer; }
 
 /* ——— figures and interactive blocks: quiet, part of the page */
 .figure { font-family: var(--sans); font-size: 14px; line-height: 1.5; border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; margin: 0.4em 0 1.1em; background: var(--page); }
+.figure input[type="range"], .figure input[type="checkbox"], .figure input[type="radio"] { accent-color: var(--accent); }
 .figure .fig-label { font: 500 12px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
 .story { font-family: var(--reader-font); border-left: 2px solid var(--accent); padding: 0.1em 0 0.1em 1em; margin: 0 0 1em; color: var(--ink-2); }
 .story .kicker { display: block; margin-bottom: 0.3em; }

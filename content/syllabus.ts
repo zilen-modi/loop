@@ -131,7 +131,7 @@ export const books: Book[] = [
           ch(16, "Elevator system"),
           ch(17, "Movie ticket booking"),
           ch(18, "Board games"),
-          ch(19, "Rate limiter"),
+          ch(19, "Rate limiter", { slug: "rate-limiter", available: true }),
           ch(20, "LRU and LFU cache", { slug: "lru-lfu-cache", available: true }),
           ch(21, "Vending machine"),
           ch(22, "Food ordering and delivery"),

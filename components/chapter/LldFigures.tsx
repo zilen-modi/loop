@@ -137,3 +137,68 @@ export function EvictionLab() {
     </div>
   );
 }
+
+/** A token bucket on a simulated clock: send requests, let time pass, change the capacity and rate. */
+export function TokenBucketLab() {
+  const [capacity, setCapacity] = useState(4);
+  const [rate, setRate] = useState(2);
+  const [milli, setMilli] = useState(4000); // thousandths of a token
+  const [clock, setClock] = useState(0);
+  const [log, setLog] = useState<{ t: number; ok: boolean }[]>([]);
+  const send = (n: number) => {
+    let m = milli;
+    const out: { t: number; ok: boolean }[] = [];
+    for (let i = 0; i < n; i++) {
+      const ok = m >= 1000;
+      if (ok) m -= 1000;
+      out.push({ t: clock, ok });
+    }
+    setMilli(m);
+    setLog([...out.reverse(), ...log].slice(0, 8));
+  };
+  const wait = (ms: number) => {
+    setMilli(Math.min(capacity * 1000, milli + ms * rate));
+    setClock(clock + ms);
+  };
+  const reset = (c: number, r: number) => {
+    setCapacity(c);
+    setRate(r);
+    setMilli(c * 1000);
+    setClock(0);
+    setLog([]);
+  };
+  const tokens = milli / 1000;
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · a token bucket, {capacity} tokens, {rate} per second</p>
+      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginBottom: 10, fontSize: 13, color: "var(--ink-2)" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          Capacity <input type="range" min={1} max={8} value={capacity} onChange={(e) => reset(+e.target.value, rate)} aria-label="Capacity" /> <span style={{ fontFamily: "var(--mono)" }}>{capacity}</span>
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          Refill <input type="range" min={1} max={5} value={rate} onChange={(e) => reset(capacity, +e.target.value)} aria-label="Refill per second" /> <span style={{ fontFamily: "var(--mono)" }}>{rate}/s</span>
+        </label>
+      </div>
+      <div style={{ display: "flex", gap: 4, marginBottom: 10 }} role="img" aria-label={`${tokens.toFixed(2)} of ${capacity} tokens`}>
+        {Array.from({ length: capacity }, (_, i) => {
+          const fill = Math.max(0, Math.min(1, tokens - i));
+          return (
+            <span key={i} style={{ flex: 1, height: 26, borderRadius: 6, border: "1.5px solid var(--accent)", background: `linear-gradient(to right, var(--accent-soft) ${fill * 100}%, transparent ${fill * 100}%)` }} />
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 8 }}>
+        <button className="btn small" onClick={() => send(1)}>Send 1 request</button>
+        <button className="btn small" onClick={() => send(5)}>Send a burst of 5</button>
+        <button className="btn small" onClick={() => wait(250)}>Wait 250 ms</button>
+        <button className="btn small" onClick={() => wait(1000)}>Wait 1 s</button>
+        <span style={{ marginLeft: "auto", fontFamily: "var(--mono)", fontSize: 13 }} data-testid="bucket-state">t = {clock} ms · {tokens.toFixed(2)} tokens</span>
+      </div>
+      <div style={{ display: "flex", gap: 4, flexWrap: "wrap", minHeight: 26 }} aria-label="Recent requests, newest first">
+        {log.map((x, i) => (
+          <span key={i} className={`chip ${x.ok ? "easy" : "hard"}`}>{x.ok ? "allowed" : "refused"} @ {x.t}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
