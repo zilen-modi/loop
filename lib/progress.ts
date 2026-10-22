@@ -53,6 +53,7 @@ export type ProblemState = {
   stage?: "core" | "extension";   // machine-coding builds: the extension unlocks after the core passes
   checks?: number[];              // self-review checklist items ticked
   design?: unknown;               // system-design labs: the saved canvas
+  interview?: unknown;            // system-design labs: interview clock, framework ticks and notes
 };
 
 export const problemsProgress = createLocalStore<Record<string, ProblemState>>("loop:problems", {});
