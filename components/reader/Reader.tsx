@@ -198,7 +198,7 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
       }
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "ArrowRight" || e.key === "PageDown" || (e.key === " " && !e.shiftKey)) {
-        if (t.closest("button, a") && e.key === " ") return;
+        if (t.closest("button, a, [role=button]") && e.key === " ") return;
         e.preventDefault();
         go(1);
       } else if (e.key === "ArrowLeft" || e.key === "PageUp" || (e.key === " " && e.shiftKey)) {
@@ -211,7 +211,7 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
   }, [go]);
 
   // Only real controls block a page turn; tapping the blank part of a figure still turns.
-  const interactive = (t: HTMLElement) => !!t.closest("button, a, input, textarea, select, label, summary, table, .cm-editor, mark[data-hl]");
+  const interactive = (t: HTMLElement) => !!t.closest("button, a, [role=button], input, textarea, select, label, summary, table, .cm-editor, mark[data-hl]");
 
   function onClick(e: React.MouseEvent) {
     if (suppressClick.current) {

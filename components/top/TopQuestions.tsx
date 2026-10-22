@@ -70,7 +70,11 @@ function Progress({ value, total }: { value: number; total: number }) {
 }
 
 function Check({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {
-  return <input type="checkbox" checked={checked} onChange={onChange} aria-label={label} style={{ width: 17, height: 17, accentColor: "var(--pass)", flexShrink: 0 }} />;
+  return (
+    <label className="tick">
+      <input type="checkbox" checked={checked} onChange={onChange} aria-label={label} style={{ width: 17, height: 17, accentColor: "var(--pass)", flexShrink: 0 }} />
+    </label>
+  );
 }
 
 function Coding({ done }: { done: Record<string, number> }) {
@@ -116,9 +120,9 @@ function Coding({ done }: { done: Record<string, number> }) {
                 return (
                   <div key={q.slug} style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 16px", borderTop: i ? "1px solid var(--rule)" : undefined, flexWrap: "wrap" }}>
                     <Check checked={!!done[q.slug]} onChange={() => toggle(q.slug)} label={`Mark ${q.title} solved`} />
-                    <a href={`https://leetcode.com/problems/${q.slug}/`} target="_blank" rel="noopener noreferrer" style={{ flex: "1 1 240px", textDecoration: "none", minWidth: 0, color: done[q.slug] ? "var(--ink-3)" : "var(--ink)" }}>
-                      <span style={{ color: "var(--ink-3)", fontVariantNumeric: "tabular-nums", marginRight: 8 }}>{q.id}.</span>
-                      {q.title} <ExternalLink size={11} color="var(--ink-3)" />
+                    <a href={`https://leetcode.com/problems/${q.slug}/`} target="_blank" rel="noopener noreferrer" style={{ flex: "1 1 240px", textDecoration: "none", minWidth: 0, minHeight: 40, display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0 4px", color: done[q.slug] ? "var(--ink-3)" : "var(--ink)" }}>
+                      <span style={{ color: "var(--ink-3)", fontVariantNumeric: "tabular-nums", marginRight: 4 }}>{q.id}.</span>
+                      <span>{q.title} <ExternalLink size={11} color="var(--ink-3)" /></span>
                     </a>
                     {!q.classic && <span className="chip">Addition</span>}
                     {q.premium && <span className="chip" title="Needs LeetCode Premium"><Lock size={10} /> Premium</span>}

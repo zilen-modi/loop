@@ -53,13 +53,13 @@ function Box({ data, selected }: NodeProps<BoxNode>) {
     <div className={`lab-box${selected ? " selected" : ""}`} data-kind={data.kind}>
       <Handle type="target" position={Position.Left} />
       <div style={{ fontWeight: 600, fontSize: 13 }}>{spec.short}</div>
-      <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{data.kind === "client" ? "peak traffic" : `× ${data.count}`}</div>
+      <div style={{ fontSize: 12, color: "var(--ink-3)" }}>{data.kind === "client" ? "peak traffic" : `× ${data.count}`}</div>
       {u !== undefined && (
         <div className="lab-meter" aria-label={`${fmtPct(u)} busy`}>
           <span style={{ width: `${Math.min(100, u * 100)}%`, background: tone }} />
         </div>
       )}
-      {u !== undefined && <div style={{ fontSize: 11, color: tone, fontVariantNumeric: "tabular-nums" }}>{fmtPct(u)}</div>}
+      {u !== undefined && <div style={{ fontSize: 12, color: tone, fontVariantNumeric: "tabular-nums" }}>{fmtPct(u)}</div>}
       <Handle type="source" position={Position.Right} />
     </div>
   );

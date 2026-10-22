@@ -130,14 +130,14 @@ button { cursor: pointer; }
 .btn.primary:hover { opacity: 0.9; }
 .btn.small { height: 30px; padding: 0 10px; font-size: 13px; border-radius: 7px; }
 .btn:disabled { opacity: 0.5; cursor: default; }
-.icon-btn { width: 36px; height: 36px; display: inline-grid; place-items: center; border-radius: 8px; border: 0; background: transparent; color: var(--ink-2); }
+.icon-btn { width: 40px; height: 40px; display: inline-grid; place-items: center; border-radius: 8px; border: 0; background: transparent; color: var(--ink-2); }
 .icon-btn:hover { background: var(--page-2); color: var(--ink); }
-.chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 999px; font: 500 11.5px var(--sans); background: var(--page-2); color: var(--ink-2); white-space: nowrap; }
+.chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 999px; font: 500 12px var(--sans); background: var(--page-2); color: var(--ink-2); white-space: nowrap; }
 .chip.easy { background: var(--pass-soft); color: var(--pass); }
 .chip.medium { background: var(--warn-soft); color: var(--warn); }
 .chip.hard { background: var(--fail-soft); color: var(--fail); }
 .chip.new { background: var(--accent-soft); color: var(--accent); }
-.kicker { font: 500 11.5px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.kicker { font: 500 12px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
 .card { border: 1px solid var(--rule); border-radius: 12px; background: var(--page); }
 .seg { display: inline-flex; padding: 2px; border-radius: 9px; background: var(--page-2); gap: 2px; }
 .seg button { height: 28px; padding: 0 12px; border-radius: 7px; border: 0; background: transparent; color: var(--ink-2); font: 500 13px var(--sans); }
@@ -178,7 +178,7 @@ button { cursor: pointer; }
 .reader-chrome.hidden { opacity: 0; pointer-events: none; }
 .reader-chrome.top.hidden { transform: translateY(-6px); }
 .reader-chrome.bottom.hidden { transform: translateY(6px); }
-.reader-foot-min { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font: 11.5px var(--sans); color: var(--ink-3); pointer-events: none; }
+.reader-foot-min { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font: 12px var(--sans); color: var(--ink-3); pointer-events: none; }
 .progress-line { flex: 1; height: 2px; background: var(--rule); border-radius: 1px; }
 .progress-line > i { display: block; height: 100%; background: var(--ink-3); border-radius: 1px; }
 
@@ -203,10 +203,10 @@ button { cursor: pointer; }
 
 /* ——— figures and interactive blocks: quiet, part of the page */
 .figure { font-family: var(--sans); font-size: 14px; line-height: 1.5; border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; margin: 0.4em 0 1.1em; background: var(--page); }
-.figure .fig-label { font: 500 11px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.figure .fig-label { font: 500 12px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
 .story { font-family: var(--reader-font); border-left: 2px solid var(--accent); padding: 0.1em 0 0.1em 1em; margin: 0 0 1em; color: var(--ink-2); }
 .story .kicker { display: block; margin-bottom: 0.3em; }
-.term { font: inherit; color: inherit; background: none; border: 0; padding: 0; border-bottom: 1.5px dotted var(--accent); cursor: help; }
+.term { display: inline; font: inherit; color: inherit; background: none; border: 0; padding: 0; border-bottom: 1.5px dotted var(--accent); cursor: help; }
 .term:hover { color: var(--accent); }
 
 /* ——— popovers (X-Ray, selection, settings) */
@@ -222,6 +222,11 @@ button { cursor: pointer; }
 .navlinks { display: flex; gap: 4px; margin-left: auto; }
 .navlinks a { padding: 6px 10px; border-radius: 7px; text-decoration: none; color: var(--ink-2); font-size: 14px; }
 .navlinks a:hover, .navlinks a[aria-current="page"] { background: var(--page-2); color: var(--ink); }
+.navlinks a svg, .navlinks .short { display: none; }
+.tagline { color: var(--ink-3); font-size: 13px; }
+.filters { display: contents; }
+.filters-toggle { display: none; }
+.bench-actions { display: flex; gap: 8px; }
 
 /* ============ workbench ============ */
 .bench { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--page); }
@@ -278,6 +283,53 @@ button { cursor: pointer; }
   .lab-bottom { height: auto; }
   .lab-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bench-body[data-tab="problem"] .lab-right, .bench-body[data-tab="code"] .bench-left { display: none; }
+}
+
+/* A checkbox with a comfortable hit area that doesn't change the row's layout. */
+.tick { display: inline-grid; place-items: center; width: 40px; height: 40px; margin: -10px -8px; cursor: pointer; flex-shrink: 0; }
+
+/* Interactive figures adapt to the width of the reading column, not the window. */
+.figure { container-type: inline-size; }
+@container (max-width: 520px) {
+  .rt-tabs { flex-direction: column; }
+  .rt-tabs > button { flex: none !important; display: flex; justify-content: space-between; align-items: center; text-align: left; padding: 8px 12px !important; }
+  .rt-tabs > button > span { display: inline !important; }
+}
+
+/* ============ phones: bottom tab bar, swipeable covers, collapsible filters, thumb-reach actions ============ */
+@media (max-width: 640px) {
+  .tagline { display: none; }
+  .navlinks { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; margin: 0; gap: 0; justify-content: space-around; background: var(--page); border-top: 1px solid var(--rule); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+  .navlinks a { flex: 1; flex-direction: column; gap: 2px; padding: 4px 2px; font-size: 12px; min-height: 52px; justify-content: center; text-align: center; }
+  .navlinks a[aria-current="page"] { background: transparent; color: var(--accent); }
+  .navlinks a svg, .navlinks .short { display: block; }
+  .navlinks .long { display: none; }
+  body:has(.topbar) { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .covers { display: flex !important; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px !important; padding-bottom: 6px; margin: 0 -20px; padding-left: 20px; padding-right: 20px; scroll-padding-left: 20px; }
+  .covers > button { flex: 0 0 156px; scroll-snap-align: start; padding: 14px 14px 12px !important; aspect-ratio: auto !important; min-height: 196px; gap: 8px; }
+  .covers .cover-title { font-size: 17px !important; }
+  .filters-toggle { display: inline-flex; }
+  .filters { display: none; }
+  .filters.open { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex-basis: 100%; }
+  .filters .filter { flex-direction: column; align-items: stretch !important; gap: 4px !important; }
+  .filters select { width: 100%; height: 40px !important; }
+}
+@media (max-width: 820px) {
+  .bench-body[data-tab="code"] .bench-actions { position: fixed; z-index: 25; left: 0; right: 0; bottom: 0; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: var(--page); border-top: 1px solid var(--rule); }
+  .bench-body[data-tab="code"] .bench-actions .btn { flex: 1; justify-content: center; height: 44px; }
+  .bench-body[data-tab="code"] { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+  .bug-lines { font-size: 12.5px !important; }
+}
+
+/* ============ touch: every control gets at least a 40 px target ============ */
+@media (max-width: 767px), (pointer: coarse) {
+  .btn, .btn.small { min-height: 40px; }
+  button:not(.term), [role="tab"], select { min-height: 40px; min-width: 40px; }
+  .bug-line { min-height: 40px !important; align-items: center; }
+  label:has(> input[type="checkbox"]), label:has(> input[type="radio"]) { min-height: 40px; }
+  a.chip { height: auto; min-height: 40px; padding: 0 12px; }
+  input:not([type="checkbox"]):not([type="radio"]), textarea { min-height: 40px; }
+  .wordmark, .navlinks a { display: inline-flex; align-items: center; min-height: 40px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

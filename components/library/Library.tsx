@@ -62,7 +62,7 @@ export default function Library() {
 
       <section aria-labelledby="books">
         <h2 id="books" className="kicker" style={{ margin: "0 0 14px" }}>Your books</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 18 }}>
+        <div className="covers" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 18 }}>
           {books.map((b) => {
             const total = chapterCount(b);
             const ready = b.parts.reduce((n, p) => n + p.chapters.filter((c) => c.available).length, 0);
@@ -89,7 +89,7 @@ export default function Library() {
                 }}
               >
                 <span className="kicker">{coverLabel[b.id]}</span>
-                <span style={{ fontFamily: "var(--serif)", fontSize: 21, lineHeight: 1.2, alignSelf: "center" }}>{b.title}</span>
+                <span className="cover-title" style={{ fontFamily: "var(--serif)", fontSize: 21, lineHeight: 1.2, alignSelf: "center" }}>{b.title}</span>
                 <span style={{ fontSize: 12, color: "var(--ink-3)" }}>
                   {total} chapters · {ready} ready
                 </span>

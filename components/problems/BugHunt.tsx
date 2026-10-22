@@ -96,7 +96,7 @@ export default function BugHunt({ problem: p, reference, from }: { problem: BugH
         </section>
         <section className="bench-pane bug-code" style={{ padding: "16px 0" }} aria-label="Code under review">
           <p className="kicker" style={{ margin: "0 18px 8px" }}>Click the line with the bug</p>
-          <ol style={{ listStyle: "none", margin: 0, padding: 0, fontFamily: "var(--mono)", fontSize: 13.5 }}>
+          <ol className="bug-lines" style={{ listStyle: "none", margin: 0, padding: 0, fontFamily: "var(--mono)", fontSize: 13.5, overflowX: "auto" }}>
             {p.lines.map((l, i) => {
               const picked = line === i;
               const verdict = checked && picked ? (checked.line ? "var(--pass-soft)" : "var(--fail-soft)") : picked ? "var(--hl)" : "transparent";
@@ -105,8 +105,9 @@ export default function BugHunt({ problem: p, reference, from }: { problem: BugH
                   <button
                     onClick={() => { setLine(i); setChecked(null); setError(""); }}
                     aria-pressed={picked}
+                    className="bug-line"
                     aria-label={`Line ${i + 1}: ${l.trim() || "blank"}`}
-                    style={{ all: "unset", cursor: "pointer", display: "grid", gridTemplateColumns: "44px 1fr", width: "100%", background: verdict, whiteSpace: "pre" }}
+                    style={{ all: "unset", cursor: "pointer", display: "grid", gridTemplateColumns: "44px 1fr", width: "max-content", minWidth: "100%", boxSizing: "border-box", paddingRight: 16, background: verdict, whiteSpace: "pre" }}
                   >
                     <span style={{ textAlign: "right", paddingRight: 14, color: "var(--ink-3)" }}>{i + 1}</span>
                     <span style={{ padding: "2px 0" }}>{l}</span>

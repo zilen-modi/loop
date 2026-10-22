@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Check, Search } from "lucide-react";
+import { Check, Search, SlidersHorizontal } from "lucide-react";
 import { problems } from "@/content/problems";
 import { books } from "@/content/syllabus";
 import { problemsProgress } from "@/lib/progress";
@@ -18,6 +18,7 @@ export default function ProblemList() {
   const [level, setLevel] = useState("All");
   const [status, setStatus] = useState("All");
   const [round, setRound] = useState("All");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const search = useSearchParams();
   const chapters = useMemo(() => ["All", ...new Set(problems.map((p) => chapterTitle(p.chapter)))], []);
   const initialChapter = search.get("chapter");
@@ -35,8 +36,10 @@ export default function ProblemList() {
     return hay.includes(q.trim().toLowerCase());
   });
 
+  const active = [chapter, level, round, status].filter((v) => v !== "All").length;
+
   const select = (label: string, value: string, set: (v: string) => void, options: string[]) => (
-    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-2)" }}>
+    <label className="filter" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-2)" }}>
       {label}
       <select value={value} onChange={(e) => set(e.target.value)} style={{ height: 32, borderRadius: 8, border: "1px solid var(--rule-2)", background: "var(--page)", color: "var(--ink)", padding: "0 8px", font: "13px var(--sans)" }}>
         {options.map((o) => <option key={o}>{o}</option>)}
@@ -47,14 +50,19 @@ export default function ProblemList() {
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
-        <label style={{ display: "flex", alignItems: "center", gap: 8, height: 36, padding: "0 10px", border: "1px solid var(--rule-2)", borderRadius: 8, flex: "1 1 220px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, height: 40, padding: "0 10px", border: "1px solid var(--rule-2)", borderRadius: 8, flex: "1 1 220px" }}>
           <Search size={15} color="var(--ink-3)" aria-hidden="true" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by title, pattern or LeetCode number" aria-label="Search problems" style={{ border: 0, outline: "none", background: "transparent", color: "var(--ink)", font: "14px var(--sans)", flex: 1 }} />
         </label>
-        {select("Pattern", chapter, setChapter, chapters)}
-        {select("Level", level, setLevel, ["All", "Easy", "Medium", "Hard"])}
-        {select("Round", round, setRound, rounds)}
-        {select("Status", status, setStatus, ["All", "To do", "Solved"])}
+        <button className="btn filters-toggle" aria-expanded={filtersOpen} aria-controls="problem-filters" onClick={() => setFiltersOpen(!filtersOpen)}>
+          <SlidersHorizontal size={15} aria-hidden="true" /> Filters{active ? ` (${active})` : ""}
+        </button>
+        <div id="problem-filters" className={`filters${filtersOpen ? " open" : ""}`}>
+          {select("Pattern", chapter, setChapter, chapters)}
+          {select("Level", level, setLevel, ["All", "Easy", "Medium", "Hard"])}
+          {select("Round", round, setRound, rounds)}
+          {select("Status", status, setStatus, ["All", "To do", "Solved"])}
+        </div>
       </div>
       <div className="card">
         {list.map((p, i) => {
@@ -66,12 +74,8 @@ export default function ProblemList() {
               </span>
               <span style={{ minWidth: 0 }}>
                 <span style={{ display: "block", fontWeight: 500 }}>{p.title}</span>
-                <span style={{ display: "flex", gap: 8, flexWrap: "wrap", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2 }}>
-                  <span>{chapterTitle(p.chapter)}</span>
-                  <span>· {p.shape}</span>
-                  {p.kind === "code" && <span>· {p.reference.label}</span>}
-                  {p.kind === "build" && <span>· {p.minutes}-minute build</span>}
-                  {p.kind === "design" && <span>· design lab</span>}
+                <span style={{ display: "block", fontSize: 12.5, color: "var(--ink-3)", marginTop: 2, lineHeight: 1.45 }}>
+                  {[chapterTitle(p.chapter), p.shape, p.kind === "code" ? p.reference.label : p.kind === "build" ? `${p.minutes}-minute build` : p.kind === "design" ? "design lab" : ""].filter(Boolean).join(" · ")}
                 </span>
               </span>
               <span className={`chip ${p.level.toLowerCase()}`}>{p.level}</span>

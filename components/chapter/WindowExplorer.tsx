@@ -43,7 +43,7 @@ export default function WindowExplorer() {
               >
                 {v}
               </div>
-              <div style={{ fontSize: 10.5, color: "var(--ink-3)", height: 14 }}>{entering ? "in" : leaving ? "out" : ""}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-3)", height: 16 }}>{entering ? "in" : leaving ? "out" : ""}</div>
             </div>
           );
         })}

@@ -21,7 +21,7 @@ export function RoundTimeline() {
   return (
     <div className="figure" data-interactive>
       <p className="fig-label">Try it · a {total}-minute machine-coding round</p>
-      <div role="tablist" aria-label="Phases" style={{ display: "flex", gap: 3, marginBottom: 10 }}>
+      <div role="tablist" aria-label="Phases" className="rt-tabs" style={{ display: "flex", gap: 3, marginBottom: 10 }}>
         {PHASES.map((p, j) => (
           <button
             key={p.name}
@@ -44,7 +44,7 @@ export function RoundTimeline() {
             }}
           >
             {p.name}
-            <span style={{ display: "block", fontWeight: 400, fontSize: 11, color: "var(--ink-3)" }}>{p.minutes} min</span>
+            <span style={{ display: "block", fontWeight: 400, fontSize: 12, color: "var(--ink-3)" }}>{p.minutes} min</span>
           </button>
         ))}
       </div>
@@ -143,9 +143,9 @@ export function Estimator() {
   const servers = Math.ceil(((rAvg + wAvg) * peak) / (3000 * 0.7));
   const out = (label: string, value: string, note: string) => (
     <div style={{ background: "var(--page-2)", borderRadius: 8, padding: "8px 10px" }}>
-      <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{label}</div>
+      <div style={{ fontSize: 12, color: "var(--ink-3)" }}>{label}</div>
       <div style={{ fontFamily: "var(--mono)", fontSize: 15 }} data-testid={label}>{value}</div>
-      <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{note}</div>
+      <div style={{ fontSize: 12, color: "var(--ink-3)" }}>{note}</div>
     </div>
   );
   return (
@@ -208,7 +208,7 @@ export function StepTable({ head, rows }: { head: string[]; rows: string[][] }) 
     <div className="figure" style={{ padding: 0, overflow: "hidden" }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
         <thead>
-          <tr>{head.map((h) => <th key={h} scope="col" style={{ textAlign: "left", padding: "8px 12px", font: "500 11px var(--sans)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-3)", borderBottom: "1px solid var(--rule)" }}>{h}</th>)}</tr>
+          <tr>{head.map((h) => <th key={h} scope="col" style={{ textAlign: "left", padding: "8px 12px", font: "500 12px var(--sans)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-3)", borderBottom: "1px solid var(--rule)" }}>{h}</th>)}</tr>
         </thead>
         <tbody>
           {rows.map((r) => (

@@ -34,9 +34,22 @@ export function Story({ when, children }: { when: string; children: React.ReactN
 export function Term({ id, children }: { id: string; children: React.ReactNode }) {
   const { openTerm } = useReader();
   return (
-    <button type="button" className="term" onClick={(e) => openTerm(id, e.currentTarget)} aria-haspopup="dialog">
+    // An inline span (not a <button>) so a long term wraps with the sentence around it.
+    <span
+      role="button"
+      tabIndex={0}
+      className="term"
+      onClick={(e) => openTerm(id, e.currentTarget)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openTerm(id, e.currentTarget);
+        }
+      }}
+      aria-haspopup="dialog"
+    >
       {children}
-    </button>
+    </span>
   );
 }
 

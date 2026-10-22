@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { BookOpen, ListChecks, Repeat, Star } from "lucide-react";
 import { applyTheme, settings } from "@/lib/settings";
 
 const links = [
-  { href: "/", label: "Library" },
-  { href: "/top", label: "Top questions" },
-  { href: "/problems", label: "Problems" },
-  { href: "/practice", label: "Practice" },
+  { href: "/", label: "Library", short: "Library", Icon: BookOpen },
+  { href: "/top", label: "Top questions", short: "Top", Icon: Star },
+  { href: "/problems", label: "Problems", short: "Problems", Icon: ListChecks },
+  { href: "/practice", label: "Practice", short: "Practice", Icon: Repeat },
 ];
 
 export default function TopBar() {
@@ -20,11 +21,13 @@ export default function TopBar() {
     <header className="topbar">
       <div className="wrap">
         <Link href="/" className="wordmark">Loop</Link>
-        <span style={{ color: "var(--ink-3)", fontSize: 13 }}>zero to offer</span>
+        <span className="tagline">zero to offer</span>
         <nav className="navlinks" aria-label="Main">
           {links.map((l) => (
             <Link key={l.href} href={l.href} aria-current={(l.href === "/" ? path === "/" : path.startsWith(l.href)) ? "page" : undefined}>
-              {l.label}
+              <l.Icon size={20} aria-hidden="true" />
+              <span className="long">{l.label}</span>
+              <span className="short" aria-hidden="true">{l.short}</span>
             </Link>
           ))}
         </nav>

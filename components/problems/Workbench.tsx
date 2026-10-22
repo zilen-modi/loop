@@ -154,8 +154,10 @@ export default function Workbench({ problem: p, from, mode, next }: { problem: C
             </div>
             <button className="icon-btn" aria-label="Reset to starter code" title="Reset to starter code" onClick={() => onCode(p.starter[lang])}><RotateCcw size={16} /></button>
             <span style={{ flex: 1 }} />
-            <button className="btn small" onClick={() => execute("run")} disabled={!!running}><Play size={14} /> Run</button>
-            <button className="btn small primary" onClick={() => execute("submit")} disabled={!!running}><Send size={14} /> Submit</button>
+            <div className="bench-actions">
+              <button className="btn small" onClick={() => execute("run")} disabled={!!running}><Play size={14} /> Run</button>
+              <button className="btn small primary" onClick={() => execute("submit")} disabled={!!running}><Send size={14} /> Submit</button>
+            </div>
           </div>
           <Editor value={code} lang={lang} onChange={onCode} label={`${lang === "js" ? "JavaScript" : "Python"} solution editor. Press Escape then Tab to leave the editor.`} />
           <div className="bench-status" style={{ padding: "8px 14px", borderBottom: "1px solid var(--rule)", fontSize: 12.5, color: "var(--ink-3)" }} aria-live="polite">
