@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight, Check, Lock } from "lucide-react";
 import { books, chapterCount, type BookId } from "@/content/syllabus";
 import { problems, problemsForChapter } from "@/content/problems";
 import { problemsProgress, reading } from "@/lib/progress";
@@ -24,9 +24,9 @@ export default function Library() {
   const book = books.find((b) => b.id === open)!;
 
   return (
-    <div style={{ display: "grid", gap: 36 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 36 }}>
       <Today />
-      <section aria-label="Practice" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
+      <section aria-label="Practice" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(240px, 100%), 1fr))", gap: 12 }}>
         <Link href="/top" className="card" style={{ padding: "16px 18px", textDecoration: "none", display: "grid", gap: 6 }}>
           <span className="kicker">Top questions</span>
           <span style={{ fontFamily: "var(--serif)", fontSize: 20 }}>Coding, design, behavioral</span>
@@ -70,7 +70,7 @@ export default function Library() {
                 <span className="kicker">{coverLabel[b.id]}</span>
                 <span className="cover-title" style={{ fontFamily: "var(--serif)", fontSize: 21, lineHeight: 1.2, alignSelf: "center" }}>{b.title}</span>
                 <span style={{ fontSize: 12, color: "var(--ink-3)" }}>
-                  {total} chapters · {ready} ready
+                  <span style={{ whiteSpace: "nowrap" }}>{total} chapters</span> · <span style={{ whiteSpace: "nowrap" }}>{ready} ready</span>
                 </span>
               </button>
             );
@@ -81,7 +81,7 @@ export default function Library() {
       <section aria-labelledby="contents">
         <h2 id="contents" style={{ fontFamily: "var(--serif)", fontWeight: 500, fontSize: 24, margin: "0 0 4px" }}>{book.title}</h2>
         <p style={{ color: "var(--ink-2)", margin: "0 0 20px" }}>{book.subtitle}</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "8px 32px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(300px, 100%), 1fr))", gap: "8px 32px" }}>
           {book.parts.map((part, pi) => (
             <div key={part.title} style={{ breakInside: "avoid", marginBottom: 14 }}>
               <p className="kicker" style={{ margin: "0 0 6px" }}>Part {String.fromCharCode(65 + pi)} · {part.title}</p>
@@ -90,12 +90,18 @@ export default function Library() {
                   const key = `${book.id}/${c.slug}`;
                   const started = mounted && c.slug && read[key];
                   const row = (
-                    <span style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid var(--rule)" }}>
+                    <span className="toc-row" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "4px 10px", padding: "7px 0", borderBottom: "1px solid var(--rule)" }}>
                       <span style={{ width: 22, color: "var(--ink-3)", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{c.n}</span>
-                      <span style={{ flex: 1, fontFamily: "var(--serif)", fontSize: 15.5, color: c.available ? "var(--ink)" : "var(--ink-3)" }}>{c.title}</span>
+                      <span style={{ flex: "1 1 140px", minWidth: 0, fontFamily: "var(--serif)", fontSize: 15.5, color: c.available ? "var(--ink)" : "var(--ink-3)" }}>{c.title}</span>
                       {c.newFormat && <span className="chip new" title="Covers a newer interview format">◆ new format</span>}
                       {c.available ? (
-                        <span className="chip easy">{started ? (read[key].finished ? "Finished" : "Reading") : "Read"}</span>
+                        started && read[key].finished ? (
+                          <span className="chip easy" data-status="finished"><Check size={12} aria-hidden="true" /> Finished</span>
+                        ) : started ? (
+                          <span className="chip new" data-status="reading">Reading</span>
+                        ) : (
+                          <span className="toc-start" data-status="new">Start <ArrowRight size={13} aria-hidden="true" /></span>
+                        )
                       ) : c.slug && problemsForChapter(c.slug).length ? (
                         <span className="chip new">{problemsForChapter(c.slug).length} problems</span>
                       ) : (

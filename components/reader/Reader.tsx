@@ -51,7 +51,7 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
   const [offsets, setOffsets] = useState<{ starts: number[]; total: number }>({ starts: [0], total: 1 });
   const arrivedAt = useRef(Date.now());
   const swipe = useRef<{ x: number; y: number; t: string } | null>(null);
-  const suppressClick = useRef(false);
+  const suppressClickUntil = useRef(0); // a swipe's own click, if the browser sends one, arrives within this window
   const restored = useRef(false);
   const flipLayerRef = useRef<HTMLDivElement>(null);
   const flipRef = useRef<FlipHandle | null>(null);
@@ -214,8 +214,8 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
   const interactive = (t: HTMLElement) => !!t.closest("button, a, [role=button], input, textarea, select, label, summary, table, .cm-editor, mark[data-hl]");
 
   function onClick(e: React.MouseEvent) {
-    if (suppressClick.current) {
-      suppressClick.current = false;
+    if (Date.now() < suppressClickUntil.current) {
+      suppressClickUntil.current = 0;
       return;
     }
     const t = e.target as HTMLElement;
@@ -250,7 +250,7 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
     const dx = e.clientX - s0.x;
     const dy = e.clientY - s0.y;
     if (Math.abs(dx) > 50 && Math.abs(dy) < 60 && !interactive(e.target as HTMLElement)) {
-      suppressClick.current = true;
+      suppressClickUntil.current = Date.now() + 350; // phones usually send no click after a swipe; don't eat the next real tap
       go(dx < 0 ? 1 : -1);
     } else captureSelection();
   }

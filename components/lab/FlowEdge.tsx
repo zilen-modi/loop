@@ -1,6 +1,6 @@
 "use client";
 
-import { BaseEdge, EdgeLabelRenderer, getBezierPath, type EdgeProps } from "@xyflow/react";
+import { BaseEdge, EdgeLabelRenderer, getBezierPath, Position, useInternalNode, type EdgeProps, type InternalNode } from "@xyflow/react";
 import type { NodeKind } from "@/lib/design/catalog";
 import { fmtRate } from "@/lib/design/engine";
 import { rateKey } from "@/lib/design/graph";
@@ -23,10 +23,42 @@ function Dots({ path, rate, reverse }: { path: string; rate: number; reverse?: b
   );
 }
 
+type Box = { x: number; y: number; w: number; h: number };
+const boxOf = (n: InternalNode | undefined): Box | null =>
+  n ? { x: n.internals.positionAbsolute.x, y: n.internals.positionAbsolute.y, w: n.measured.width ?? 160, h: n.measured.height ?? 52 } : null;
+
+/**
+ * Floating ends: a link leaves from the side of one box that faces the other, whichever dots it was
+ * drawn between, so moving a box never makes a link loop round behind it.
+ */
+export function facingSides(a: Box, b: Box) {
+  const apart = b.x >= a.x + a.w - 20 || a.x >= b.x + b.w - 20; // side by side, not stacked
+  if (apart) {
+    const right = b.x + b.w / 2 >= a.x + a.w / 2;
+    return {
+      sx: right ? a.x + a.w : a.x, sy: a.y + a.h / 2, sp: right ? Position.Right : Position.Left,
+      tx: right ? b.x : b.x + b.w, ty: b.y + b.h / 2, tp: right ? Position.Left : Position.Right,
+    };
+  }
+  const down = b.y + b.h / 2 >= a.y + a.h / 2;
+  return {
+    sx: a.x + a.w / 2, sy: down ? a.y + a.h : a.y, sp: down ? Position.Bottom : Position.Top,
+    tx: b.x + b.w / 2, ty: down ? b.y : b.y + b.h, tp: down ? Position.Top : Position.Bottom,
+  };
+}
+
 /** A link with live traffic: width and dots scale with requests per second, red when it feeds an overloaded box. */
-export default function FlowEdge({ id, source, target, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected }: EdgeProps) {
+export default function FlowEdge(props: EdgeProps) {
+  const { id, source, target, selected } = props;
   const live = useLab();
-  const [path, lx, ly] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
+  const a = boxOf(useInternalNode(source));
+  const b = boxOf(useInternalNode(target));
+  const ends = a && b ? facingSides(a, b) : null;
+  const sourceX = ends?.sx ?? props.sourceX;
+  const sourceY = ends?.sy ?? props.sourceY;
+  const targetX = ends?.tx ?? props.targetX;
+  const targetY = ends?.ty ?? props.targetY;
+  const [path, lx, ly] = getBezierPath({ sourceX, sourceY, sourcePosition: ends?.sp ?? props.sourcePosition, targetX, targetY, targetPosition: ends?.tp ?? props.targetPosition });
   const fwd = live.rates[rateKey(source as NodeKind, target as NodeKind)] ?? 0;
   const back = live.rates[rateKey(target as NodeKind, source as NodeKind)] ?? 0;
   const total = fwd + back;

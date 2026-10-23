@@ -19,8 +19,8 @@ export function TrafficSlider({ scale, onScale, label }: { scale: number; onScal
 
 export function TraceButton({ running, onTrace, disabled }: { running: boolean; onTrace: () => void; disabled: boolean }) {
   return (
-    <button className="btn small" onClick={onTrace} disabled={disabled} aria-pressed={running}>
-      <Route size={14} aria-hidden="true" /> {running ? "Tracing…" : "Trace a request"}
+    <button className="btn small" onClick={onTrace} disabled={disabled} aria-pressed={running} aria-label={running ? "Tracing a request" : "Trace a request"}>
+      <Route size={14} aria-hidden="true" /><span className="lbl"> {running ? "Tracing…" : "Trace a request"}</span>
     </button>
   );
 }

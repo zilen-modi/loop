@@ -336,12 +336,12 @@ function Lab({ problem: p, from }: { problem: DesignProblem; from: string }) {
           <div className="lab-toolbar" role="toolbar" aria-label="Simulation">
             <TrafficSlider scale={drill ? 1 : scale} onScale={setScale} label={s.trafficLabel(drill ? 1 : scale)} />
             <TraceButton running={!!trace} disabled={!slow?.ok} onTrace={() => setTrace(trace ? null : { i: 0 })} />
-            <button className="btn small" onClick={() => (drill ? setDrill(null) : startDrill())} aria-pressed={!!drill}><ShieldAlert size={14} aria-hidden="true" /> Failure drill</button>
+            <button className="btn small" onClick={() => (drill ? setDrill(null) : startDrill())} aria-pressed={!!drill} aria-label="Failure drill"><ShieldAlert size={14} aria-hidden="true" /><span className="lbl"> Failure drill</span></button>
             <span className="lab-spacer" />
-            <button className="btn small" onClick={(e) => { panelOpener.current = e.currentTarget; setPanel("compare"); }} title="Save designs and compare them side by side" aria-label="Compare designs"><Columns2 size={14} aria-hidden="true" /><span className="lbl"> Compare</span></button>
-            <button className="btn small" onClick={(e) => { panelOpener.current = e.currentTarget; setPanel("export"); }} title="Download a picture and notes of this design" aria-label="Export design"><FileDown size={14} aria-hidden="true" /><span className="lbl"> Export</span></button>
-            <button className="btn small" onClick={() => { load(tidy(design)); }} title="Lay boxes out by lane" aria-label="Tidy up"><LayoutGrid size={14} aria-hidden="true" /><span className="lbl"> Tidy up</span></button>
-            <button className="btn small" onClick={() => load(s.start)} title="Start again from an empty canvas" aria-label="Clear"><Eraser size={14} aria-hidden="true" /><span className="lbl"> Clear</span></button>
+            <button className="btn small" onClick={(e) => { panelOpener.current = e.currentTarget; setPanel("compare"); }} title="Save designs and compare them side by side" aria-label="Compare designs"><Columns2 size={14} aria-hidden="true" /><span className="lbl lbl-2"> Compare</span></button>
+            <button className="btn small" onClick={(e) => { panelOpener.current = e.currentTarget; setPanel("export"); }} title="Download a picture and notes of this design" aria-label="Export design"><FileDown size={14} aria-hidden="true" /><span className="lbl lbl-2"> Export</span></button>
+            <button className="btn small" onClick={() => { load(tidy(design)); }} title="Lay boxes out by lane" aria-label="Tidy up"><LayoutGrid size={14} aria-hidden="true" /><span className="lbl lbl-2"> Tidy up</span></button>
+            <button className="btn small" onClick={() => load(s.start)} title="Start again from an empty canvas" aria-label="Clear"><Eraser size={14} aria-hidden="true" /><span className="lbl lbl-2"> Clear</span></button>
           </div>
 
           <div className="lab-work">

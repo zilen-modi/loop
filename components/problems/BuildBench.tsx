@@ -91,13 +91,13 @@ export default function BuildBench({ problem: p, from }: { problem: BuildProblem
           <div style={{ fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
           <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 12, color: "var(--ink-3)", flexWrap: "wrap" }}>
             <span className={`chip ${p.level.toLowerCase()}`}>{p.level}</span>
-            <span>{p.shape}</span>
+            <span className="bench-shape">{p.shape}</span>
             <span className={`chip ${unlocked ? "new" : ""}`}>{unlocked ? "Round 2: extension" : "Round 1: core"}</span>
             {solved && <span className="chip easy"><Check size={11} /> Solved</span>}
           </div>
         </div>
         {clock === null ? (
-          <button className="btn small" onClick={() => { setClock(Date.now()); setNow(Date.now()); }}><Timer size={14} /> Start the {p.minutes}-minute clock</button>
+          <button className="btn small" onClick={() => { setClock(Date.now()); setNow(Date.now()); }} aria-label={`Start the ${p.minutes}-minute clock`}><Timer size={14} aria-hidden="true" /> <span className="clock-long">Start the {p.minutes}-minute clock</span><span className="clock-short">{p.minutes} min</span></button>
         ) : (
           <span className="chip" role="timer" aria-label="Time left" style={{ height: 28, fontSize: 13, color: left < 10 * 60_000 ? "var(--fail)" : "var(--ink-2)" }}>
             <Timer size={14} /> {left === 0 ? "Time's up: demo what works" : `${Math.floor(left / 60000)}:${String(Math.floor((left % 60000) / 1000)).padStart(2, "0")}`}

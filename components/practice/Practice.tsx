@@ -44,7 +44,7 @@ export default function Practice() {
 
   return (
     <div style={{ display: "grid", gap: 32 }}>
-      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
+      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(240px, 100%), 1fr))", gap: 12 }}>
         {tile(<Repeat size={16} />, "Re-solve", due.length ? `${due.length} problem${due.length === 1 ? " is" : "s are"} due. Solving again from memory is what makes a pattern stick.` : "Problems you solve come back after 1, 3, 7 and 21 days, sooner if you needed help.", due[0] ? <Link className="btn small primary" href={`/problems/${due[0]!.id}?from=${encodeURIComponent("/practice")}`}>Start</Link> : <span style={{ color: "var(--ink-3)", fontSize: 13 }}>Nothing due</span>)}
         {tile(<Shuffle size={16} />, "Mixed set", "Problems in random order with their titles and patterns hidden, so you practise recognising the pattern yourself.", <button className="btn small" onClick={startMixed}>Start a mixed set</button>)}
         {tile(<Timer size={16} />, "Timed round", "One medium or hard problem on the clock, no hints until you pass or time runs out. Like the real thing.", <button className="btn small" onClick={startTimed}>Start the clock</button>)}
