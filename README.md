@@ -43,11 +43,13 @@ Every page works from a 320 px phone to a wide desktop.
   - A scorecard checks each requirement.
   - A failure drill knocks out one machine at a time.
   - Interview mode adds a 45-minute clock and the framework as a checklist.
+  - **Compare** saves designs by name and puts any two side by side; **Export** downloads a picture and Markdown notes.
 - **Today, Practice and Top questions:**
   - Re-solves due across all three tracks, on a 1/3/7/21-day schedule.
   - Review cards.
   - Mixed sets and timed rounds.
   - The most-asked coding, design and behavioral questions.
+- **Search:** ⌘K (Ctrl K) anywhere, or the search button, finds chapters, sections, concepts, problems and top questions from a local index.
 - **Privacy:** no AI, no accounts and no backend. Progress lives in this browser's localStorage. The only outside requests are for Pyodide, from jsDelivr, when you pick Python.
 
 ## Run
@@ -56,6 +58,7 @@ Every page works from a 320 px phone to a wide desktop.
 npm install
 npm run dev            # http://localhost:3002
 npm run check:content  # proves every example, test, answer key, reference solution and reference design is right
+npm run gen:search     # rebuilds content/search-index.json after adding chapters, concepts or problems
 node scripts/fetch-leetcode-meta.mjs  # refreshes the top-questions list from LeetCode
 ```
 
@@ -66,7 +69,7 @@ node scripts/fetch-leetcode-meta.mjs  # refreshes the top-questions list from Le
 1. Write `content/chapters/<slug>.mdx`. Chapter components (`Story`, `Term`, `Checkpoint`, `ProblemLadder`, `ProblemLink`, `ExplainBack`, `Recap`, `Sources` and the figures) are available without imports. Register new figures in `components/chapter/mdx.tsx`.
 2. Register it in `content/chapters/index.ts` (`"<book>/<slug>"`) and set `slug` and `available: true` in `content/syllabus.ts`. Slugs must be unique across books.
 3. Add concepts to `content/concepts.ts` and checkpoints to `content/checkpoints.ts`. Use `compute` for any answer that can be calculated.
-4. Run `npm run check:content`.
+4. Run `npm run gen:search`, then `npm run check:content` (it fails if the search index is out of date).
 
 ## Adding a machine-coding build
 
@@ -82,7 +85,7 @@ A build is a `BuildProblem` (see `content/problem-types.ts`); `content/problems/
    - `mutants`: small edits to the JS reference that introduce plausible bugs. Each must fail at least one scenario.
    - For complexity requirements, a `slowVariant` that is correct but too slow, and must miss a time limit clearly.
 5. **Guidance:** three hints, a design-review checklist, and a walkthrough.
-6. List it in `content/problems/index.ts`, then run `npm run check:content`. It checks:
+6. List it in `content/problems/index.ts`, run `npm run gen:search`, then `npm run check:content`. It checks:
    - both references pass every scenario, and the starter fails the core;
    - every mutant is caught;
    - the slow variant misses its limit.
@@ -102,7 +105,7 @@ A lab is a `DesignScenario` (see `lib/design/evaluate.ts`) in `content/designs/`
    - a `reference` design that passes everything;
    - a `naive` one;
    - named `wrong` designs, each failing one specific criterion.
-6. Pin the reference's numbers (`pinned`) and register the scenario in `content/designs/index.ts`. Then run `npm run check:content`. It verifies:
+6. Pin the reference's numbers (`pinned`) and register the scenario in `content/designs/index.ts`. Then run `npm run gen:search` and `npm run check:content`. It verifies:
    - the reference passes every check;
    - each wrong design fails its criterion;
    - the naive, empty and one-machine-each designs fail;

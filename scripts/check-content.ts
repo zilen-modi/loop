@@ -19,6 +19,9 @@ import { evaluate } from "../lib/design/evaluate";
 import { catalog, type NodeKind } from "../lib/design/catalog";
 import { simulate, type FlowDef } from "../lib/design/engine";
 import { rateKey } from "../lib/design/graph";
+import { search, type SearchEntry } from "../lib/search";
+import { buildSearchIndex } from "./search-index";
+import { readFileSync } from "fs";
 
 let failures = 0;
 const fail = (msg: string) => {
@@ -286,8 +289,35 @@ function checkDesign(p: DesignProblem) {
   }
 }
 
+function checkSearch() {
+  console.log("\nSearch index");
+  const fresh = buildSearchIndex();
+  const committed = JSON.parse(readFileSync(new URL("../content/search-index.json", import.meta.url), "utf8")) as SearchEntry[];
+  if (JSON.stringify(fresh) !== JSON.stringify(committed)) fail("content/search-index.json is out of date: run npm run gen:search");
+  else ok(`${fresh.length} entries, up to date`);
+  const hrefs = new Set(fresh.map((e) => e.href));
+  const dead = [...hrefs].filter((h) => h.startsWith("/problems/") && !problems.some((p) => `/problems/${p.id}` === h));
+  if (dead.length) fail(`links to missing problems: ${dead.join(", ")}`);
+  const cases: [string, string, string][] = [
+    ["idempotency", "concept", "Idempotency key"],
+    ["order book", "chapter", "Stock exchange order book"],
+    ["lru", "chapter", "LRU and LFU cache"],
+    ["waiting room", "concept", "Virtual waiting room"],
+    ["splitwise", "chapter", "Splitwise"],
+    ["practice", "page", "Practice"],
+    ["chat pres", "chapter", "Chat and presence"],
+  ];
+  for (const [q, kind, title] of cases) {
+    const top = search(fresh, q)[0];
+    if (top && top.kind === kind && top.title === title) ok(`"${q}" → ${title}`);
+    else fail(`"${q}" should find ${kind} "${title}" first, got ${top ? `${top.kind} "${top.title}"` : "nothing"}`);
+  }
+  if (search(fresh, "zzqx").length) fail("nonsense matches something");
+}
+
 async function main() {
   checkCatalog();
+  checkSearch();
   for (const p of problems) {
     if (p.kind === "code") await checkCode(p);
     else if (p.kind === "build") checkBuild(p);

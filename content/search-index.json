@@ -1,0 +1,1573 @@
+[
+ {
+  "kind": "page",
+  "title": "Library",
+  "sub": "Home: your books and what's due today",
+  "href": "/"
+ },
+ {
+  "kind": "page",
+  "title": "Top questions",
+  "sub": "The most asked coding, design and behavioural questions",
+  "href": "/top"
+ },
+ {
+  "kind": "page",
+  "title": "Problems",
+  "sub": "Every problem, build and design lab",
+  "href": "/problems"
+ },
+ {
+  "kind": "page",
+  "title": "Practice",
+  "sub": "Re-solves and review cards",
+  "href": "/practice"
+ },
+ {
+  "kind": "chapter",
+  "title": "Sliding window",
+  "sub": "DSA 9 · Core patterns",
+  "href": "/learn/dsa/sliding-window"
+ },
+ {
+  "kind": "section",
+  "title": "The slide",
+  "sub": "Sliding window · DSA 9",
+  "href": "/learn/dsa/sliding-window"
+ },
+ {
+  "kind": "section",
+  "title": "Why it matters at scale",
+  "sub": "Sliding window · DSA 9",
+  "href": "/learn/dsa/sliding-window"
+ },
+ {
+  "kind": "section",
+  "title": "Two kinds of window",
+  "sub": "Sliding window · DSA 9",
+  "href": "/learn/dsa/sliding-window"
+ },
+ {
+  "kind": "section",
+  "title": "Spotting a window problem",
+  "sub": "Sliding window · DSA 9",
+  "href": "/learn/dsa/sliding-window"
+ },
+ {
+  "kind": "section",
+  "title": "When it doesn't work",
+  "sub": "Sliding window · DSA 9",
+  "href": "/learn/dsa/sliding-window"
+ },
+ {
+  "kind": "chapter",
+  "title": "The 90-minute playbook",
+  "sub": "LLD 9 · Machine-coding craft",
+  "href": "/learn/lld/machine-coding-playbook"
+ },
+ {
+  "kind": "section",
+  "title": "The shape of the round",
+  "sub": "The 90-minute playbook · LLD 9",
+  "href": "/learn/lld/machine-coding-playbook"
+ },
+ {
+  "kind": "section",
+  "title": "Clarify: ten minutes that save forty",
+  "sub": "The 90-minute playbook · LLD 9",
+  "href": "/learn/lld/machine-coding-playbook"
+ },
+ {
+  "kind": "section",
+  "title": "Model: nouns, verbs and the part that will change",
+  "sub": "The 90-minute playbook · LLD 9",
+  "href": "/learn/lld/machine-coding-playbook"
+ },
+ {
+  "kind": "section",
+  "title": "Core: make it run, then make it right",
+  "sub": "The 90-minute playbook · LLD 9",
+  "href": "/learn/lld/machine-coding-playbook"
+ },
+ {
+  "kind": "section",
+  "title": "Extend: the requirement you knew was coming",
+  "sub": "The 90-minute playbook · LLD 9",
+  "href": "/learn/lld/machine-coding-playbook"
+ },
+ {
+  "kind": "section",
+  "title": "Test and demo",
+  "sub": "The 90-minute playbook · LLD 9",
+  "href": "/learn/lld/machine-coding-playbook"
+ },
+ {
+  "kind": "section",
+  "title": "The mistakes that cost the round",
+  "sub": "The 90-minute playbook · LLD 9",
+  "href": "/learn/lld/machine-coding-playbook"
+ },
+ {
+  "kind": "chapter",
+  "title": "Parking lot",
+  "sub": "LLD 14 · Classic builds",
+  "href": "/learn/lld/parking-lot"
+ },
+ {
+  "kind": "section",
+  "title": "Clarify the two rules",
+  "sub": "Parking lot · LLD 14",
+  "href": "/learn/lld/parking-lot"
+ },
+ {
+  "kind": "section",
+  "title": "The allocation rule, live",
+  "sub": "Parking lot · LLD 14",
+  "href": "/learn/lld/parking-lot"
+ },
+ {
+  "kind": "section",
+  "title": "Model what the questions need",
+  "sub": "Parking lot · LLD 14",
+  "href": "/learn/lld/parking-lot"
+ },
+ {
+  "kind": "section",
+  "title": "Pricing is the part that changes",
+  "sub": "Parking lot · LLD 14",
+  "href": "/learn/lld/parking-lot"
+ },
+ {
+  "kind": "section",
+  "title": "Validate, then write",
+  "sub": "Parking lot · LLD 14",
+  "href": "/learn/lld/parking-lot"
+ },
+ {
+  "kind": "section",
+  "title": "The extension",
+  "sub": "Parking lot · LLD 14",
+  "href": "/learn/lld/parking-lot"
+ },
+ {
+  "kind": "chapter",
+  "title": "Splitwise",
+  "sub": "LLD 15 · Classic builds",
+  "href": "/learn/lld/splitwise"
+ },
+ {
+  "kind": "section",
+  "title": "Clarify the money first",
+  "sub": "Splitwise · LLD 15",
+  "href": "/learn/lld/splitwise"
+ },
+ {
+  "kind": "section",
+  "title": "What do you need to remember?",
+  "sub": "Splitwise · LLD 15",
+  "href": "/learn/lld/splitwise"
+ },
+ {
+  "kind": "section",
+  "title": "The part that changes: how a bill is split",
+  "sub": "Splitwise · LLD 15",
+  "href": "/learn/lld/splitwise"
+ },
+ {
+  "kind": "section",
+  "title": "Validate, then write",
+  "sub": "Splitwise · LLD 15",
+  "href": "/learn/lld/splitwise"
+ },
+ {
+  "kind": "section",
+  "title": "The extension",
+  "sub": "Splitwise · LLD 15",
+  "href": "/learn/lld/splitwise"
+ },
+ {
+  "kind": "chapter",
+  "title": "Elevator system",
+  "sub": "LLD 16 · Classic builds",
+  "href": "/learn/lld/elevator"
+ },
+ {
+  "kind": "section",
+  "title": "Two kinds of request",
+  "sub": "Elevator system · LLD 16",
+  "href": "/learn/lld/elevator"
+ },
+ {
+  "kind": "section",
+  "title": "Where does a car go next? SCAN",
+  "sub": "Elevator system · LLD 16",
+  "href": "/learn/lld/elevator"
+ },
+ {
+  "kind": "section",
+  "title": "Which car answers? A cost function",
+  "sub": "Elevator system · LLD 16",
+  "href": "/learn/lld/elevator"
+ },
+ {
+  "kind": "section",
+  "title": "Time in ticks",
+  "sub": "Elevator system · LLD 16",
+  "href": "/learn/lld/elevator"
+ },
+ {
+  "kind": "section",
+  "title": "The extension",
+  "sub": "Elevator system · LLD 16",
+  "href": "/learn/lld/elevator"
+ },
+ {
+  "kind": "chapter",
+  "title": "Movie ticket booking",
+  "sub": "LLD 17 · Classic builds",
+  "href": "/learn/lld/movie-booking"
+ },
+ {
+  "kind": "section",
+  "title": "Hold, then pay",
+  "sub": "Movie ticket booking · LLD 17",
+  "href": "/learn/lld/movie-booking"
+ },
+ {
+  "kind": "section",
+  "title": "All or nothing",
+  "sub": "Movie ticket booking · LLD 17",
+  "href": "/learn/lld/movie-booking"
+ },
+ {
+  "kind": "section",
+  "title": "Expiry without timers",
+  "sub": "Movie ticket booking · LLD 17",
+  "href": "/learn/lld/movie-booking"
+ },
+ {
+  "kind": "section",
+  "title": "Who wins a race?",
+  "sub": "Movie ticket booking · LLD 17",
+  "href": "/learn/lld/movie-booking"
+ },
+ {
+  "kind": "section",
+  "title": "The extension",
+  "sub": "Movie ticket booking · LLD 17",
+  "href": "/learn/lld/movie-booking"
+ },
+ {
+  "kind": "chapter",
+  "title": "Rate limiter",
+  "sub": "LLD 19 · Classic builds",
+  "href": "/learn/lld/rate-limiter"
+ },
+ {
+  "kind": "section",
+  "title": "What does \"100 a minute\" mean?",
+  "sub": "Rate limiter · LLD 19",
+  "href": "/learn/lld/rate-limiter"
+ },
+ {
+  "kind": "section",
+  "title": "A bucket you can play with",
+  "sub": "Rate limiter · LLD 19",
+  "href": "/learn/lld/rate-limiter"
+ },
+ {
+  "kind": "section",
+  "title": "No timers needed",
+  "sub": "Rate limiter · LLD 19",
+  "href": "/learn/lld/rate-limiter"
+ },
+ {
+  "kind": "section",
+  "title": "The sliding window and its boundary",
+  "sub": "Rate limiter · LLD 19",
+  "href": "/learn/lld/rate-limiter"
+ },
+ {
+  "kind": "section",
+  "title": "One shape for both algorithms",
+  "sub": "Rate limiter · LLD 19",
+  "href": "/learn/lld/rate-limiter"
+ },
+ {
+  "kind": "chapter",
+  "title": "LRU and LFU cache",
+  "sub": "LLD 20 · Classic builds",
+  "href": "/learn/lld/lru-lfu-cache"
+ },
+ {
+  "kind": "section",
+  "title": "The two policies, side by side",
+  "sub": "LRU and LFU cache · LLD 20",
+  "href": "/learn/lld/lru-lfu-cache"
+ },
+ {
+  "kind": "section",
+  "title": "Why O(1) is the whole problem",
+  "sub": "LRU and LFU cache · LLD 20",
+  "href": "/learn/lld/lru-lfu-cache"
+ },
+ {
+  "kind": "section",
+  "title": "LFU without scanning",
+  "sub": "LRU and LFU cache · LLD 20",
+  "href": "/learn/lld/lru-lfu-cache"
+ },
+ {
+  "kind": "section",
+  "title": "Details the hidden tests check",
+  "sub": "LRU and LFU cache · LLD 20",
+  "href": "/learn/lld/lru-lfu-cache"
+ },
+ {
+  "kind": "chapter",
+  "title": "Vending machine",
+  "sub": "LLD 21 · Classic builds",
+  "href": "/learn/lld/vending-machine"
+ },
+ {
+  "kind": "section",
+  "title": "Clarify the states first",
+  "sub": "Vending machine · LLD 21",
+  "href": "/learn/lld/vending-machine"
+ },
+ {
+  "kind": "section",
+  "title": "One object per state",
+  "sub": "Vending machine · LLD 21",
+  "href": "/learn/lld/vending-machine"
+ },
+ {
+  "kind": "section",
+  "title": "Money: escrow, then commit",
+  "sub": "Vending machine · LLD 21",
+  "href": "/learn/lld/vending-machine"
+ },
+ {
+  "kind": "section",
+  "title": "Change, and why greedy can fail",
+  "sub": "Vending machine · LLD 21",
+  "href": "/learn/lld/vending-machine"
+ },
+ {
+  "kind": "chapter",
+  "title": "Key-value store with TTL and transactions",
+  "sub": "LLD 25 · Classic builds",
+  "href": "/learn/lld/kv-store"
+ },
+ {
+  "kind": "section",
+  "title": "Clarify",
+  "sub": "Key-value store with TTL and transactions · LLD 25",
+  "href": "/learn/lld/kv-store"
+ },
+ {
+  "kind": "section",
+  "title": "Undo, two ways",
+  "sub": "Key-value store with TTL and transactions · LLD 25",
+  "href": "/learn/lld/kv-store"
+ },
+ {
+  "kind": "section",
+  "title": "Expiry that doesn't wait for reads",
+  "sub": "Key-value store with TTL and transactions · LLD 25",
+  "href": "/learn/lld/kv-store"
+ },
+ {
+  "kind": "section",
+  "title": "One function changes entries",
+  "sub": "Key-value store with TTL and transactions · LLD 25",
+  "href": "/learn/lld/kv-store"
+ },
+ {
+  "kind": "chapter",
+  "title": "Stock exchange order book",
+  "sub": "LLD 28 · Classic builds",
+  "href": "/learn/lld/order-book"
+ },
+ {
+  "kind": "section",
+  "title": "Questions to ask first",
+  "sub": "Stock exchange order book · LLD 28",
+  "href": "/learn/lld/order-book"
+ },
+ {
+  "kind": "section",
+  "title": "The model",
+  "sub": "Stock exchange order book · LLD 28",
+  "href": "/learn/lld/order-book"
+ },
+ {
+  "kind": "section",
+  "title": "The key decision: the data structure",
+  "sub": "Stock exchange order book · LLD 28",
+  "href": "/learn/lld/order-book"
+ },
+ {
+  "kind": "section",
+  "title": "Trades happen at the resting price",
+  "sub": "Stock exchange order book · LLD 28",
+  "href": "/learn/lld/order-book"
+ },
+ {
+  "kind": "section",
+  "title": "Invalid input changes nothing",
+  "sub": "Stock exchange order book · LLD 28",
+  "href": "/learn/lld/order-book"
+ },
+ {
+  "kind": "section",
+  "title": "The extension",
+  "sub": "Stock exchange order book · LLD 28",
+  "href": "/learn/lld/order-book"
+ },
+ {
+  "kind": "chapter",
+  "title": "The interview framework",
+  "sub": "HLD 1 · Foundations",
+  "href": "/learn/hld/interview-framework"
+ },
+ {
+  "kind": "section",
+  "title": "The shape of 45 minutes",
+  "sub": "The interview framework · HLD 1",
+  "href": "/learn/hld/interview-framework"
+ },
+ {
+  "kind": "section",
+  "title": "Requirements: what, and how well",
+  "sub": "The interview framework · HLD 1",
+  "href": "/learn/hld/interview-framework"
+ },
+ {
+  "kind": "section",
+  "title": "Estimates: size it before you build it",
+  "sub": "The interview framework · HLD 1",
+  "href": "/learn/hld/interview-framework"
+ },
+ {
+  "kind": "section",
+  "title": "API and data model",
+  "sub": "The interview framework · HLD 1",
+  "href": "/learn/hld/interview-framework"
+ },
+ {
+  "kind": "section",
+  "title": "High-level design, then go deep",
+  "sub": "The interview framework · HLD 1",
+  "href": "/learn/hld/interview-framework"
+ },
+ {
+  "kind": "section",
+  "title": "Say what you're giving up",
+  "sub": "The interview framework · HLD 1",
+  "href": "/learn/hld/interview-framework"
+ },
+ {
+  "kind": "chapter",
+  "title": "Caching",
+  "sub": "HLD 6 · Foundations",
+  "href": "/learn/hld/caching"
+ },
+ {
+  "kind": "section",
+  "title": "Where caches live",
+  "sub": "Caching · HLD 6",
+  "href": "/learn/hld/caching"
+ },
+ {
+  "kind": "section",
+  "title": "Reading: cache-aside",
+  "sub": "Caching · HLD 6",
+  "href": "/learn/hld/caching"
+ },
+ {
+  "kind": "section",
+  "title": "Writing: keep the copies honest",
+  "sub": "Caching · HLD 6",
+  "href": "/learn/hld/caching"
+ },
+ {
+  "kind": "section",
+  "title": "When the cache turns on you",
+  "sub": "Caching · HLD 6",
+  "href": "/learn/hld/caching"
+ },
+ {
+  "kind": "section",
+  "title": "Eviction",
+  "sub": "Caching · HLD 6",
+  "href": "/learn/hld/caching"
+ },
+ {
+  "kind": "chapter",
+  "title": "URL shortener",
+  "sub": "HLD 22 · Classic designs",
+  "href": "/learn/hld/url-shortener"
+ },
+ {
+  "kind": "section",
+  "title": "Requirements and numbers",
+  "sub": "URL shortener · HLD 22",
+  "href": "/learn/hld/url-shortener"
+ },
+ {
+  "kind": "section",
+  "title": "The API and the data",
+  "sub": "URL shortener · HLD 22",
+  "href": "/learn/hld/url-shortener"
+ },
+ {
+  "kind": "section",
+  "title": "Making the codes",
+  "sub": "URL shortener · HLD 22",
+  "href": "/learn/hld/url-shortener"
+ },
+ {
+  "kind": "section",
+  "title": "301 or 302?",
+  "sub": "URL shortener · HLD 22",
+  "href": "/learn/hld/url-shortener"
+ },
+ {
+  "kind": "section",
+  "title": "The read path",
+  "sub": "URL shortener · HLD 22",
+  "href": "/learn/hld/url-shortener"
+ },
+ {
+  "kind": "section",
+  "title": "Counting clicks without slowing redirects",
+  "sub": "URL shortener · HLD 22",
+  "href": "/learn/hld/url-shortener"
+ },
+ {
+  "kind": "section",
+  "title": "Surviving failures",
+  "sub": "URL shortener · HLD 22",
+  "href": "/learn/hld/url-shortener"
+ },
+ {
+  "kind": "chapter",
+  "title": "Distributed rate limiter",
+  "sub": "HLD 24 · Classic designs",
+  "href": "/learn/hld/distributed-rate-limiter"
+ },
+ {
+  "kind": "section",
+  "title": "Requirements and numbers",
+  "sub": "Distributed rate limiter · HLD 24",
+  "href": "/learn/hld/distributed-rate-limiter"
+ },
+ {
+  "kind": "section",
+  "title": "Where does the count live?",
+  "sub": "Distributed rate limiter · HLD 24",
+  "href": "/learn/hld/distributed-rate-limiter"
+ },
+ {
+  "kind": "section",
+  "title": "When the store is down",
+  "sub": "Distributed rate limiter · HLD 24",
+  "href": "/learn/hld/distributed-rate-limiter"
+ },
+ {
+  "kind": "section",
+  "title": "Spreading the load",
+  "sub": "Distributed rate limiter · HLD 24",
+  "href": "/learn/hld/distributed-rate-limiter"
+ },
+ {
+  "kind": "chapter",
+  "title": "Notification system",
+  "sub": "HLD 25 · Classic designs",
+  "href": "/learn/hld/notification-system"
+ },
+ {
+  "kind": "section",
+  "title": "Requirements and numbers",
+  "sub": "Notification system · HLD 25",
+  "href": "/learn/hld/notification-system"
+ },
+ {
+  "kind": "section",
+  "title": "Accepting is not delivering",
+  "sub": "Notification system · HLD 25",
+  "href": "/learn/hld/notification-system"
+ },
+ {
+  "kind": "section",
+  "title": "Retries without making things worse",
+  "sub": "Notification system · HLD 25",
+  "href": "/learn/hld/notification-system"
+ },
+ {
+  "kind": "section",
+  "title": "Exactly once is a promise you can't keep (but you can fake it)",
+  "sub": "Notification system · HLD 25",
+  "href": "/learn/hld/notification-system"
+ },
+ {
+  "kind": "section",
+  "title": "Preferences and priorities",
+  "sub": "Notification system · HLD 25",
+  "href": "/learn/hld/notification-system"
+ },
+ {
+  "kind": "chapter",
+  "title": "News feed",
+  "sub": "HLD 26 · Classic designs",
+  "href": "/learn/hld/news-feed"
+ },
+ {
+  "kind": "section",
+  "title": "Requirements and numbers",
+  "sub": "News feed · HLD 26",
+  "href": "/learn/hld/news-feed"
+ },
+ {
+  "kind": "section",
+  "title": "Two ways to build a feed",
+  "sub": "News feed · HLD 26",
+  "href": "/learn/hld/news-feed"
+ },
+ {
+  "kind": "section",
+  "title": "The hybrid everyone ends up with",
+  "sub": "News feed · HLD 26",
+  "href": "/learn/hld/news-feed"
+ },
+ {
+  "kind": "section",
+  "title": "Ids, not copies",
+  "sub": "News feed · HLD 26",
+  "href": "/learn/hld/news-feed"
+ },
+ {
+  "kind": "section",
+  "title": "The write path, end to end",
+  "sub": "News feed · HLD 26",
+  "href": "/learn/hld/news-feed"
+ },
+ {
+  "kind": "chapter",
+  "title": "Chat and presence",
+  "sub": "HLD 27 · Classic designs",
+  "href": "/learn/hld/chat"
+ },
+ {
+  "kind": "section",
+  "title": "Requirements and numbers",
+  "sub": "Chat and presence · HLD 27",
+  "href": "/learn/hld/chat"
+ },
+ {
+  "kind": "section",
+  "title": "Holding connections",
+  "sub": "Chat and presence · HLD 27",
+  "href": "/learn/hld/chat"
+ },
+ {
+  "kind": "section",
+  "title": "Finding the right connection",
+  "sub": "Chat and presence · HLD 27",
+  "href": "/learn/hld/chat"
+ },
+ {
+  "kind": "section",
+  "title": "Store first, then deliver",
+  "sub": "Chat and presence · HLD 27",
+  "href": "/learn/hld/chat"
+ },
+ {
+  "kind": "section",
+  "title": "One order for everyone",
+  "sub": "Chat and presence · HLD 27",
+  "href": "/learn/hld/chat"
+ },
+ {
+  "kind": "section",
+  "title": "Presence",
+  "sub": "Chat and presence · HLD 27",
+  "href": "/learn/hld/chat"
+ },
+ {
+  "kind": "section",
+  "title": "Offline recipients",
+  "sub": "Chat and presence · HLD 27",
+  "href": "/learn/hld/chat"
+ },
+ {
+  "kind": "chapter",
+  "title": "Ticket booking",
+  "sub": "HLD 31 · Classic designs",
+  "href": "/learn/hld/ticket-booking"
+ },
+ {
+  "kind": "section",
+  "title": "Requirements and numbers",
+  "sub": "Ticket booking · HLD 31",
+  "href": "/learn/hld/ticket-booking"
+ },
+ {
+  "kind": "section",
+  "title": "Three kinds of traffic, three places to answer them",
+  "sub": "Ticket booking · HLD 31",
+  "href": "/learn/hld/ticket-booking"
+ },
+ {
+  "kind": "section",
+  "title": "The waiting room",
+  "sub": "Ticket booking · HLD 31",
+  "href": "/learn/hld/ticket-booking"
+ },
+ {
+  "kind": "section",
+  "title": "Taking a seat exactly once",
+  "sub": "Ticket booking · HLD 31",
+  "href": "/learn/hld/ticket-booking"
+ },
+ {
+  "kind": "section",
+  "title": "Holds that expire",
+  "sub": "Ticket booking · HLD 31",
+  "href": "/learn/hld/ticket-booking"
+ },
+ {
+  "kind": "section",
+  "title": "The gateways and the cache",
+  "sub": "Ticket booking · HLD 31",
+  "href": "/learn/hld/ticket-booking"
+ },
+ {
+  "kind": "chapter",
+  "title": "Payments and ledgers",
+  "sub": "HLD 32 · Classic designs",
+  "href": "/learn/hld/payments"
+ },
+ {
+  "kind": "section",
+  "title": "Requirements and numbers",
+  "sub": "Payments and ledgers · HLD 32",
+  "href": "/learn/hld/payments"
+ },
+ {
+  "kind": "section",
+  "title": "Charge once: idempotency keys",
+  "sub": "Payments and ledgers · HLD 32",
+  "href": "/learn/hld/payments"
+ },
+ {
+  "kind": "section",
+  "title": "Record everything: double entry",
+  "sub": "Payments and ledgers · HLD 32",
+  "href": "/learn/hld/payments"
+ },
+ {
+  "kind": "section",
+  "title": "The flow, step by step",
+  "sub": "Payments and ledgers · HLD 32",
+  "href": "/learn/hld/payments"
+ },
+ {
+  "kind": "section",
+  "title": "Find out when you're wrong: reconciliation",
+  "sub": "Payments and ledgers · HLD 32",
+  "href": "/learn/hld/payments"
+ },
+ {
+  "kind": "concept",
+  "title": "Sliding window",
+  "sub": "Concept · Sliding window",
+  "href": "/learn/dsa/sliding-window",
+  "text": "A range over a sequence that moves forward, updated by adding what enters and removing what leaves instead of recomputing from scratch."
+ },
+ {
+  "kind": "concept",
+  "title": "Fixed window",
+  "sub": "Concept · Sliding window",
+  "href": "/learn/dsa/sliding-window",
+  "text": "A window whose size never changes. Each step, one item enters on the right and exactly one leaves on the left."
+ },
+ {
+  "kind": "concept",
+  "title": "Variable window",
+  "sub": "Concept · Sliding window",
+  "href": "/learn/dsa/sliding-window",
+  "text": "A window that grows on the right while it stays valid and shrinks on the left when it breaks a rule, such as 'at most k surges'."
+ },
+ {
+  "kind": "concept",
+  "title": "Monotonic deque",
+  "sub": "Concept · Sliding window",
+  "href": "/learn/dsa/sliding-window",
+  "text": "A double-ended queue kept in sorted order by popping values that can never win again. It gives the max or min of a sliding window in O(1) per step."
+ },
+ {
+  "kind": "concept",
+  "title": "Amortised cost",
+  "sub": "Concept · Sliding window",
+  "href": "/learn/dsa/sliding-window",
+  "text": "The average cost per operation over a whole run. An inner loop can be fine if, across the run, each item enters and leaves at most once."
+ },
+ {
+  "kind": "concept",
+  "title": "Two pointers",
+  "sub": "Concept · Sliding window",
+  "href": "/learn/dsa/sliding-window",
+  "text": "Two indices that move through a sequence by rules, so each position is visited a small number of times. A sliding window is two pointers that bound a range."
+ },
+ {
+  "kind": "concept",
+  "title": "Hash map",
+  "sub": "Concept · Sliding window",
+  "href": "/learn/dsa/sliding-window",
+  "text": "A key–value table with O(1) average lookup. In window problems it remembers counts or the last position of each item."
+ },
+ {
+  "kind": "concept",
+  "title": "Machine coding",
+  "sub": "Concept · The 90-minute playbook",
+  "href": "/learn/lld/machine-coding-playbook",
+  "text": "An interview round where you build a small working system in 60 to 120 minutes: clean classes, a runnable demo, and an extra requirement the interviewer adds partway through."
+ },
+ {
+  "kind": "concept",
+  "title": "Strategy pattern",
+  "sub": "Concept · The 90-minute playbook",
+  "href": "/learn/lld/machine-coding-playbook",
+  "text": "Each variant of a behaviour (equal, exact or percentage split) lives in its own class behind one interface, so adding a variant means adding a class, not editing a growing if/else."
+ },
+ {
+  "kind": "concept",
+  "title": "Service layer",
+  "sub": "Concept · The 90-minute playbook",
+  "href": "/learn/lld/machine-coding-playbook",
+  "text": "The class that holds the use cases (add an expense, settle up). It validates input, coordinates the entities and storage, and is the API the interviewer calls."
+ },
+ {
+  "kind": "concept",
+  "title": "Netting",
+  "sub": "Concept · Splitwise",
+  "href": "/learn/lld/splitwise",
+  "text": "Keeping one signed balance per pair instead of a list of debts: A owes B ₹200 and B owes A ₹50 becomes A owes B ₹150."
+ },
+ {
+  "kind": "concept",
+  "title": "Back-of-the-envelope estimate",
+  "sub": "Concept · The interview framework",
+  "href": "/learn/hld/interview-framework",
+  "text": "Quick arithmetic with round numbers (a day is about 10⁵ seconds) to size traffic, storage and machines before choosing a design."
+ },
+ {
+  "kind": "concept",
+  "title": "Peak factor",
+  "sub": "Concept · The interview framework",
+  "href": "/learn/hld/interview-framework",
+  "text": "How much busier the busiest moment is than the average. Systems are sized for the peak: a 10× promo blast, not a quiet Tuesday."
+ },
+ {
+  "kind": "concept",
+  "title": "Cache-aside",
+  "sub": "Concept · Caching",
+  "href": "/learn/hld/caching",
+  "text": "The app checks the cache first. On a miss it reads the database, then stores the result in the cache for next time."
+ },
+ {
+  "kind": "concept",
+  "title": "Base 62",
+  "sub": "Concept · URL shortener",
+  "href": "/learn/hld/url-shortener",
+  "text": "Writing a number with 62 symbols: 0–9, a–z and A–Z. Seven characters cover 62⁷, about 3.5 trillion values."
+ },
+ {
+  "kind": "concept",
+  "title": "Message queue",
+  "sub": "Concept · URL shortener",
+  "href": "/learn/hld/url-shortener",
+  "text": "A durable buffer between the code that produces work and the workers that do it, so slow or failing work (like recording a click) doesn't hold up the request."
+ },
+ {
+  "kind": "concept",
+  "title": "Allocation rule",
+  "sub": "Concept · Parking lot",
+  "href": "/learn/lld/parking-lot",
+  "text": "The exact order in which a system hands out a scarce resource (a slot, a seat, a driver). Writing it down as a precise order makes it testable and easy to change."
+ },
+ {
+  "kind": "concept",
+  "title": "Eviction policy",
+  "sub": "Concept · LRU and LFU cache",
+  "href": "/learn/lld/lru-lfu-cache",
+  "text": "The rule a full cache uses to choose what to drop. LRU drops whatever was used longest ago; LFU drops whatever was used the fewest times."
+ },
+ {
+  "kind": "concept",
+  "title": "Token bucket",
+  "sub": "Concept · Rate limiter",
+  "href": "/learn/lld/rate-limiter",
+  "text": "A rate limit as a bucket of tokens that refills at a steady rate up to a capacity. Each request takes one token; an empty bucket means wait. The capacity is the biggest burst allowed."
+ },
+ {
+  "kind": "concept",
+  "title": "Undo log",
+  "sub": "Concept · Key-value store with TTL and transactions",
+  "href": "/learn/lld/kv-store",
+  "text": "A record of what each change overwrote, kept while a transaction is open. Rolling back replays it backwards; committing keeps the changes (or hands the log to the transaction outside)."
+ },
+ {
+  "kind": "concept",
+  "title": "Fail open / fail closed",
+  "sub": "Concept · Distributed rate limiter",
+  "href": "/learn/hld/distributed-rate-limiter",
+  "text": "What a check does when something it depends on is down. Fail open lets requests through unchecked (stays available); fail closed refuses them (stays safe). The right choice depends on which failure costs more."
+ },
+ {
+  "kind": "concept",
+  "title": "Idempotency key",
+  "sub": "Concept · Notification system",
+  "href": "/learn/hld/notification-system",
+  "text": "A unique id attached to a request so that doing it twice has the same effect as doing it once. The receiver records ids it has handled and skips repeats, which makes retries safe."
+ },
+ {
+  "kind": "concept",
+  "title": "Fan-out",
+  "sub": "Concept · News feed",
+  "href": "/learn/hld/news-feed",
+  "text": "Copying one event to many recipients. On write, each new post is pushed into every follower's feed; on read, each feed load gathers posts from everyone followed. Big systems mix the two."
+ },
+ {
+  "kind": "concept",
+  "title": "State machine",
+  "sub": "Concept · Vending machine",
+  "href": "/learn/lld/vending-machine",
+  "text": "A design where what an object may do depends on which state it's in, and actions move it between states. The state pattern puts each state's rules in its own object instead of if-chains in every method."
+ },
+ {
+  "kind": "concept",
+  "title": "Seat hold",
+  "sub": "Concept · Movie ticket booking",
+  "href": "/learn/lld/movie-booking",
+  "text": "A short lease on a scarce item (a seat, a room, stock) while the customer pays. It's taken all at once or not at all, and it ends on its own when time runs out."
+ },
+ {
+  "kind": "concept",
+  "title": "SCAN (the elevator algorithm)",
+  "sub": "Concept · Elevator system",
+  "href": "/learn/lld/elevator",
+  "text": "Serve requests by sweeping in one direction while any lie ahead, then reversing. Fair and simple: nobody waits more than about two sweeps. Also used to schedule disk heads."
+ },
+ {
+  "kind": "concept",
+  "title": "Price-time priority",
+  "sub": "Concept · Stock exchange order book",
+  "href": "/learn/lld/order-book",
+  "text": "How an exchange decides who trades first: the best price wins, and among orders at the same price, the one that arrived first. Trades happen at the price of the order that was already resting."
+ },
+ {
+  "kind": "concept",
+  "title": "Virtual waiting room",
+  "sub": "Concept · Ticket booking",
+  "href": "/learn/hld/ticket-booking",
+  "text": "A line in front of a system that can't serve everyone at once. Each arrival gets a number from one shared counter, and fans are admitted in order at a rate the system can safely take; everyone else sees their place."
+ },
+ {
+  "kind": "concept",
+  "title": "WebSocket",
+  "sub": "Concept · Chat and presence",
+  "href": "/learn/hld/chat",
+  "text": "A connection a client opens once and keeps open, so either side can send at any time. Servers can push messages instantly instead of waiting to be asked; the cost is holding millions of open connections."
+ },
+ {
+  "kind": "concept",
+  "title": "Idempotency key",
+  "sub": "Concept · Payments and ledgers",
+  "href": "/learn/hld/payments",
+  "text": "A unique id the client sends with a request and every retry of it. The server stores it with the result (under a unique constraint), so a repeat returns the first result instead of doing the work, or charging the card, again."
+ },
+ {
+  "kind": "problem",
+  "title": "Two items that make the bill",
+  "sub": "Coding problem · Easy",
+  "href": "/problems/pair-for-bill",
+  "text": "Hash map of what you've seen "
+ },
+ {
+  "kind": "problem",
+  "title": "Longest unbroken run of order numbers",
+  "sub": "Coding problem · Medium",
+  "href": "/problems/order-run",
+  "text": "Set lookups from run starts "
+ },
+ {
+  "kind": "problem",
+  "title": "Same ingredients, different codes",
+  "sub": "Coding problem · Medium",
+  "href": "/problems/same-ingredients",
+  "text": "Group by a canonical key "
+ },
+ {
+  "kind": "problem",
+  "title": "Mirror coupon code",
+  "sub": "Coding problem · Easy",
+  "href": "/problems/mirror-code",
+  "text": "Pointers from both ends "
+ },
+ {
+  "kind": "problem",
+  "title": "Biggest loading bay",
+  "sub": "Coding problem · Medium",
+  "href": "/problems/widest-bay",
+  "text": "Move the shorter side inwards "
+ },
+ {
+  "kind": "problem",
+  "title": "Three adjustments that cancel out",
+  "sub": "Coding problem · Medium",
+  "href": "/problems/balanced-triples",
+  "text": "Sort, fix one, two pointers "
+ },
+ {
+  "kind": "problem",
+  "title": "Rain on the rooftop kitchen",
+  "sub": "Coding problem · Hard",
+  "href": "/problems/rooftop-rain",
+  "text": "Two pointers with running maxima "
+ },
+ {
+  "kind": "problem",
+  "title": "Busiest stretch",
+  "sub": "Coding problem · Easy",
+  "href": "/problems/busiest-stretch",
+  "text": "Fixed window Sliding window"
+ },
+ {
+  "kind": "problem",
+  "title": "Rider bonus from both ends",
+  "sub": "Coding problem · Medium",
+  "href": "/problems/rider-bonus",
+  "text": "Window on the complement Sliding window"
+ },
+ {
+  "kind": "problem",
+  "title": "Longest run without a repeat dish",
+  "sub": "Coding problem · Medium",
+  "href": "/problems/unique-dishes",
+  "text": "Variable window and a set Sliding window"
+ },
+ {
+  "kind": "problem",
+  "title": "Calmest long stretch",
+  "sub": "Coding problem · Medium",
+  "href": "/problems/surge-zones",
+  "text": "Variable window and a counter Sliding window"
+ },
+ {
+  "kind": "problem",
+  "title": "Shortest stretch covering the order",
+  "sub": "Coding problem · Hard",
+  "href": "/problems/cover-menu",
+  "text": "Shrinking window and counts Sliding window"
+ },
+ {
+  "kind": "problem",
+  "title": "Peak load in every window",
+  "sub": "Coding problem · Hard",
+  "href": "/problems/peak-load",
+  "text": "Monotonic deque Sliding window"
+ },
+ {
+  "kind": "problem",
+  "title": "Code review: the calm stretch",
+  "sub": "Bug hunt · Medium",
+  "href": "/problems/review-calm-stretch",
+  "text": "Find and explain the bug Sliding window"
+ },
+ {
+  "kind": "problem",
+  "title": "Sales between any two minutes",
+  "sub": "Coding problem · Easy",
+  "href": "/problems/range-totals",
+  "text": "Prefix sums "
+ },
+ {
+  "kind": "problem",
+  "title": "Stretches with an exact net change",
+  "sub": "Coding problem · Medium",
+  "href": "/problems/net-stock",
+  "text": "Prefix sums and a hash map "
+ },
+ {
+  "kind": "problem",
+  "title": "Every other kitchen's multiplier",
+  "sub": "Coding problem · Medium",
+  "href": "/problems/others-output",
+  "text": "Prefix and suffix products "
+ },
+ {
+  "kind": "problem",
+  "title": "Parking lot in 90 minutes",
+  "sub": "Machine-coding build · Medium",
+  "href": "/problems/parking-lot",
+  "text": "Machine coding · allocation and pricing Parking lot"
+ },
+ {
+  "kind": "problem",
+  "title": "Splitwise in 90 minutes",
+  "sub": "Machine-coding build · Medium",
+  "href": "/problems/splitwise",
+  "text": "Machine coding · strategy pattern Splitwise"
+ },
+ {
+  "kind": "problem",
+  "title": "Lifts for Tiffin's new office",
+  "sub": "Machine-coding build · Hard",
+  "href": "/problems/elevator",
+  "text": "Machine coding · scheduling and simulation Elevator system"
+ },
+ {
+  "kind": "problem",
+  "title": "Seats for the opening night",
+  "sub": "Machine-coding build · Hard",
+  "href": "/problems/movie-booking",
+  "text": "Machine coding · holds, expiry and races Movie ticket booking"
+ },
+ {
+  "kind": "problem",
+  "title": "A rate limiter for the partner API",
+  "sub": "Machine-coding build · Medium",
+  "href": "/problems/rate-limiter",
+  "text": "Machine coding · token bucket, then sliding window Rate limiter"
+ },
+ {
+  "kind": "problem",
+  "title": "A menu cache: LRU, then LFU",
+  "sub": "Machine-coding build · Medium",
+  "href": "/problems/lru-lfu-cache",
+  "text": "Machine coding · O(1) data structures LRU and LFU cache"
+ },
+ {
+  "kind": "problem",
+  "title": "The office pantry vending machine",
+  "sub": "Machine-coding build · Medium",
+  "href": "/problems/vending-machine",
+  "text": "Machine coding · state pattern, change-making Vending machine"
+ },
+ {
+  "kind": "problem",
+  "title": "A key-value store with expiry and transactions",
+  "sub": "Machine-coding build · Hard",
+  "href": "/problems/kv-store",
+  "text": "Machine coding · undo logs and a min-heap Key-value store with TTL and transactions"
+ },
+ {
+  "kind": "problem",
+  "title": "A matching engine for cardamom contracts",
+  "sub": "Machine-coding build · Hard",
+  "href": "/problems/order-book",
+  "text": "Machine coding · price-time priority Stock exchange order book"
+ },
+ {
+  "kind": "problem",
+  "title": "Short links for Tiffin's notifications",
+  "sub": "Design lab · Medium",
+  "href": "/problems/url-shortener",
+  "text": "Read-heavy · cache and async analytics URL shortener"
+ },
+ {
+  "kind": "problem",
+  "title": "Rate limits across a fleet of gateways",
+  "sub": "Design lab · Medium",
+  "href": "/problems/distributed-rate-limiter",
+  "text": "Shared counters · fail open or closed Distributed rate limiter"
+ },
+ {
+  "kind": "problem",
+  "title": "Order updates, without losing one",
+  "sub": "Design lab · Medium",
+  "href": "/problems/notification-system",
+  "text": "Queues, retries and idempotency Notification system"
+ },
+ {
+  "kind": "problem",
+  "title": "The food feed, with a celebrity chef",
+  "sub": "Design lab · Hard",
+  "href": "/problems/news-feed",
+  "text": "Fan-out on write, read or both News feed"
+ },
+ {
+  "kind": "problem",
+  "title": "Chat with your rider, live",
+  "sub": "Design lab · Hard",
+  "href": "/problems/chat",
+  "text": "Connections, a registry, presence, ordering Chat and presence"
+ },
+ {
+  "kind": "problem",
+  "title": "Tiffin Fest: 80,000 passes, a million fans",
+  "sub": "Design lab · Hard",
+  "href": "/problems/ticket-booking",
+  "text": "Waiting room, atomic holds, expiry Ticket booking"
+ },
+ {
+  "kind": "problem",
+  "title": "Every rupee, exactly once",
+  "sub": "Design lab · Hard",
+  "href": "/problems/payments",
+  "text": "Idempotency, double entry, reconciliation Payments and ledgers"
+ },
+ {
+  "kind": "question",
+  "title": "Parking lot",
+  "sub": "Top LLD question",
+  "href": "/learn/lld/parking-lot",
+  "text": "Modelling entities and rules cleanly; extensibility for new vehicle and spot types."
+ },
+ {
+  "kind": "question",
+  "title": "Splitwise (expense sharing)",
+  "sub": "Top LLD question",
+  "href": "/learn/lld/splitwise",
+  "text": "Domain modelling, split strategies and balance simplification."
+ },
+ {
+  "kind": "question",
+  "title": "Elevator system",
+  "sub": "Top LLD question",
+  "href": "/learn/lld/elevator",
+  "text": "State machines and scheduling under concurrent requests."
+ },
+ {
+  "kind": "question",
+  "title": "Movie ticket booking (BookMyShow)",
+  "sub": "Top LLD question",
+  "href": "/learn/lld/movie-booking",
+  "text": "Seat locking under contention and clean booking flow."
+ },
+ {
+  "kind": "question",
+  "title": "Snake and ladder",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Game loop, turn handling and configurable boards."
+ },
+ {
+  "kind": "question",
+  "title": "Tic-tac-toe / chess",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Separating rules, board state and players."
+ },
+ {
+  "kind": "question",
+  "title": "Rate limiter",
+  "sub": "Top LLD question",
+  "href": "/learn/lld/rate-limiter",
+  "text": "Algorithm choice and thread-safe counters."
+ },
+ {
+  "kind": "question",
+  "title": "LRU and LFU cache",
+  "sub": "Top LLD question",
+  "href": "/learn/lld/lru-lfu-cache",
+  "text": "Data-structure design with O(1) operations."
+ },
+ {
+  "kind": "question",
+  "title": "Vending machine",
+  "sub": "Top LLD question",
+  "href": "/learn/lld/vending-machine",
+  "text": "State pattern and money handling."
+ },
+ {
+  "kind": "question",
+  "title": "Food ordering and delivery",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Order lifecycle, multiple actors and notifications."
+ },
+ {
+  "kind": "question",
+  "title": "Ride sharing (Uber/Ola)",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Matching and pricing as replaceable strategies."
+ },
+ {
+  "kind": "question",
+  "title": "Logger, pub-sub and notifications",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Decoupling producers and consumers; delivery guarantees."
+ },
+ {
+  "kind": "question",
+  "title": "In-memory key-value store with TTL and transactions",
+  "sub": "Top LLD question",
+  "href": "/learn/lld/kv-store",
+  "text": "Correctness of nested transactions and expiry."
+ },
+ {
+  "kind": "question",
+  "title": "Task scheduler with retries",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Priority queues, time and failure handling."
+ },
+ {
+  "kind": "question",
+  "title": "Cart, inventory and coupons",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Rules that change often, kept extensible."
+ },
+ {
+  "kind": "question",
+  "title": "Stock exchange order book",
+  "sub": "Top LLD question",
+  "href": "/learn/lld/order-book",
+  "text": "Matching engine correctness and data structures."
+ },
+ {
+  "kind": "question",
+  "title": "In-memory file system / text editor with undo",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Composite and command patterns."
+ },
+ {
+  "kind": "question",
+  "title": "Autocomplete / typeahead",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Async state, debouncing and accessibility."
+ },
+ {
+  "kind": "question",
+  "title": "Infinite scroll and virtualised list",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Performance with large lists."
+ },
+ {
+  "kind": "question",
+  "title": "Kanban board with drag and drop",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "State modelling and interaction design."
+ },
+ {
+  "kind": "question",
+  "title": "Form builder with validation",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Config-driven UI and validation design."
+ },
+ {
+  "kind": "question",
+  "title": "Accessible modal, tabs and carousel",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Accessibility and focus management."
+ },
+ {
+  "kind": "question",
+  "title": "Data table: sort, filter, paginate",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Derived state and performance."
+ },
+ {
+  "kind": "question",
+  "title": "Nested comments / file explorer",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Recursive components and tree updates."
+ },
+ {
+  "kind": "question",
+  "title": "Debounce, throttle, Promise.all, event emitter",
+  "sub": "Top LLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Core JavaScript fluency."
+ },
+ {
+  "kind": "question",
+  "title": "URL shortener",
+  "sub": "Top HLD question",
+  "href": "/learn/hld/url-shortener",
+  "text": "End-to-end basics: API, IDs, storage, caching, scale."
+ },
+ {
+  "kind": "question",
+  "title": "Pastebin",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Blob storage vs metadata, expiry."
+ },
+ {
+  "kind": "question",
+  "title": "Distributed rate limiter",
+  "sub": "Top HLD question",
+  "href": "/learn/hld/distributed-rate-limiter",
+  "text": "Algorithms across many servers."
+ },
+ {
+  "kind": "question",
+  "title": "Notification system",
+  "sub": "Top HLD question",
+  "href": "/learn/hld/notification-system",
+  "text": "Fan-out, channels, reliability."
+ },
+ {
+  "kind": "question",
+  "title": "News feed (Twitter/Instagram)",
+  "sub": "Top HLD question",
+  "href": "/learn/hld/news-feed",
+  "text": "Fan-out trade-offs and ranking."
+ },
+ {
+  "kind": "question",
+  "title": "Chat and presence (WhatsApp)",
+  "sub": "Top HLD question",
+  "href": "/learn/hld/chat",
+  "text": "Real-time delivery and ordering."
+ },
+ {
+  "kind": "question",
+  "title": "Video streaming (YouTube/Netflix)",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Upload pipeline and global delivery."
+ },
+ {
+  "kind": "question",
+  "title": "Ride hailing (Uber)",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Geo-indexing and real-time matching."
+ },
+ {
+  "kind": "question",
+  "title": "Food delivery (Swiggy/Zomato)",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Three-sided marketplace flows."
+ },
+ {
+  "kind": "question",
+  "title": "Ticket booking (BookMyShow)",
+  "sub": "Top HLD question",
+  "href": "/learn/hld/ticket-booking",
+  "text": "High contention on scarce inventory."
+ },
+ {
+  "kind": "question",
+  "title": "Payments and ledger (UPI/Stripe)",
+  "sub": "Top HLD question",
+  "href": "/learn/hld/payments",
+  "text": "Correctness over everything: idempotency and money."
+ },
+ {
+  "kind": "question",
+  "title": "Search autocomplete",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Low-latency prefix lookups."
+ },
+ {
+  "kind": "question",
+  "title": "Web crawler",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Distributed work with politeness."
+ },
+ {
+  "kind": "question",
+  "title": "Distributed key-value store",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Partitioning, replication and consistency."
+ },
+ {
+  "kind": "question",
+  "title": "Collaborative editing (Google Docs)",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Concurrent edits converging."
+ },
+ {
+  "kind": "question",
+  "title": "Metrics and logging platform",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Write-heavy ingestion and querying."
+ },
+ {
+  "kind": "question",
+  "title": "Real-time leaderboard",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Ranking at scale."
+ },
+ {
+  "kind": "question",
+  "title": "Flash sale (e-commerce)",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Spiky traffic on limited stock."
+ },
+ {
+  "kind": "question",
+  "title": "Distributed job scheduler",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Exactly-once-ish execution and recovery."
+ },
+ {
+  "kind": "question",
+  "title": "File storage and sync (Dropbox)",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Chunking, deduplication and sync."
+ },
+ {
+  "kind": "question",
+  "title": "Nearby places (Yelp)",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Read-heavy geo queries."
+ },
+ {
+  "kind": "question",
+  "title": "Frontend: news feed client",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Client architecture and performance."
+ },
+ {
+  "kind": "question",
+  "title": "RAG search over company documents",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Retrieval quality, latency and cost trade-offs."
+ },
+ {
+  "kind": "question",
+  "title": "LLM gateway",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Running models reliably and affordably."
+ },
+ {
+  "kind": "question",
+  "title": "Agent orchestration system",
+  "sub": "Top HLD question · chapter coming soon",
+  "href": "/top",
+  "text": "Tool use with safety and observability."
+ }
+]

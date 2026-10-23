@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { BookOpen, ListChecks, Repeat, Star } from "lucide-react";
+import { BookOpen, ListChecks, Repeat, Search, Star } from "lucide-react";
 import { applyTheme, settings } from "@/lib/settings";
+import { openSearch } from "./SearchPalette";
 
 const links = [
   { href: "/", label: "Library", short: "Library", Icon: BookOpen },
@@ -31,6 +32,9 @@ export default function TopBar() {
             </Link>
           ))}
         </nav>
+        <button className="icon-btn search-btn" onClick={openSearch} aria-label="Search" title="Search (⌘K)">
+          <Search size={19} aria-hidden="true" />
+        </button>
       </div>
     </header>
   );

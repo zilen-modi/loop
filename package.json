@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start -p 3002",
     "lint": "eslint",
-    "check:content": "tsx scripts/check-content.ts"
+    "check:content": "tsx scripts/check-content.ts",
+    "gen:search": "tsx scripts/gen-search.ts"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Literata } from "next/font/google";
 import { themeBootstrap } from "@/lib/theme-bootstrap";
+import SearchPalette from "@/components/ui/SearchPalette";
 import "./globals.css";
 
 const literata = Literata({ variable: "--font-literata", subsets: ["latin"], style: ["normal", "italic"] });
@@ -27,7 +28,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
-      <body className={`${literata.variable} ${geist.variable} ${mono.variable}`}>{children}</body>
+      <body className={`${literata.variable} ${geist.variable} ${mono.variable}`}>
+        {children}
+        <SearchPalette />
+      </body>
     </html>
   );
 }
