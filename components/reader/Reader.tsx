@@ -148,7 +148,7 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
       setPanel(null);
       setTerm(null);
       setSelection(null);
-      setChrome(false);
+      // Turning a page leaves the bars as they are; only a tap in the middle hides or shows them.
       flipRef.current?.finish(); // a quick second press completes the turn in progress
       const p = pageRef.current;
       const next = Math.min(Math.max(p + delta, 0), pages - 1);
@@ -213,6 +213,16 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
   // Only real controls block a page turn; tapping the blank part of a figure still turns.
   const interactive = (t: HTMLElement) => !!t.closest("button, a, [role=button], input, textarea, select, label, summary, table, .cm-editor, mark[data-hl]");
 
+  // A sideways swipe turns the page unless it started on something that uses sideways drags itself.
+  const usesSideways = (t: HTMLElement) => {
+    if (t.closest("input, textarea, select, .cm-editor")) return true;
+    for (let el: HTMLElement | null = t; el && el !== viewportRef.current; el = el.parentElement) {
+      const ox = getComputedStyle(el).overflowX;
+      if ((ox === "auto" || ox === "scroll") && el.scrollWidth > el.clientWidth + 1) return true;
+    }
+    return false;
+  };
+
   function onClick(e: React.MouseEvent) {
     if (Date.now() < suppressClickUntil.current) {
       suppressClickUntil.current = 0;
@@ -249,7 +259,7 @@ export default function Reader({ chapterKey, title, bookTitle, chapterLabel, chi
     }
     const dx = e.clientX - s0.x;
     const dy = e.clientY - s0.y;
-    if (Math.abs(dx) > 50 && Math.abs(dy) < 60 && !interactive(e.target as HTMLElement)) {
+    if (Math.abs(dx) > 50 && Math.abs(dy) < 60 && !usesSideways(e.target as HTMLElement)) {
       suppressClickUntil.current = Date.now() + 350; // phones usually send no click after a swipe; don't eat the next real tap
       go(dx < 0 ? 1 : -1);
     } else captureSelection();
