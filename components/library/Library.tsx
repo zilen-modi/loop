@@ -15,6 +15,7 @@ const coverLabel: Record<BookId, string> = { dsa: "Book 1", lld: "Book 2", hld: 
 /** The home screen: your books, like a Kindle library, plus what's due today. */
 export default function Library() {
   const [open, setOpen] = useState<BookId>("dsa");
+  const [onlyReady, setOnlyReady] = useState(false);
   const mounted = useMounted();
   const read = reading.use();
   const solved = problemsProgress.use();
@@ -81,51 +82,72 @@ export default function Library() {
       <section aria-labelledby="contents">
         <h2 id="contents" style={{ fontFamily: "var(--serif)", fontWeight: 500, fontSize: 24, margin: "0 0 4px" }}>{book.title}</h2>
         <p style={{ color: "var(--ink-2)", margin: "0 0 20px" }}>{book.subtitle}</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(300px, 100%), 1fr))", gap: "8px 32px" }}>
-          {book.parts.map((part, pi) => (
-            <div key={part.title} style={{ breakInside: "avoid", marginBottom: 14 }}>
-              <p className="kicker" style={{ margin: "0 0 6px" }}>Part {String.fromCharCode(65 + pi)} · {part.title}</p>
-              <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                {part.chapters.map((c) => {
-                  const key = `${book.id}/${c.slug}`;
-                  const started = mounted && c.slug && read[key];
-                  const row = (
-                    <span className="toc-row" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "4px 10px", padding: "7px 0", borderBottom: "1px solid var(--rule)" }}>
-                      <span style={{ width: 22, color: "var(--ink-3)", fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{c.n}</span>
-                      <span style={{ flex: "1 1 140px", minWidth: 0, fontFamily: "var(--serif)", fontSize: 15.5, color: c.available ? "var(--ink)" : "var(--ink-3)" }}>{c.title}</span>
-                      {c.newFormat && <span className="chip new" title="Covers a newer interview format">◆ new format</span>}
-                      {c.available ? (
-                        started && read[key].finished ? (
-                          <span className="chip easy" data-status="finished"><Check size={12} aria-hidden="true" /> Finished</span>
-                        ) : started ? (
-                          <span className="chip new" data-status="reading">Reading</span>
-                        ) : (
-                          <span className="toc-start" data-status="new">Start <ArrowRight size={13} aria-hidden="true" /></span>
-                        )
-                      ) : c.slug && problemsForChapter(c.slug).length ? (
-                        <span className="chip new">{problemsForChapter(c.slug).length} problems</span>
-                      ) : (
-                        <span style={{ color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
-                          <Lock size={12} aria-hidden="true" /> Soon
-                        </span>
-                      )}
-                    </span>
-                  );
-                  return (
-                    <li key={c.n}>
-                      {c.available ? (
-                        <Link href={`/learn/${key}`} style={{ textDecoration: "none" }}>{row}</Link>
-                      ) : c.slug && problemsForChapter(c.slug).length ? (
-                        <Link href={`/problems?chapter=${c.slug}`} style={{ textDecoration: "none" }}>{row}</Link>
-                      ) : (
-                        row
-                      )}
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
-          ))}
+        <label className="toc-only">
+          <input type="checkbox" checked={onlyReady} onChange={(e) => setOnlyReady(e.target.checked)} /> Only ready chapters
+        </label>
+        <div className="toc-wrap">
+          <table className="toc-table" data-testid="toc-table">
+            <thead>
+              <tr>
+                <th scope="col" className="num">#</th>
+                <th scope="col">Chapter</th>
+                <th scope="col" className="toc-problems">Problems</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            {book.parts.map((part, pi) => {
+              const rows = part.chapters.filter((c) => !onlyReady || c.available || (c.slug && problemsForChapter(c.slug).length));
+              if (!rows.length) return null;
+              const ready = part.chapters.filter((c) => c.available).length;
+              return (
+                <tbody key={part.title}>
+                  <tr className="toc-part">
+                    <th scope="colgroup" colSpan={4}>
+                      <span>Part {String.fromCharCode(65 + pi)} · {part.title}</span>
+                      <span className="toc-part-count">{ready ? `${ready} of ${part.chapters.length} ready` : `${part.chapters.length} chapters`}</span>
+                    </th>
+                  </tr>
+                  {rows.map((c) => {
+                    const key = `${book.id}/${c.slug}`;
+                    const started = mounted && c.slug && read[key];
+                    const list = c.slug ? problemsForChapter(c.slug) : [];
+                    const done = mounted ? list.filter((x) => solved[x.id]?.status === "solved").length : 0;
+                    const problemsCell = list.length ? (
+                      <Link href={`/problems?chapter=${c.slug}`} className="toc-count">
+                        {done ? `${done} of ${list.length} solved` : `${list.length} ${list.length === 1 ? "problem" : "problems"}`}
+                      </Link>
+                    ) : (
+                      <span className="toc-none">—</span>
+                    );
+                    return (
+                      <tr key={c.n} data-ready={c.available || undefined}>
+                        <td className="num">{c.n}</td>
+                        <th scope="row">
+                          {c.available ? <Link href={`/learn/${key}`} className="toc-title">{c.title}</Link> : <span className="toc-title">{c.title}</span>}
+                          {c.newFormat && <span className="chip new toc-new" title="Covers a newer interview format">◆ new format</span>}
+                          {list.length > 0 && <span className="toc-sub">{problemsCell}</span>}
+                        </th>
+                        <td className="toc-problems">{problemsCell}</td>
+                        <td>
+                          {c.available ? (
+                            started && read[key].finished ? (
+                              <span className="chip easy" data-status="finished"><Check size={12} aria-hidden="true" /> Finished</span>
+                            ) : started ? (
+                              <span className="chip new" data-status="reading">Reading</span>
+                            ) : (
+                              <Link href={`/learn/${key}`} className="toc-start" data-status="new" aria-label={`Start ${c.title}`}>Start <ArrowRight size={13} aria-hidden="true" /></Link>
+                            )
+                          ) : (
+                            <span className="toc-soon"><Lock size={12} aria-hidden="true" /> Soon</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              );
+            })}
+          </table>
         </div>
       </section>
     </div>

@@ -49,6 +49,7 @@ Every page works from a 320 px phone to a wide desktop.
   - Review cards.
   - Mixed sets and timed rounds.
   - The most-asked coding, design and behavioral questions.
+- **Book contents:** a table per book, grouped by part: each chapter's status (Start, Reading, Finished, Soon) and its problems solved, with an "only ready chapters" filter.
 - **Problems page:** a list, or a sortable table (type, book, chapter, level, status, attempts, last solved, next re-solve), with search and filters.
 - **Search:** ⌘K (Ctrl K) anywhere, or the search button, finds chapters, sections, concepts, problems and top questions from a local index.
 - **Privacy:** no AI, no accounts and no backend. Progress lives in this browser's localStorage. The only outside requests are for Pyodide, from jsDelivr, when you pick Python.
