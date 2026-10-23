@@ -41,3 +41,14 @@ HLD progress: 9 / 48 chapters. LLD progress: 10 / 38 chapters.
 Deployed 7c1288f to https://loop-azure-nine.vercel.app (deployment loop-ltzred8eo, Ready). Live suites: search 17, export 14, compare 16, chapters 165, labs 76, builds 72, lab2 48, today 12, a11y 6, bench 9, loop2 25, loop5 10, loop6 11, flip 9, all passing. Two first-run flakes on the live site, both clean on re-run: one search "Enter opens the result" navigation took over 15 s (3/3 re-runs pass), and the chapter suite hit a 30 s network-idle timeout on one page (re-run 165/165).
 
 Overflow queue (items 21–30) is complete. Nothing is stuck; there are no `wip/` branches. Next nights: the rest of the HLD book (Parts A–C chapters, the remaining Part D labs, then Parts E and F).
+
+## UI fixes and a problems table (23 October 2026, daytime)
+
+Reported: links in the lab looping behind boxes; the reader's top bar disappearing on phones; other UI bugs; a table view for problems.
+
+- Lab links now attach to the sides of the two boxes that face each other, whichever dots they were drawn between (`edges.cjs`, 3 layouts).
+- Reader on phones: after a swipe, the next tap in the middle was swallowed (phones send no click after a swipe, so the "ignore the swipe's click" flag stayed set), so the top bar seemed to vanish. Now the flag expires after 350 ms (`reader-touch.cjs`, 8 checks with real touch events).
+- Book covers on phones were squeezed to ~120 px because their inline `all: unset` overrode the stylesheet's width; fixing that exposed min-content overflow that made phones zoom the whole page out. Fixed with `contain: inline-size`, `minmax(0, 1fr)` on the home grid, `min(…, 100%)` in grid minimums, and wrapping contents rows. A new check (`mobile-zoom.cjs`, 11 routes × iPhone SE / iPhone 13 / Pixel 7) catches page zoom-out, which the old sweep (desktop emulation) couldn't see; it also found the 320 px tab bar issue.
+- Chapter status in the contents: Start → / Reading / ✓ Finished are now distinct (all three were the same green chip).
+- Phone headers: the build bench title was cut to "A matching e…"; shape lines are hidden and the clock button shortened on phones. The lab toolbar fits one row on phones and at every desktop width (secondary tools go icon-only via a container query).
+- Problems page: List / Table toggle (remembered), a Type filter, and a table sortable by number, title, type, book, chapter, level, status, attempts, last solved and next re-solve; the title column stays pinned while the table scrolls sideways on phones (`ptable.cjs`, 16 checks).
