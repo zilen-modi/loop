@@ -463,6 +463,31 @@ export const checkpoints: Record<string, Checkpoint> = {
     compute: () => String(Math.ceil(90_000 / (8000 * 0.7))),
     explain: "70% of 8,000 is 5,600 a second per gateway; 90,000 ÷ 5,600 = 16.1, so 17. With one down, 16 run at about 70%, still under capacity.",
   },
+  "chat-gateways": {
+    id: "chat-gateways",
+    prompt: "2 million clients each hold one connection. A gateway can hold about 100,000, and you want each at most 70% full. How many gateways do you need?",
+    options: ["20", "21", "29", "40"],
+    compute: () => String(Math.ceil(2_000_000 / (100_000 * 0.7))),
+    explain: "70% of 100,000 is 70,000 connections per gateway; 2,000,000 ÷ 70,000 = 28.6, so 29. Twenty would be completely full, and losing one would drop 100,000 people with nowhere to reconnect.",
+  },
+  "chat-order": {
+    id: "chat-order",
+    prompt: "Asha sends \"Lunch?\" at 12:00:00 from a phone whose clock is 3 seconds fast. Bilal replies \"Yes!\" one second later from a phone with the right time. Sorted by the phones' timestamps, which message comes first?",
+    options: ["\"Lunch?\"", "\"Yes!\""],
+    compute: () => {
+      const asha = 0 + 3; // seconds after 12:00:00 on Asha's fast clock
+      const bilal = 1 + 0;
+      return asha < bilal ? "\"Lunch?\"" : "\"Yes!\"";
+    },
+    explain: "Asha's message is stamped 12:00:03 and Bilal's 12:00:01, so the answer appears above the question. A sequence number assigned by the server when each message arrives gives everyone the real order.",
+  },
+  "chat-heartbeats": {
+    id: "chat-heartbeats",
+    prompt: "2 million connected clients each send a heartbeat every 30 seconds. About how many presence writes a second is that?",
+    options: ["About 6,700", "About 67,000", "About 670,000", "2 million"],
+    compute: () => `About ${(Math.round(2_000_000 / 30 / 1000) * 1000).toLocaleString("en-US")}`,
+    explain: "2,000,000 ÷ 30 ≈ 66,667 writes a second, more than the messages themselves. That's why presence lives in memory with an expiry, not in the database: a SQL primary takes about 3,000 writes a second.",
+  },
 };
 
 export function correctIndex(c: Checkpoint): number {

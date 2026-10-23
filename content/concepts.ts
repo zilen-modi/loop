@@ -4,7 +4,7 @@
 export type Concept = {
   id: string;
   term: string;
-  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen" | "Workflow" | "Ticket" | "ArrowUpDown" | "CandlestickChart" | "Hourglass";
+  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen" | "Workflow" | "Ticket" | "ArrowUpDown" | "CandlestickChart" | "Hourglass" | "Cable";
   hue: "teal" | "violet" | "amber" | "rose" | "blue";
   definition: string;
   appearsIn: string[];
@@ -234,5 +234,13 @@ export const concepts: Record<string, Concept> = {
     hue: "blue",
     definition: "A line in front of a system that can't serve everyone at once. Each arrival gets a number from one shared counter, and fans are admitted in order at a rate the system can safely take; everyone else sees their place.",
     appearsIn: ["HLD 31 · Ticket booking", "HLD 39 · Flash sale", "LLD 17 · Movie ticket booking"],
+  },
+  websocket: {
+    id: "websocket",
+    term: "WebSocket",
+    glyph: "Cable",
+    hue: "teal",
+    definition: "A connection a client opens once and keeps open, so either side can send at any time. Servers can push messages instantly instead of waiting to be asked; the cost is holding millions of open connections.",
+    appearsIn: ["HLD 27 · Chat and presence", "HLD 29 · Ride hailing", "Frontend · Real-time UIs"],
   },
 };

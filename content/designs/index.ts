@@ -4,5 +4,6 @@ import { rateLimiterLab } from "./rate-limiter-lab";
 import { notificationsLab } from "./notifications-lab";
 import { newsFeedLab } from "./news-feed-lab";
 import { ticketBookingLab } from "./ticket-booking-lab";
+import { chatLab } from "./chat-lab";
 
-export const designScenarios: Record<string, DesignScenario> = Object.fromEntries([urlShortener, rateLimiterLab, notificationsLab, newsFeedLab, ticketBookingLab].map((s) => [s.id, s]));
+export const designScenarios: Record<string, DesignScenario> = Object.fromEntries([urlShortener, rateLimiterLab, notificationsLab, newsFeedLab, chatLab, ticketBookingLab].map((s) => [s.id, s]));

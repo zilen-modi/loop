@@ -442,3 +442,46 @@ export function WaitingRoom() {
     </div>
   );
 }
+
+/** How a message finds its recipient's connection, and what each way costs as gateways are added. */
+export function DeliveryPaths() {
+  const [how, setHow] = useState<"registry" | "broadcast" | "poll">("registry");
+  const [gateways, setGateways] = useState(29);
+  const sends = 40_000;
+  const deliveries = 48_000; // online recipients: 1.5 per message, 80% online
+  const heartbeats = 66_667; // 2 million clients, every 30 s
+  const capacity = 20_000; // messages a second one gateway handles
+  const perGateway = how === "registry" ? (sends + deliveries + heartbeats) / gateways : how === "broadcast" ? sends * 1.5 + (sends + heartbeats) / gateways : heartbeats / gateways;
+  const busy = perGateway / capacity;
+  const reads = how === "poll" ? 1_000_000 : 0;
+  const delay = how === "poll" ? "about 1,000 ms" : busy >= 1 ? "never: overloaded" : "about 40 ms";
+  const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
+  const tile = (label: string, value: string, bad: boolean, id: string) => (
+    <div style={{ background: bad ? "var(--fail-soft)" : "var(--page-2)", borderRadius: 8, padding: "8px 10px" }}>
+      <div style={{ color: "var(--ink-3)", fontSize: 12 }}>{label}</div>
+      <strong style={{ fontSize: 16, color: bad ? "var(--fail)" : "var(--ink)" }} data-testid={id}>{value}</strong>
+    </div>
+  );
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · finding the right connection</p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
+        <div className="seg" role="group" aria-label="Delivery">
+          {([["registry", "Registry"], ["broadcast", "Broadcast"], ["poll", "Polling"]] as const).map(([v, l]) => (
+            <button key={v} aria-pressed={how === v} onClick={() => setHow(v)}>{l}</button>
+          ))}
+        </div>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-2)" }}>
+          Gateways <input type="range" min={5} max={60} value={gateways} onChange={(e) => setGateways(+e.target.value)} aria-label="Number of gateways" aria-valuetext={`${gateways} gateways`} /> <span style={{ fontFamily: "var(--mono)" }}>{gateways}</span>
+        </label>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8, fontSize: 13 }}>
+        {tile("Messages per gateway", `${fmt(perGateway)} / s`, busy > 0.7, "dp-each")}
+        {tile("Gateway busy", busy >= 1 ? "overloaded" : `${Math.round(busy * 100)}%`, busy > 0.7, "dp-busy")}
+        {tile("Store reads for delivery", reads ? `${fmt(reads)} / s` : "none", reads > 0, "dp-reads")}
+        {tile("Delivery delay", delay, how === "poll" || busy >= 1, "dp-delay")}
+      </div>
+      <p style={{ margin: "8px 0 0", fontSize: 12.5, color: "var(--ink-3)" }}>40,000 messages a second, 1.5 recipients each, 80% online; 2 million clients sending a heartbeat every 30 s; 20,000 messages a second per gateway. With broadcast, every gateway handles every delivery, however many there are. Estimates, rounded.</p>
+    </div>
+  );
+}

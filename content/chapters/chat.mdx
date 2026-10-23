@@ -1,0 +1,109 @@
+<ChapterHead kicker="Book 3 · Classic designs · Chapter 27" title="Chat and presence" concept="websocket" meta="About 20 minutes of reading · one design lab" />
+
+<Story when="Friday, 8:15 pm">
+Tiffin's new rider chat works in testing. On its first Friday night, 2 million people have the app open. Messages to riders arrive ten seconds late, or twice, or with the reply above the question. The green "online" dots stay green for riders who went home an hour ago. And the database, which was only meant to store messages, is busy recording 67,000 heartbeats a second.
+</Story>
+
+"Design WhatsApp" (or Messenger, Slack, or chat with your delivery rider) looks like a messaging problem, but most of the design is about **connections**: millions of them, open for hours, and each message has to find exactly the right one. Presence (who's online) and ordering are where the interesting mistakes are.
+
+## Requirements and numbers
+
+- Send to a person or a small group; online recipients see it at once, offline ones get a push.
+- A green dot for who's online; history to scroll back through.
+- Messages in a conversation appear in the same order for everyone.
+
+Peak: 2 million open connections, 40,000 messages sent and about 60,000 delivered a second (1.5 recipients each on average, 80% of them online).
+
+## Holding connections
+
+A <Term id="websocket">WebSocket</Term> is a connection the client opens once and keeps, so the server can push to it at any time. Holding millions of them is its own job, so give it its own machines: **gateways** that do nothing but hold sockets and pass frames along. Everything that thinks (storing, ordering, deciding who gets what) lives in a stateless chat service behind them.
+
+<Checkpoint id="chat-gateways" />
+
+Size gateways by connections, not just messages: in the lab, 29 gateways are needed for the connections, while the messages alone would keep only 8 busy.
+
+## Finding the right connection
+
+A message for Bilal arrives at gateway 7. Bilal is connected to gateway 23. How does it get there?
+
+<DeliveryPaths />
+
+- **A registry.** When Bilal connects, gateway 23 writes "Bilal → gateway 23" into a shared cache, with an expiry that his heartbeats keep refreshing. The chat service looks him up and sends the message to gateway 23 only. One lookup, one hop.
+- **Broadcast** to every gateway, and let each check whether it holds Bilal. It needs no registry, but every gateway sees every message: adding gateways adds work everywhere instead of spreading it.
+- **Polling**: clients ask "anything new?" every couple of seconds. It needs no push at all, but 2 million clients make a million mostly empty reads a second, and messages still arrive about a second late.
+
+## Store first, then deliver
+
+The chat service writes each message to a store **before** delivering it, partitioned by conversation id, so a conversation's messages live together and come back in order with one range read. If the recipient's connection drops mid-delivery, nothing is lost: when the app reconnects, it asks for everything after the last message it has.
+
+Delivery is therefore at least once. Clients acknowledge by sequence number and ignore duplicates, so a resend after a reconnect is harmless.
+
+## One order for everyone
+
+Phone clocks disagree by seconds. Sorting by the sender's timestamp can put a reply above its question:
+
+<Checkpoint id="chat-order" />
+
+Instead, the chat service gives each message the **conversation's next sequence number**. Everyone sorts by it, and a gap (you have 41 and 43) tells the client exactly what to fetch. There's no need for a global order across conversations, which would be a bottleneck for nothing.
+
+## Presence
+
+Each connected client sends a heartbeat every 30 seconds. That's the biggest write load in the system.
+
+<Checkpoint id="chat-heartbeats" />
+
+Keep presence as a key per user in a cache, refreshed by each heartbeat and set to expire after about 60 seconds. If an app dies without saying goodbye, its key simply expires. Nothing has to notice the disconnect, and nothing durable is written. A green dot that's up to a minute stale is fine.
+
+## Offline recipients
+
+If the registry has no live connection for Bilal, the chat service puts a push notification on a queue, and workers send it through the platform's push provider. When the provider has an outage, notifications wait in the queue, and chat itself is unaffected.
+
+## Try it in the lab
+
+<ProblemLadder chapter="chat" />
+
+The lab runs your design with 2 million connections and 40,000 messages a second, checks delivery time, presence, ordering and connection headroom, then knocks out one machine at a time.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Group chats with 10,000 members." Fan out through a queue, rate-limit presence updates, and don't send typing indicators to everyone.
+- "Read receipts and typing indicators." Small events over the same sockets; store receipts compactly (the last read sequence number per member), and never store typing at all.
+- "Several devices per user." The registry maps a user to a set of connections; each device tracks its own last sequence number.
+- "End-to-end encryption." The server stores and forwards ciphertext; it can still order and deliver, but not read or search.
+
+Traps that cost people the round:
+
+- Ordering by client timestamps.
+- Presence in the main database.
+- Delivering before storing, so a dropped connection loses the message.
+- Sizing gateways by messages and forgetting the connections.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how a message reaches its recipient in a chat system with millions of open connections."
+  model="Gateways hold the WebSocket connections and record which user is on which gateway in a shared registry; the stateless chat service stores each message with the conversation's next sequence number, looks up the recipient's gateway and forwards it there, or queues a push if they're offline. Presence is a key per user that heartbeats refresh and that expires on its own."
+  points={["Gateways only hold connections", "A registry maps users to gateways", "Store first, with a per-conversation sequence number", "Offline: a push through a queue", "Presence: heartbeat-refreshed keys that expire"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "Why separate gateways from the chat service?", a: "Holding millions of long-lived connections is a different job from handling messages; it scales by connection count, and the chat service can stay stateless." },
+    { q: "How does a message find the recipient's connection?", a: "A registry in a cache maps each user to their gateway; the chat service looks them up and forwards to that gateway only." },
+    { q: "Why not order by timestamps?", a: "Phone clocks drift by seconds. A per-conversation sequence number, assigned in one place, gives everyone the same order and makes gaps detectable." },
+    { q: "How does presence work without a disconnect handler?", a: "Heartbeats refresh a key with a ~60 s expiry; when the heartbeats stop, the key expires and the user shows as offline." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "MDN: The WebSocket API", href: "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API" },
+    { label: "RFC 6455: The WebSocket Protocol", href: "https://datatracker.ietf.org/doc/html/rfc6455" },
+    { label: "Redis documentation: EXPIRE", href: "https://redis.io/docs/latest/commands/expire/" },
+  ]}
+/>

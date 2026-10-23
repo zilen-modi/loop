@@ -29,6 +29,7 @@ import { urlShortenerLab } from "./hld/url-shortener";
 import { distributedRateLimiterLab } from "./hld/distributed-rate-limiter";
 import { notificationSystemLab } from "./hld/notification-system";
 import { newsFeedProblem } from "./hld/news-feed";
+import { chatProblem } from "./hld/chat";
 import { ticketBookingProblem } from "./hld/ticket-booking";
 
 export const problems: Problem[] = [
@@ -50,11 +51,12 @@ export const problems: Problem[] = [
   vendingMachine,
   kvStore,
   orderBook,
-  // System design · chapters 22, 24–26 and 31
+  // System design · chapters 22, 24–27 and 31
   urlShortenerLab,
   distributedRateLimiterLab,
   notificationSystemLab,
   newsFeedProblem,
+  chatProblem,
   ticketBookingProblem,
 ];
 
