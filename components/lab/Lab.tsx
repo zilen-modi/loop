@@ -7,7 +7,7 @@ import {
   addEdge, Background, ConnectionMode, Controls as ZoomControls, MiniMap, ReactFlow, ReactFlowProvider,
   useEdgesState, useNodesState, useReactFlow, useViewport, ViewportPortal, type Connection, type Edge,
 } from "@xyflow/react";
-import { Activity, Check, ChevronLeft, Columns2, Eraser, LayoutGrid, PanelLeftClose, PanelLeftOpen, ShieldAlert } from "lucide-react";
+import { Activity, Check, ChevronLeft, Columns2, Eraser, FileDown, LayoutGrid, PanelLeftClose, PanelLeftOpen, ShieldAlert } from "lucide-react";
 import type { DesignProblem } from "@/content/problem-types";
 import { designScenarios } from "@/content/designs";
 import { catalog, type NodeKind } from "@/lib/design/catalog";
@@ -23,6 +23,7 @@ import Inspector from "./Inspector";
 import Brief from "./Brief";
 import Interview from "./Interview";
 import { Compare } from "./Compare";
+import { Export } from "./Export";
 import { CostBar, HopBar, Scorecard, Tiles } from "./Dashboard";
 import { Drill, TraceButton, TrafficSlider, type DrillStep } from "./Controls";
 import { categoryLabel, LabContext, laneOrder, type LabLive } from "./visuals";
@@ -99,8 +100,8 @@ function Lab({ problem: p, from }: { problem: DesignProblem; from: string }) {
   const [highlight, setHighlight] = useState<NodeKind[] | null>(null);
   const [drill, setDrill] = useState<{ steps: DrillStep[]; index: number; playing: boolean } | null>(null);
   const [trace, setTrace] = useState<{ i: number } | null>(null);
-  const [panel, setPanel] = useState<"compare" | null>(null);
-  const panelOpener = useRef<HTMLButtonElement>(null);
+  const [panel, setPanel] = useState<"compare" | "export" | null>(null);
+  const panelOpener = useRef<HTMLButtonElement | null>(null);
   const closePanel = () => {
     setPanel(null);
     requestAnimationFrame(() => panelOpener.current?.focus()); // the dialog unmounts, so return focus by hand
@@ -337,7 +338,8 @@ function Lab({ problem: p, from }: { problem: DesignProblem; from: string }) {
             <TraceButton running={!!trace} disabled={!slow?.ok} onTrace={() => setTrace(trace ? null : { i: 0 })} />
             <button className="btn small" onClick={() => (drill ? setDrill(null) : startDrill())} aria-pressed={!!drill}><ShieldAlert size={14} aria-hidden="true" /> Failure drill</button>
             <span className="lab-spacer" />
-            <button ref={panelOpener} className="btn small" onClick={() => setPanel("compare")} title="Save designs and compare them side by side" aria-label="Compare designs"><Columns2 size={14} aria-hidden="true" /><span className="lbl"> Compare</span></button>
+            <button className="btn small" onClick={(e) => { panelOpener.current = e.currentTarget; setPanel("compare"); }} title="Save designs and compare them side by side" aria-label="Compare designs"><Columns2 size={14} aria-hidden="true" /><span className="lbl"> Compare</span></button>
+            <button className="btn small" onClick={(e) => { panelOpener.current = e.currentTarget; setPanel("export"); }} title="Download a picture and notes of this design" aria-label="Export design"><FileDown size={14} aria-hidden="true" /><span className="lbl"> Export</span></button>
             <button className="btn small" onClick={() => { load(tidy(design)); }} title="Lay boxes out by lane" aria-label="Tidy up"><LayoutGrid size={14} aria-hidden="true" /><span className="lbl"> Tidy up</span></button>
             <button className="btn small" onClick={() => load(s.start)} title="Start again from an empty canvas" aria-label="Clear"><Eraser size={14} aria-hidden="true" /><span className="lbl"> Clear</span></button>
           </div>
@@ -392,6 +394,7 @@ function Lab({ problem: p, from }: { problem: DesignProblem; from: string }) {
           </div>
 
           {panel === "compare" && <Compare s={s} problemId={p.id} current={design} onLoad={load} onClose={closePanel} />}
+          {panel === "export" && <Export s={s} problemId={p.id} design={design} onClose={closePanel} />}
 
           {drill && (
             <Drill

@@ -517,3 +517,10 @@ button { cursor: pointer; }
   .compare-pick select { min-width: 0; width: 100%; }
   .compare-pick label:not(.compare-only) { flex: 1 1 40%; }
 }
+
+.export-preview { border: 1px solid var(--rule); border-radius: 10px; overflow: auto; max-height: 46dvh; background: #fbfaf7; }
+.export-preview svg { display: block; max-width: 100%; height: auto; }
+@media (max-width: 640px) { .export-preview svg { max-width: none; } } /* phones: scroll the picture at full size rather than shrink it unreadably */
+.export-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.export-md summary { cursor: pointer; font-size: 13px; color: var(--ink-2); min-height: 40px; display: flex; align-items: center; }
+.export-md pre { margin: 6px 0 0; padding: 10px 12px; max-height: 40dvh; overflow: auto; background: var(--code-bg); border-radius: 8px; font: 12.5px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word; }
