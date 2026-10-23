@@ -1,0 +1,114 @@
+<ChapterHead kicker="Book 3 · Classic designs · Chapter 31" title="Ticket booking at high contention" concept="waiting-room" meta="About 20 minutes of reading · one design lab" />
+
+<Story when="Saturday, 9:59 am">
+Tiffin Fest passes go on sale at 10:00: 80,000 of them, and a million people on the page. At 10:00:02 the booking servers are at full tilt, the database is refusing connections, and fans see spinning wheels and "something went wrong". Those who refresh fastest get through. By 10:06 the festival shows "sold out", while 16,000 passes sit in abandoned carts.
+</Story>
+
+Ticket drops, sneaker releases, flash sales and train bookings at 10 am all share a shape: a fixed, small amount of stock, and demand that's a hundred times bigger, all arriving in the same minute. The booking logic is the easy part; chapter 17 of the low-level book builds it. This chapter is about the crowd around it. The key idea is to **shape the traffic** so that the one component that has to be exact never sees the crowd at all.
+
+## Requirements and numbers
+
+- Fans see the event page with live seat counts.
+- Fans hold seats for ten minutes while they pay; paying turns the hold into a booking.
+- No seat is ever sold twice, and abandoned holds come back.
+- When demand is higher than the system can serve, fans wait in a fair line.
+
+At 10:00: about 100,000 page loads a second, 30,000 fans pressing Book every second in the first minutes, and one database, the only place that knows which seats are free, that can take about 3,000 writes a second.
+
+## Three kinds of traffic, three places to answer them
+
+Not every request needs the database. Sort them by what they need:
+
+- **The event page** is the same for everyone, so a CDN serves it, with a seat-count snapshot it refreshes once a second. The counts are a second old, and that's fine: the hold is the moment of truth.
+- **"Where am I in line?"** needs one shared counter, not the seat data. Gateways in front of everything answer it from a cache.
+- **Holding a seat** needs the database, and only a steady, safe rate of fans ever gets this far.
+
+## The waiting room
+
+A <Term id="waiting-room">virtual waiting room</Term> gives each arriving fan a number (one atomic increment on a shared counter) and a signed token. The gateways admit fans in number order at a fixed rate; everyone else sees their place and an estimated wait.
+
+<WaitingRoom />
+
+<Checkpoint id="tb-admit" />
+
+Without the line, refused fans retry, so 30,000 fans become about 90,000 attempts a second, all of them reaching the app servers and the database. The fastest retries win, and the fastest retries are usually bots. The line is both the capacity plan and the fairness policy.
+
+<Checkpoint id="tb-wait" />
+
+## Taking a seat exactly once
+
+Admitted fans hold seats with **one atomic step**, never "check, then write":
+
+```sql
+UPDATE seats
+SET hold = :hold, hold_until = now() + interval '10 minutes'
+WHERE event = :event AND id IN (:seats)
+  AND booking IS NULL
+  AND (hold IS NULL OR hold_until < now());
+```
+
+If fewer rows changed than seats were asked for, roll back: someone else got there first. Paying writes the booking in the same database, so there's one source of truth.
+
+A lock per seat in Redis (`SET seat:D7 hold-123 NX EX 600`) is faster and is a fine answer too, but the lock and the booking then live in two places. If a cache node fails, its locks vanish, so the database still needs a unique constraint on (event, seat) as the last guard.
+
+## Holds that expire
+
+About one hold in five is never paid for. Each hold stores when it ends, and "is this seat free?" means "no booking, and no hold that's still live". Abandoned seats come back on their own, with no timer per hold and no sweeper to fall behind.
+
+## The gateways and the cache
+
+The line is cheap work, but there's a lot of it: 30,000 joins and about 60,000 "where am I?" checks a second.
+
+<Checkpoint id="tb-gateways" />
+
+Two cache nodes hold the counter and the admission state, so the line survives losing one.
+
+## Try it in the lab
+
+<ProblemLadder chapter="ticket-booking" />
+
+The lab runs your design at the moment the sale opens: 100,000 page loads, 30,000 bookings and 60,000 line checks a second. It checks that no seat can be sold twice, that the line is fair and that holds expire, then knocks out one machine at a time.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Bots." Limits per account and per card, a challenge at the front of the line, tokens bound to the session, and admission by number, not by speed.
+- "Payment comes back after the hold expired." Refund automatically, or extend the hold once while a payment is in flight.
+- "Pick seats on a map." Shard the seat table by section, and lock a few seats at a time within a section.
+- "Twenty events on sale at once." One line per event, and seat data sharded by event.
+
+Traps that cost people the round:
+
+- Scaling the database for the crowd instead of keeping the crowd away from it.
+- "Check if free, then book."
+- Holds that never expire.
+- A waiting room whose position check hits the database.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how you'd sell 80,000 tickets to a million fans arriving in the same minute."
+  model="Keep the crowd away from the database: a CDN serves the event page, and gateways run a waiting room from a shared counter in a cache, admitting a fixed safe rate in arrival order. Admitted fans hold seats with one atomic conditional update that expires after ten minutes, and paying writes the booking in the same database."
+  points={["CDN for the identical page", "A waiting room: a number from a shared counter, admitted in order", "Admission rate set from database capacity", "One atomic conditional update per hold", "Holds expire by time"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "Why a waiting room rather than a bigger database?", a: "Demand is a hundred times the stock and arrives at once. A line turns it into a steady, safe rate, and makes the order fair instead of a race of retries." },
+    { q: "How is the admission rate chosen?", a: "From what the booking path can take with headroom: database writes per second ÷ writes per admitted fan × the target utilisation." },
+    { q: "How does a hold avoid selling a seat twice?", a: "One conditional update that changes every requested seat or none; a Redis lock also works if the database keeps a unique constraint as the last guard." },
+    { q: "What serves the event page?", a: "A CDN, with a seat-count snapshot refreshed every second. The hold, not the page, is the moment of truth." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Cloudflare: Waiting Room documentation", href: "https://developers.cloudflare.com/waiting-room/" },
+    { label: "PostgreSQL documentation: explicit locking", href: "https://www.postgresql.org/docs/current/explicit-locking.html" },
+    { label: "Redis documentation: SET with NX and EX", href: "https://redis.io/docs/latest/commands/set/" },
+  ]}
+/>

@@ -439,6 +439,30 @@ export const checkpoints: Record<string, Checkpoint> = {
     },
     explain: "A market order walks the book from the best price: 4 at 102, then 6 at 103. That's 408 + 618 = 1,026 for 10 kilos, 102.6 each. A bigger order would reach 110, which is why large orders are split up or sent with a limit.",
   },
+  "tb-admit": {
+    id: "tb-admit",
+    prompt: "The seat database takes 3,000 writes a second. Each admitted fan writes one hold, and 4 in 5 also write a booking when they pay. To keep the database at most 60% busy, how many fans can the waiting room admit per second?",
+    options: ["600", "1,000", "1,667", "3,000"],
+    compute: () => Math.floor((3000 * 0.6) / (1 + 0.8)).toLocaleString("en-US"),
+    explain: "Each admitted fan costs 1 + 0.8 = 1.8 writes on average. 60% of 3,000 is 1,800 writes a second, so 1,800 ÷ 1.8 = 1,000 fans a second. Admission is a dial set from what the slowest exact component can take.",
+  },
+  "tb-wait": {
+    id: "tb-wait",
+    prompt: "You're number 24,000 in line, and the room admits 1,000 fans a second. Roughly how long do you wait?",
+    options: ["24 seconds", "4 minutes", "40 minutes", "4 hours"],
+    compute: () => {
+      const s = 24_000 / 1000;
+      return s < 60 ? `${s} seconds` : `${s / 60} minutes`;
+    },
+    explain: "24,000 ÷ 1,000 = 24 seconds. Showing that estimate is half the value of a waiting room: people who know they're 24 seconds away don't refresh. Number 240,000 would wait 4 minutes for nothing: the passes run out after about the first 50,000 fans, so a good waiting room tells everyone past that point early.",
+  },
+  "tb-gateways": {
+    id: "tb-gateways",
+    prompt: "The line gets 90,000 joins and place checks a second. Each gateway handles 8,000 a second, and you want every gateway at most 70% busy. How many gateways do you need?",
+    options: ["12", "15", "17", "23"],
+    compute: () => String(Math.ceil(90_000 / (8000 * 0.7))),
+    explain: "70% of 8,000 is 5,600 a second per gateway; 90,000 ÷ 5,600 = 16.1, so 17. With one down, 16 run at about 70%, still under capacity.",
+  },
 };
 
 export function correctIndex(c: Checkpoint): number {

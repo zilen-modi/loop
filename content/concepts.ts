@@ -4,7 +4,7 @@
 export type Concept = {
   id: string;
   term: string;
-  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen" | "Workflow" | "Ticket" | "ArrowUpDown" | "CandlestickChart";
+  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen" | "Workflow" | "Ticket" | "ArrowUpDown" | "CandlestickChart" | "Hourglass";
   hue: "teal" | "violet" | "amber" | "rose" | "blue";
   definition: string;
   appearsIn: string[];
@@ -226,5 +226,13 @@ export const concepts: Record<string, Concept> = {
     hue: "amber",
     definition: "How an exchange decides who trades first: the best price wins, and among orders at the same price, the one that arrived first. Trades happen at the price of the order that was already resting.",
     appearsIn: ["LLD 28 · Stock exchange order book", "HLD · Low-latency systems"],
+  },
+  "waiting-room": {
+    id: "waiting-room",
+    term: "Virtual waiting room",
+    glyph: "Hourglass",
+    hue: "blue",
+    definition: "A line in front of a system that can't serve everyone at once. Each arrival gets a number from one shared counter, and fans are admitted in order at a rate the system can safely take; everyone else sees their place.",
+    appearsIn: ["HLD 31 · Ticket booking", "HLD 39 · Flash sale", "LLD 17 · Movie ticket booking"],
   },
 };

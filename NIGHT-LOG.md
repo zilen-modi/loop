@@ -6,7 +6,7 @@ Legend: ✅ done · ⚠️ done with caveats · ⛔ stuck (partial work on a `wi
 
 Every item has to pass the same gate before it counts as done: tsc, lint, `check:content`, build, its own browser test, the regression suites, the responsive sweep and a screenshot review.
 
-HLD progress: 6 / 48 chapters. LLD progress: 10 / 38 chapters.
+HLD progress: 7 / 48 chapters. LLD progress: 10 / 38 chapters.
 
 | # | Item | Status | Commit | Notes |
 |---|---|---|---|---|
@@ -28,4 +28,5 @@ HLD progress: 6 / 48 chapters. LLD progress: 10 / 38 chapters.
 | 21 | LLD 21 Vending machine build and chapter | ✅ | f0616c8 | State pattern, escrow and greedy change from the coins held; 5 mutants caught. The checks caught my scenario expecting ₹1 change from a machine with no ₹1 coins. |
 | 22 | LLD 17 Movie-ticket booking build and chapter | ✅ | f0616c8 | All-or-nothing holds that expire by time, with no timers; races staged call by call; 5 mutants caught; SeatRace figure. |
 | 23 | LLD 16 Elevator build and chapter | ✅ | f0616c8 | SCAN movement and a cost-based dispatcher in ticks; out-of-service cars hand their hall calls back; 5 mutants caught. Items 21–23 are in one commit because they share the registration files. |
-| 24 | LLD 28 Stock-exchange order book build and chapter | ✅ | (this commit) | Price-time matching, market orders, cancel, depth; extension: modify (keep or lose your place) and icebergs. 13 scenarios + 3 generated, including a 40,000-call opening bell; 7 mutants caught. A slow variant that scans the whole book is correct but 7.5× over the limit. JS and Python 16/16 in the browser; BookLadder figure; 96/96 responsive states. |
+| 24 | LLD 28 Stock-exchange order book build and chapter | ✅ | 7fd6adc | Price-time matching, market orders, cancel, depth; extension: modify (keep or lose your place) and icebergs. 13 scenarios + 3 generated, including a 40,000-call opening bell; 7 mutants caught. A slow variant that scans the whole book is correct but 7.5× over the limit. JS and Python 16/16 in the browser; BookLadder figure; 96/96 responsive states. `/problems/[id]` first load is now 180 kB (each build's references ship with the page; still well under the 335 kB budget). |
+| 25 | HLD 31 Ticket booking at high contention: lab and chapter | ✅ | (this commit) | A flash crowd (100k page loads, 30k bookings, 60k line checks a second) against one seat database. 9 checks; 5 wrong designs each fail their intended check (open doors, check-then-book, holds that never expire, no CDN, one cache node). The gateway box doubles as the waiting room. WaitingRoom figure; 3 computed checkpoints. Caught my own inconsistency: the brief said 1.5 minutes to sell out, the maths says 50 s, and fans past ~50,000 in line are now told it's sold out. 11/11 lab checks in the browser; 64/64 responsive states. |

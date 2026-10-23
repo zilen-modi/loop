@@ -213,7 +213,7 @@ export const books: Book[] = [
           ch(28, "Video streaming"),
           ch(29, "Ride hailing"),
           ch(30, "Food delivery"),
-          ch(31, "Ticket booking"),
+          ch(31, "Ticket booking", { slug: "ticket-booking", available: true }),
           ch(32, "Payments and ledgers"),
           ch(33, "Search autocomplete"),
           ch(34, "Web crawler"),

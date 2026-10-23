@@ -397,3 +397,48 @@ export function FanoutCost() {
     </div>
   );
 }
+
+/** A waiting room in numbers: the admission rate against database load, wait times and the sell-out. */
+export function WaitingRoom() {
+  const [on, setOn] = useState(true);
+  const [admit, setAdmit] = useState(1000);
+  const [place, setPlace] = useState(30_000);
+  const writes = 3000; // the seat database's writes per second
+  const perFan = 1.8; // one hold write, and 4 in 5 fans also write a booking
+  const attempts = on ? admit : 90_000; // with no line, 30,000 fans a second retry ~3 times
+  const db = (attempts * perFan) / writes;
+  const waitS = place / admit;
+  const sellOutS = 40_000 / 0.8 / admit; // 40,000 orders; 1 hold in 5 lapses and goes back
+  const tooLate = place > admit * sellOutS; // admitted after the last pass is gone
+  const fmtTime = (s: number) => (s < 90 ? `${Math.round(s)} s` : s < 5400 ? `${Math.round(s / 60)} min` : `${(s / 3600).toFixed(1)} h`);
+  const tile = (label: string, value: string, bad: boolean, id: string) => (
+    <div style={{ background: bad ? "var(--fail-soft)" : "var(--page-2)", borderRadius: 8, padding: "8px 10px" }}>
+      <div style={{ color: "var(--ink-3)", fontSize: 12 }}>{label}</div>
+      <strong style={{ fontSize: 16, color: bad ? "var(--fail)" : "var(--ink)" }} data-testid={id}>{value}</strong>
+    </div>
+  );
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · the line in numbers</p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
+        <div className="seg" role="group" aria-label="Waiting room">
+          <button aria-pressed={!on} onClick={() => setOn(false)}>No line</button>
+          <button aria-pressed={on} onClick={() => setOn(true)}>Waiting room</button>
+        </div>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: on ? "var(--ink-2)" : "var(--ink-3)" }}>
+          Admit per second <input type="range" min={250} max={3000} step={250} value={admit} disabled={!on} onChange={(e) => setAdmit(+e.target.value)} aria-label="Fans admitted per second" aria-valuetext={`${admit} a second`} /> <span style={{ fontFamily: "var(--mono)" }}>{admit.toLocaleString("en-US")}</span>
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: on ? "var(--ink-2)" : "var(--ink-3)" }}>
+          Your place <input type="range" min={10_000} max={600_000} step={10_000} value={place} disabled={!on} onChange={(e) => setPlace(+e.target.value)} aria-label="Your place in line" aria-valuetext={`number ${place.toLocaleString("en-US")}`} /> <span style={{ fontFamily: "var(--mono)" }}>#{place.toLocaleString("en-US")}</span>
+        </label>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8, fontSize: 13 }}>
+        {tile("Attempts reaching the app", `${attempts.toLocaleString("en-US")} / s`, !on, "wr-attempts")}
+        {tile("Seat database busy", db >= 1 ? "overloaded" : `${Math.round(db * 100)}%`, db > 0.7, "wr-db")}
+        {tile("Your wait", !on ? "a race of retries" : tooLate ? "sold out before your turn" : `about ${fmtTime(waitS)}`, !on || tooLate, "wr-wait")}
+        {tile("Sold out after", on ? `about ${fmtTime(sellOutS)}` : "whenever the database recovers", !on, "wr-sellout")}
+      </div>
+      <p style={{ margin: "8px 0 0", fontSize: 12.5, color: "var(--ink-3)" }}>One SQL primary at 3,000 writes a second; each admitted fan makes 1.8 writes on average. 40,000 orders, and 1 hold in 5 lapses and is sold again. Estimates, rounded.</p>
+    </div>
+  );
+}
