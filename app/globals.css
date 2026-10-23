@@ -481,3 +481,39 @@ button { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
 }
+
+/* Lab dialogs: compare designs, export */
+.lab-dialog { width: min(860px, calc(100vw - 24px)); max-height: min(88dvh, 900px); margin: auto; padding: 0; border: 1px solid var(--rule-2); border-radius: 14px; background: var(--page); color: var(--ink); box-shadow: var(--shadow); font: 14px var(--sans); overflow: hidden; }
+.lab-dialog[open] { display: flex; flex-direction: column; }
+.lab-dialog::backdrop { background: rgb(0 0 0 / 35%); }
+.lab-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px 10px 18px; border-bottom: 1px solid var(--rule); }
+.lab-dialog-head h2 { margin: 0; font: 600 16px var(--sans); }
+.lab-dialog-body { padding: 14px 18px 18px; overflow: auto; display: grid; gap: 14px; align-content: start; }
+.compare-save { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.compare-save label { font-size: 13px; color: var(--ink-2); }
+.compare-save input { flex: 1 1 160px; min-width: 0; min-height: 36px; padding: 6px 10px; border: 1px solid var(--rule-2); border-radius: 8px; background: var(--page); color: var(--ink); font: 14px var(--sans); }
+.compare-note { font-size: 12.5px; color: var(--ink-3); }
+.compare-saved { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.compare-saved li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 8px; }
+.compare-saved-name { font-weight: 500; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.compare-pick { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; }
+.compare-pick label { display: grid; gap: 4px; font-size: 12px; color: var(--ink-3); }
+.compare-pick select { min-height: 36px; min-width: 150px; padding: 4px 8px; border: 1px solid var(--rule-2); border-radius: 8px; background: var(--page); color: var(--ink); font: 14px var(--sans); }
+.compare-pick .compare-only { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); min-height: 40px; }
+.compare-pick .compare-only input { width: 18px; height: 18px; }
+.compare-table-wrap { overflow-x: auto; }
+.compare-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.compare-table th, .compare-table td { padding: 6px 8px; text-align: left; vertical-align: top; border-top: 1px solid var(--rule); }
+.compare-table thead th { border-top: 0; font-weight: 600; color: var(--ink); }
+.compare-table tbody th { font-weight: 400; color: var(--ink-2); width: 34%; }
+.compare-table tr.group-start th, .compare-table tr.group-start td { border-top: 1px solid var(--rule-2); padding-top: 10px; }
+.compare-group { display: block; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px; }
+.compare-table tr[data-diff] td { background: var(--page-2); }
+.compare-table td[data-good] { color: var(--pass); font-weight: 600; }
+.compare-table td[data-bad] { color: var(--fail); }
+@media (max-width: 640px) {
+  .lab-dialog { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; border: 0; }
+  .lab-dialog-body { padding: 12px 16px calc(16px + env(safe-area-inset-bottom)); }
+  .compare-pick select { min-width: 0; width: 100%; }
+  .compare-pick label:not(.compare-only) { flex: 1 1 40%; }
+}

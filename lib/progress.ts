@@ -55,6 +55,7 @@ export type ProblemState = {
   checks?: number[];              // self-review checklist items ticked
   design?: unknown;               // system-design labs: the saved canvas
   interview?: unknown;            // system-design labs: interview clock, framework ticks and notes
+  saved?: unknown;                // system-design labs: designs saved by name, for comparing
 };
 
 export const problemsProgress = createLocalStore<Record<string, ProblemState>>("loop:problems", {});
