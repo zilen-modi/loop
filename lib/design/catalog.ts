@@ -3,7 +3,7 @@
 
 export type NodeKind =
   | "client" | "cdn" | "lb" | "app" | "cache" | "sql" | "replica" | "kv" | "idgen" | "queue" | "worker" | "analytics"
-  | "objstore" | "search" | "wsgw" | "stream" | "limiter" | "provider";
+  | "objstore" | "search" | "wsgw" | "stream" | "limiter" | "provider" | "psp";
 
 export type Category = "users" | "edge" | "compute" | "data" | "async" | "external";
 
@@ -51,6 +51,7 @@ export const catalog: Record<NodeKind, Spec> = {
   stream: { label: "Stream (partitions)", short: "Stream", category: "async", capacity: 10_000, latencyMs: 5, costPerMonth: 40, maxCount: 200, note: "Kafka-style partitioned log you can replay. Order is kept within a partition. Count = partitions, 10k msgs/s each." },
   limiter: { label: "Rate-limit gateway", short: "Gateway", category: "edge", capacity: 8_000, latencyMs: 1, costPerMonth: 60, maxCount: 20, note: "API gateway nodes that check every call against its client's limit (token bucket) before passing it on. 8k calls/s each." },
   provider: { label: "Push provider", short: "Provider", category: "external", capacity: 40_000, latencyMs: 200, costPerMonth: 0, maxCount: 1, fixedCount: 1, external: true, note: "Third-party push service (FCM/APNs style). Your account allows 40k sends/s and each send takes ~200 ms; you can't scale it, and sometimes it goes down." },
+  psp: { label: "Payment provider", short: "Payments", category: "external", capacity: 5_000, latencyMs: 800, costPerMonth: 0, maxCount: 1, fixedCount: 1, external: true, note: "Card and UPI payment service (Stripe/Razorpay style). Your account allows 5k charges/s and each charge takes ~800 ms. You pay a fee per payment, not per machine; you can't scale it, and sometimes it times out or goes down." },
 };
 
 export const kindsInPalette = (Object.keys(catalog) as NodeKind[]).filter((k) => k !== "client");

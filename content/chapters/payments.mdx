@@ -1,0 +1,98 @@
+<ChapterHead kicker="Book 3 · Classic designs · Chapter 32" title="Payments and ledgers" concept="idempotency-key" meta="About 20 minutes of reading · one design lab" />
+
+<Story when="Saturday, 8:40 pm">
+Dinner rush, and the mobile network in one neighbourhood is flaky. Customers tap Pay, see a spinner, and tap again. By Monday, support has 2,000 complaints about double charges. Finance can't say how much Tiffin owes restaurants, because the balance column has been updated in place 30 million times and two of those updates collided. And 300 payments from Saturday have no status at all: the provider timed out, and nobody ever asked it what happened.
+</Story>
+
+Payments are where a system design meets money, and the interviewer wants three guarantees: **charge once**, **record everything**, and **find out when you're wrong**. None of them needs exotic technology. Each needs one design decision made deliberately.
+
+## Requirements and numbers
+
+- Charge a customer through an outside payment provider; show the payment's status.
+- Record every movement of money: customers, Tiffin, restaurants, riders.
+- Match our records against the provider's daily settlement file.
+
+Peak: 800 payments a second. About 5% of requests are retried after a timeout. The provider takes about 800 ms per charge and sometimes times out itself.
+
+## Charge once: idempotency keys
+
+The app can't tell "the request was lost" from "the response was lost", so it retries, and retries are where double charges come from.
+
+<Checkpoint id="pay-retries" />
+
+The fix is an <Term id="idempotency-key">idempotency key</Term>: the app generates a unique key for each payment attempt and sends it with every retry. The server writes the payment intent **and the key in one transaction**, under a unique constraint, before calling the provider. A retry with the same key finds the existing payment and gets its result back instead of charging again. Pass the same key on to the provider, which supports it for the same reason.
+
+Where the key lives matters. A key in a cache can be evicted or lost with a node, and then the next retry charges again. A key that can vanish isn't a guarantee.
+
+## Record everything: double entry
+
+Accountants solved this centuries ago. Every movement of money is written as entries that **sum to zero**: the customer's account goes down by ₹500 and Tiffin's holding account goes up by ₹500. Balances aren't stored; they're the sum of an account's entries.
+
+<LedgerLab />
+
+<Checkpoint id="pay-ledger" />
+
+The ledger is append-only. A refund is new entries in the other direction, never an edit. Concurrent writers can't lose each other's updates, because nobody overwrites anything, and a bug shows up as books that don't add up to zero.
+
+## The flow, step by step
+
+1. **Intent:** insert the payment (status `pending`) with the idempotency key. A duplicate key returns the existing payment.
+2. **Charge:** call the provider with a timeout.
+3. **Outcome:** in one transaction, set the status and write the ledger entries. If the provider timed out, set `unknown` and don't guess.
+4. **Status:** the app polls; serve those reads from a replica.
+
+<Checkpoint id="pay-primary" />
+
+## Find out when you're wrong: reconciliation
+
+Every day the provider sends a settlement file: what it actually charged and paid out. A job reads it from object storage, reads the ledger from a replica, and matches them payment by payment. `unknown` payments are resolved; anything charged but not recorded (or recorded but not charged) is flagged for a person. Reconciliation is how a payment system finds the errors no single request can see.
+
+## Try it in the lab
+
+<ProblemLadder chapter="payments" />
+
+The lab runs your design at 800 payments and 4,000 status checks a second, checks that retries can't double-charge, that the ledger balances and that mismatches are caught, then knocks out one machine at a time.
+
+## In interviews
+
+What you'll usually be asked next:
+
+- "Refunds." New ledger entries in the reverse direction, with their own idempotency key.
+- "Webhooks from the provider." Verify the signature, handle each one idempotently, and expect them late, twice or out of order.
+- "Currency." Integers in the smallest unit (paise), with the currency code; never floating point.
+- "A second provider." Route by method or cost, fail over on outages; reconciliation runs per provider.
+
+Traps that cost people the round:
+
+- Retrying the provider without an idempotency key.
+- A balance column updated in place.
+- Floats for money.
+- Assuming a timeout means the charge failed.
+
+## Explain it back
+
+<ExplainBack
+  prompt="In one or two sentences, explain how you'd make sure nobody is charged twice and every rupee is accounted for."
+  model="Every payment carries a client-generated idempotency key that's stored with the payment intent in one transaction under a unique constraint, so a retry returns the first result instead of charging again. Money is recorded as append-only double-entry ledger lines that sum to zero, and a daily job reconciles the ledger against the provider's settlement file to resolve timeouts and flag mismatches."
+  points={["Idempotency key from the client", "Stored with the payment, unique, one transaction", "Double-entry, append-only ledger", "Timeouts become 'unknown', not failures", "Daily reconciliation against the provider"]}
+/>
+
+## Recap
+
+<Recap
+  cards={[
+    { q: "What does an idempotency key do?", a: "It identifies one payment attempt across retries; stored with the payment under a unique constraint, a retry returns the first result instead of charging again." },
+    { q: "Why not keep idempotency keys in a cache?", a: "A cache can evict or lose them; the next retry then charges again. The key must live, and commit, with the payment." },
+    { q: "What is double-entry bookkeeping?", a: "Every movement is entries that sum to zero (one account down, another up); balances are sums of entries, and the ledger is append-only." },
+    { q: "What do you do when the provider times out?", a: "Mark the payment unknown, don't guess, and resolve it by asking the provider or by the daily reconciliation." },
+  ]}
+/>
+
+<Sources
+  reviewed="23 October 2026"
+  items={[
+    { label: "Stripe documentation: idempotent requests", href: "https://docs.stripe.com/api/idempotent_requests" },
+    { label: "Wikipedia: double-entry bookkeeping", href: "https://en.wikipedia.org/wiki/Double-entry_bookkeeping" },
+    { label: "Martin Fowler: Accounting Patterns (Account, Entry)", href: "https://martinfowler.com/eaaDev/AccountingNarrative.html" },
+  ]}
+/>

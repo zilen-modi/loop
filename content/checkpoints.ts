@@ -488,6 +488,30 @@ export const checkpoints: Record<string, Checkpoint> = {
     compute: () => `About ${(Math.round(2_000_000 / 30 / 1000) * 1000).toLocaleString("en-US")}`,
     explain: "2,000,000 ÷ 30 ≈ 66,667 writes a second, more than the messages themselves. That's why presence lives in memory with an expiry, not in the database: a SQL primary takes about 3,000 writes a second.",
   },
+  "pay-retries": {
+    id: "pay-retries",
+    prompt: "At peak, 800 payments a second, and 5% of them are retried after a timeout. With no idempotency keys, about how many customers are charged twice in one minute?",
+    options: ["40", "240", "2,400", "48,000"],
+    compute: () => (800 * 0.05 * 60).toLocaleString("en-US"),
+    explain: "800 × 5% = 40 double charges a second, × 60 = 2,400 a minute. Every one is a support ticket and a refund, which is why the key is part of the API from day one.",
+  },
+  "pay-ledger": {
+    id: "pay-ledger",
+    prompt: "A ₹500 order: the customer pays ₹500 to Tiffin, then Tiffin pays the restaurant ₹350 and the rider ₹50. Written as double-entry ledger lines, what do all the entries add up to?",
+    options: ["₹0", "₹100", "₹500", "₹900"],
+    compute: () => {
+      const entries = [-500, 500, -350, 350, -50, 50];
+      return `₹${entries.reduce((t, e) => t + e, 0)}`;
+    },
+    explain: "Every movement is one account down and another up by the same amount, so the entries always sum to ₹0. Tiffin's balance is the sum of its own entries: +500 − 350 − 50 = ₹100, its commission. If the total is ever not zero, there's a bug.",
+  },
+  "pay-primary": {
+    id: "pay-primary",
+    prompt: "The primary takes 3,000 writes or 10,000 reads a second, and already does 1,600 writes a second for payments. If the 4,000 status checks a second also read from it, how busy is it?",
+    options: ["40%", "53%", "70%", "93%"],
+    compute: () => `${Math.round((1600 / 3000 + 4000 / 10000) * 100)}%`,
+    explain: "Writes use 1,600 ÷ 3,000 = 53% and reads 4,000 ÷ 10,000 = 40%: 93%, with no room for a spike or a failover. Status can be a second stale, so serve it from read replicas and keep the primary for the writes that move money.",
+  },
 };
 
 export function correctIndex(c: Checkpoint): number {

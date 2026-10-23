@@ -6,7 +6,8 @@ import ProblemLadder from "./ProblemLadder";
 import { ExplainBack, Recap } from "./Reflect";
 import { CacheMath, Estimator, FanoutCost,
   WaitingRoom,
-  DeliveryPaths, GatewayCounts, RetryLab, RoundTimeline, SplitCalculator, StampedeLab, StepTable } from "./DesignFigures";
+  DeliveryPaths,
+  LedgerLab, GatewayCounts, RetryLab, RoundTimeline, SplitCalculator, StampedeLab, StepTable } from "./DesignFigures";
 import { BookLadder, EvictionLab, ParkingBoard, ScanLift, SeatRace, TokenBucketLab, TransactionLab, VendingStateLab } from "./LldFigures";
 
 // Everything an MDX chapter can use without importing it.
@@ -34,6 +35,7 @@ export const chapterComponents = {
   FanoutCost,
   WaitingRoom,
   DeliveryPaths,
+  LedgerLab,
   ParkingBoard,
   EvictionLab,
   TokenBucketLab,

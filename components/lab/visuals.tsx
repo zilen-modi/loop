@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from "react";
 import {
-  ChartColumn, Cog, Database, DatabaseBackup, Gauge, Globe, HardDrive, Hash, Inbox, KeyRound, Network, Radio, Search, Send, Server, Users, Waves, Zap,
+  ChartColumn, Cog, CreditCard, Database, DatabaseBackup, Gauge, Globe, HardDrive, Hash, Inbox, KeyRound, Network, Radio, Search, Send, Server, Users, Waves, Zap,
   type LucideIcon,
 } from "lucide-react";
 import type { Category, NodeKind } from "@/lib/design/catalog";
@@ -10,7 +10,7 @@ import type { Category, NodeKind } from "@/lib/design/catalog";
 export const kindIcon: Record<NodeKind, LucideIcon> = {
   client: Users, cdn: Globe, lb: Network, app: Server, cache: Zap, sql: Database, replica: DatabaseBackup, kv: KeyRound,
   idgen: Hash, queue: Inbox, worker: Cog, analytics: ChartColumn, objstore: HardDrive, search: Search, wsgw: Radio,
-  stream: Waves, limiter: Gauge, provider: Send,
+  stream: Waves, limiter: Gauge, provider: Send, psp: CreditCard,
 };
 
 export const categoryColor: Record<Category, string> = {

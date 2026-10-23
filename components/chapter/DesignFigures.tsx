@@ -485,3 +485,75 @@ export function DeliveryPaths() {
     </div>
   );
 }
+
+type LedgerAccount = "Customer" | "Tiffin" | "Restaurant";
+const ledgerAccounts: LedgerAccount[] = ["Customer", "Tiffin", "Restaurant"];
+
+/** The same money movements as a ledger and as balance columns, including two refunds that race. */
+export function LedgerLab() {
+  const [entries, setEntries] = useState<{ acct: LedgerAccount; amount: number; what: string }[]>([]);
+  const [column, setColumn] = useState<Record<LedgerAccount, number>>({ Customer: 0, Tiffin: 0, Restaurant: 0 });
+  const [line, setLine] = useState("Nothing has happened yet.");
+  const move = (from: LedgerAccount, to: LedgerAccount, amount: number, what: string) => [
+    { acct: from, amount: -amount, what },
+    { acct: to, amount, what },
+  ];
+  const pay = () => {
+    setEntries([...entries, ...move("Customer", "Tiffin", 500, "Order paid")]);
+    setColumn({ ...column, Customer: column.Customer - 500, Tiffin: column.Tiffin + 500 });
+    setLine("Order paid: Customer −₹500, Tiffin +₹500. Both views agree.");
+  };
+  const payout = () => {
+    setEntries([...entries, ...move("Tiffin", "Restaurant", 350, "Payout")]);
+    setColumn({ ...column, Tiffin: column.Tiffin - 350, Restaurant: column.Restaurant + 350 });
+    setLine("Payout: Tiffin −₹350, Restaurant +₹350. Both views agree.");
+  };
+  const raceRefunds = () => {
+    // Ledger: two refunds append four entries. Balance columns: both refunds read the same old values,
+    // and the second write overwrites the first.
+    setEntries([...entries, ...move("Tiffin", "Customer", 50, "Refund A"), ...move("Tiffin", "Customer", 50, "Refund B")]);
+    setColumn({ ...column, Tiffin: column.Tiffin - 50, Customer: column.Customer + 50 });
+    setLine("Two ₹50 refunds at the same moment. The ledger appends both. The balance columns both read the old value and write old ± ₹50, so one refund disappears.");
+  };
+  const sum = (a: LedgerAccount) => entries.filter((e) => e.acct === a).reduce((t, e) => t + e.amount, 0);
+  const total = entries.reduce((t, e) => t + e.amount, 0);
+  const rupees = (n: number) => `${n < 0 ? "−" : ""}₹${Math.abs(n).toLocaleString("en-IN")}`;
+  return (
+    <div className="figure" data-interactive>
+      <p className="fig-label">Try it · ledger or balance column</p>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+        <button className="btn small" onClick={pay}>Order paid ₹500</button>
+        <button className="btn small" onClick={payout}>Pay restaurant ₹350</button>
+        <button className="btn small" onClick={raceRefunds}>Two ₹50 refunds at once</button>
+        <button className="btn small" onClick={() => { setEntries([]); setColumn({ Customer: 0, Tiffin: 0, Restaurant: 0 }); setLine("Back to the start."); }} aria-label="Reset the ledger">↺</button>
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ color: "var(--ink-3)", textAlign: "left" }}>
+              <th style={{ padding: "4px 6px", fontWeight: 500 }}>Account</th>
+              <th style={{ padding: "4px 6px", fontWeight: 500 }}>Ledger (sum of entries)</th>
+              <th style={{ padding: "4px 6px", fontWeight: 500 }}>Balance column</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ledgerAccounts.map((a) => {
+              const off = sum(a) !== column[a];
+              return (
+                <tr key={a} style={{ borderTop: "1px solid var(--rule)" }}>
+                  <td style={{ padding: "6px" }}>{a}</td>
+                  <td style={{ padding: "6px", fontFamily: "var(--mono)" }} data-testid={`ledger-${a}`}>{rupees(sum(a))}</td>
+                  <td style={{ padding: "6px", fontFamily: "var(--mono)", color: off ? "var(--fail)" : "var(--ink)" }} data-testid={`column-${a}`}>{rupees(column[a])}{off ? " ✗" : ""}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p style={{ margin: "8px 0 4px", fontSize: 13 }}>
+        {entries.length} ledger entries; their sum is <strong data-testid="ledger-total">{rupees(total)}</strong>.
+      </p>
+      <p role="status" style={{ margin: 0, fontSize: 13.5, color: "var(--ink-2)" }} data-testid="ledger-line">{line}</p>
+    </div>
+  );
+}

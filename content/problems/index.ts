@@ -31,6 +31,7 @@ import { notificationSystemLab } from "./hld/notification-system";
 import { newsFeedProblem } from "./hld/news-feed";
 import { chatProblem } from "./hld/chat";
 import { ticketBookingProblem } from "./hld/ticket-booking";
+import { paymentsProblem } from "./hld/payments";
 
 export const problems: Problem[] = [
   // Chapter 3 · Hashing
@@ -51,13 +52,14 @@ export const problems: Problem[] = [
   vendingMachine,
   kvStore,
   orderBook,
-  // System design · chapters 22, 24–27 and 31
+  // System design · chapters 22, 24–27, 31 and 32
   urlShortenerLab,
   distributedRateLimiterLab,
   notificationSystemLab,
   newsFeedProblem,
   chatProblem,
   ticketBookingProblem,
+  paymentsProblem,
 ];
 
 export const problemById = (id: string) => problems.find((p) => p.id === id);

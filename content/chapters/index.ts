@@ -10,6 +10,7 @@ export const chapterLoaders: Record<string, () => Promise<{ default: React.Compo
   "lld/order-book": () => import("./order-book.mdx"),
   "hld/chat": () => import("./chat.mdx"),
   "hld/ticket-booking": () => import("./ticket-booking.mdx"),
+  "hld/payments": () => import("./payments.mdx"),
   "lld/movie-booking": () => import("./movie-booking.mdx"),
   "lld/vending-machine": () => import("./vending-machine.mdx"),
   "lld/kv-store": () => import("./kv-store.mdx"),

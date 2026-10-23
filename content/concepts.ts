@@ -4,7 +4,7 @@
 export type Concept = {
   id: string;
   term: string;
-  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen" | "Workflow" | "Ticket" | "ArrowUpDown" | "CandlestickChart" | "Hourglass" | "Cable";
+  glyph: "Brackets" | "MoveHorizontal" | "Expand" | "ListOrdered" | "Gauge" | "Hash" | "ArrowLeftRight" | "Layers" | "Timer" | "Split" | "Boxes" | "Calculator" | "Database" | "Link2" | "SquareParking" | "Recycle" | "Undo2" | "DoorOpen" | "Workflow" | "Ticket" | "ArrowUpDown" | "CandlestickChart" | "Hourglass" | "Cable" | "Fingerprint";
   hue: "teal" | "violet" | "amber" | "rose" | "blue";
   definition: string;
   appearsIn: string[];
@@ -242,5 +242,13 @@ export const concepts: Record<string, Concept> = {
     hue: "teal",
     definition: "A connection a client opens once and keeps open, so either side can send at any time. Servers can push messages instantly instead of waiting to be asked; the cost is holding millions of open connections.",
     appearsIn: ["HLD 27 · Chat and presence", "HLD 29 · Ride hailing", "Frontend · Real-time UIs"],
+  },
+  "idempotency-key": {
+    id: "idempotency-key",
+    term: "Idempotency key",
+    glyph: "Fingerprint",
+    hue: "violet",
+    definition: "A unique id the client sends with a request and every retry of it. The server stores it with the result (under a unique constraint), so a repeat returns the first result instead of doing the work, or charging the card, again.",
+    appearsIn: ["HLD 32 · Payments and ledgers", "HLD 25 · Notification system", "LLD 17 · Movie ticket booking"],
   },
 };
